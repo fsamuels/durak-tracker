@@ -35,8 +35,9 @@ the open-ended "Iterate" bucket shifted to M11+.
      extracted into a shared helper (`src/lib/data/games.ts`) reused by home and the
      history page (plus a shared `GameList` component).
    - New **`/group` (Manage group)** page holds the group switcher + create-new-group and
-     links to **Manage Players** (removed from home). Home keeps: Log a game, Game
-     history, Group stats, Manage group.
+     links to **Manage Players** (removed from home). Home shows: Log a game, a group
+     stats summary (total games + top durak) linking to full stats, and recent games;
+     the group name links to Manage group.
 
 8. **Two-part game logging** _(next)_ — split logging into **start** then **finish**;
    this _replaces_ the one-shot log flow.
