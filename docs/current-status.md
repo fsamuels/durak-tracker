@@ -4,7 +4,7 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M3 — Auth (Google working end to end; Facebook deferred)
+- **Current milestone:** M4 — Core flow (add players + log a game) on branch `milestone4`
 
 ## Done
 
@@ -31,12 +31,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
   RLS cross-group isolation confirmed; `create_group` verified; core stats queries
   (durak rate, trump frequency, avg duration, last durak) return correct results.
 
-## In progress
+### Milestone 3 — Auth ✅
 
-### Milestone 3 — Auth (on branch `milestone3`)
-
-Built and **tested end to end with Google** (login → onboarding → create group →
-protected home):
+**Tested end to end with Google** (login → onboarding → create group → protected
+home):
 
 - `@supabase/ssr` + `@supabase/supabase-js`; generated DB types
   (`src/lib/supabase/database.types.ts`).
@@ -49,17 +47,43 @@ protected home):
 - Supabase: **Google** provider enabled; URL config set (Site URL + `localhost` /
   Vercel redirect allow-list). Publishable key in `.env.local`.
 
-Remaining for M3:
+Deferred out of M3 to the [roadmap](./roadmap.md) post-v1 backlog: **Facebook
+login** (re-enable provider + restore the button in `src/app/login/page.tsx`; see
+[oauth-setup.md](./oauth-setup.md)) and **auth UX polish** (custom auth domain +
+consent-screen branding — see "Polish / UX backlog" below).
 
-- [ ] **Facebook** — deferred; re-enable provider in Supabase and restore the button
-      in `src/app/login/page.tsx` once we revisit (see [oauth-setup.md](./oauth-setup.md)).
-- [ ] Polish auth UX (see "Action required" → auth text/branding).
+## In progress
+
+### Milestone 4 — Core flow (on branch `milestone4`)
+
+Add players (incl. guests) and log a game, persisted to the DB:
+
+- Installed **Zod** + **React Hook Form** (`@hookform/resolvers`).
+- Shared Zod schemas (`src/lib/validation/`): add-player; log-game with the
+  **min-3-players / exactly-one-durak** invariants validated client-side and
+  re-validated in the server action.
+- **`log_game` RPC** (migration `20260616060126_log_game.sql`, pushed to remote;
+  types regenerated). Inserts the game + all `game_players` in one transaction so
+  the deferred integrity triggers validate at COMMIT — two separate PostgREST
+  inserts can't (the game would commit player-less). `SECURITY INVOKER`, so RLS
+  still gates every row; `logged_by` is set from `auth.uid()`.
+- Screens: `/players` (list + add-player form) and `/games/new` (log-game form
+  with per-player outcome selects, optional trump/deck/notes/times). Home links to
+  both. `getCurrentGroup()` resolves the user's group (single-group for now).
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; `log_game` tested
+  against the live DB via JWT-simulated psql (valid game OK; 2-players,
+  zero-durak, and unauthenticated all rejected; every test rolled back).
+
+Remaining for M4:
+
+- [ ] Manual end-to-end UI test with a signed-in Google session (add players →
+      log a game → confirm it persists). DB + build are green; the authenticated
+      browser flow hasn't been exercised yet.
 
 ## Not yet implemented
 
-- App screens: log a game, game history, group stats, player stats.
-- Libraries planned but not installed: **Zod**, **React Hook Form**, **next-pwa**,
-  **Vitest/Playwright**.
+- App screens: game history, group stats, player stats.
+- Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
 - Roadmap features: edit/delete game, invitations, guest claiming, offline, etc.
 

@@ -248,6 +248,36 @@ export type Database = {
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_group_owner: { Args: { p_group_id: string }; Returns: boolean };
       is_member_of_game: { Args: { p_game_id: string }; Returns: boolean };
+      log_game: {
+        Args: {
+          p_deck_count?: number;
+          p_ended_at?: string;
+          p_group_id: string;
+          p_notes?: string;
+          p_participants: Json;
+          p_started_at?: string;
+          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
+        };
+        Returns: {
+          created_at: string;
+          deck_count: number | null;
+          ended_at: string | null;
+          group_id: string;
+          id: string;
+          logged_by: string;
+          metrics: Json | null;
+          notes: string | null;
+          started_at: string;
+          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "games";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       trump_suit: "hearts" | "diamonds" | "clubs" | "spades";

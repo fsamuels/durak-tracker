@@ -22,19 +22,19 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 
 ## Tech stack
 
-| Layer           | Choice                            | Status          |
-| --------------- | --------------------------------- | --------------- |
-| Frontend        | Next.js (App Router) + TypeScript | In use          |
-| Styling         | Tailwind CSS v4                   | In use          |
-| Database / Auth | Supabase (Postgres 17), RLS       | In use          |
-| Hosting / CI    | Vercel + GitHub auto-deploy       | In use          |
-| Package manager | pnpm                              | In use          |
-| Lint / format   | ESLint (flat config) + Prettier   | In use          |
-| Auth providers  | Supabase Auth — Google + Facebook | Planned (M3)    |
-| PWA             | `next-pwa` (manifest, SW)         | Planned (M7)    |
-| Validation      | Zod                               | Planned (M3/M4) |
-| Forms           | React Hook Form + Zod             | Planned (M4)    |
-| Testing         | Vitest (unit), Playwright (e2e)   | Planned         |
+| Layer           | Choice                                     | Status       |
+| --------------- | ------------------------------------------ | ------------ |
+| Frontend        | Next.js (App Router) + TypeScript          | In use       |
+| Styling         | Tailwind CSS v4                            | In use       |
+| Database / Auth | Supabase (Postgres 17), RLS                | In use       |
+| Hosting / CI    | Vercel + GitHub auto-deploy                | In use       |
+| Package manager | pnpm                                       | In use       |
+| Lint / format   | ESLint (flat config) + Prettier            | In use       |
+| Auth providers  | Supabase Auth — Google (Facebook deferred) | In use       |
+| PWA             | `next-pwa` (manifest, SW)                  | Planned (M7) |
+| Validation      | Zod                                        | In use       |
+| Forms           | React Hook Form + Zod                      | In use       |
+| Testing         | Vitest (unit), Playwright (e2e)            | Planned      |
 
 > Only the "In use" rows are installed today. "Planned" rows are introduced in the
 > milestone noted; see [roadmap.md](./roadmap.md).
@@ -78,7 +78,9 @@ These are enforced by **`DEFERRABLE INITIALLY DEFERRED` constraint triggers**
 (`game_players_integrity` on `game_players`, `games_integrity` on `games`) that
 call `check_game_player_integrity(game_id)` at **COMMIT** — once every row for the
 game is in place. The games-level trigger also catches a game inserted with zero
-players. App-layer Zod validation will enforce the same rules earlier for UX.
+players. App-layer Zod validation enforces the same rules earlier for UX (M4), and
+the `log_game` RPC keeps a game and its players in one transaction so the deferred
+checks fire with every row present (see below).
 
 `set_updated_at()` BEFORE-UPDATE triggers maintain `updated_at` on
 `groups`, `players`, and `games`.
@@ -154,6 +156,19 @@ chicken-and-egg. `create_group` is a **`SECURITY DEFINER`** function that atomic
 creates the group, the caller's `owner` membership, and the caller's linked
 `players` row, then returns the group. This is the single entry point for onboarding.
 
+### Logging a game — `log_game(group_id, participants, started_at, …)`
+
+Defined in [`supabase/migrations/20260616060126_log_game.sql`](../supabase/migrations/20260616060126_log_game.sql).
+A game and all of its `game_players` must be inserted **in one transaction** so the
+deferred integrity triggers (≥3 players, exactly one durak) validate at COMMIT with
+every row present. Over PostgREST, two separate `.insert()` calls are two
+transactions — the first would commit a player-less game and be rejected — so logging
+goes through this RPC, taking the participants as a JSON array. Unlike `create_group`,
+it is **`SECURITY INVOKER`**: it runs as the caller so RLS still gates every insert,
+and `logged_by` is set from `auth.uid()` inside the function rather than trusted from
+the client. The client (M4) builds forms with React Hook Form + Zod and re-validates
+the same invariants in the server action before calling the RPC.
+
 ## Metrics
 
 All metrics are **computed from stored data, not cached**, unless performance later
@@ -184,6 +199,9 @@ This machine has **no Docker**, so the local Supabase stack / `db reset` is not 
   URL-encoding). The direct `db.<ref>.supabase.co` host is IPv6-only.
 - `supabase/seed.sql` is wrapped in one `begin; … commit;` so the deferred integrity
   triggers validate at COMMIT, after each game has its players.
+- **Typed client** → after a schema change, regenerate the committed types with
+  `supabase gen types typescript --linked > src/lib/supabase/database.types.ts` so
+  `supabase.from(...)`/`.rpc(...)` stay type-safe.
 
 ## Key decisions (summary)
 
@@ -193,6 +211,7 @@ This machine has **no Docker**, so the local Supabase stack / `db reset` is not 
   identity is reconstructed via `auth_user_id`.
 - **SECURITY DEFINER helpers** to avoid recursive RLS evaluation.
 - **Deferred constraint triggers** for multi-row invariants (one durak, ≥3 players).
-- **`create_group` RPC** to break the onboarding RLS chicken-and-egg.
+- **`create_group` / `log_game` RPCs** for multi-row atomic writes — break the
+  onboarding RLS chicken-and-egg, and keep a game + its players in one transaction.
 - **`groups.timezone`** for deterministic time-bucketed stats.
 - **Computed-not-stored metrics** until proven to need caching.
