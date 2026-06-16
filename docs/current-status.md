@@ -173,11 +173,17 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
   moved to `src/app/actions.ts` and now sets the active-group cookie so a just-created
   group becomes active.
 - **Dedicated `/group/switch` page** — a simple tap-to-switch list of the user's
-  groups (the switcher was pulled out of Manage group). The `switchGroup` action sets
-  the cookie, then `revalidatePath("/", "layout")` **before** `redirect("/")` — without
-  busting the client Router Cache the redirect could land on a stale, prefetched home
-  rendered with the old group, making the switch look like a no-op (the prior
-  redirect-only fix regressed for this reason).
+  groups (the switcher was pulled out of Manage group).
+- **Group switching root-cause fix (`z.uuid()` → `z.guid()`).** The switcher "did
+  nothing" because `switchGroup` validated the posted `groupId` with `z.uuid()`, and
+  Zod 4's `z.uuid()` enforces RFC-9562 version/variant bits — which the DB's ids
+  (e.g. `a0000000-…` groups, `b0000000-…` players) don't satisfy — so the action
+  failed validation and returned early. Same strictness silently blanked the stats
+  pages (the `group_stats`/`player_stats` result parse), the player-stats route param,
+  and `log_game` participant validation. Switched all five id checks to `z.guid()`
+  (shape-only, still accepts real v4 ids). `switchGroup` also now
+  `revalidatePath("/", "layout")` before `redirect("/")` so the post-switch home isn't
+  served stale from the client Router Cache.
 - **Home layout.** A single primary **Log a game** action; the group name links to
   `/group` and a "Change group →" link beside it goes to `/group/switch`; a **Group
   stats** summary card

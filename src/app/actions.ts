@@ -8,7 +8,10 @@ import { z } from "zod";
 import { GROUP_COOKIE } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 
-const schema = z.object({ groupId: z.uuid() });
+// z.guid() (not z.uuid()): the DB's ids are valid 8-4-4-4-12 GUIDs but not all
+// RFC-9562 version-conformant (e.g. seed ids like a0000000-…), which Zod 4's
+// strict z.uuid() rejects. guid validates the shape without the version check.
+const schema = z.object({ groupId: z.guid() });
 
 /** One year, in seconds — how long the active-group cookie persists. */
 const GROUP_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
