@@ -1,10 +1,10 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-16.
+Living snapshot of what's built. Last updated: 2026-06-15.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M4 — Core flow (add players + log a game) on branch `milestone4`
+- **Current milestone:** M5 — Game history shipped; next up is M6 — Stats v1.
 
 ## Done
 
@@ -52,9 +52,7 @@ login** (re-enable provider + restore the button in `src/app/login/page.tsx`; se
 [oauth-setup.md](./oauth-setup.md)) and **auth UX polish** (custom auth domain +
 consent-screen branding — see "Polish / UX backlog" below).
 
-## In progress
-
-### Milestone 4 — Core flow (on branch `milestone4`)
+### Milestone 4 — Core flow ✅
 
 Add players (incl. guests) and log a game, persisted to the DB:
 
@@ -72,17 +70,35 @@ Add players (incl. guests) and log a game, persisted to the DB:
   both. `getCurrentGroup()` resolves the user's group (single-group for now).
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; `log_game` tested
   against the live DB via JWT-simulated psql (valid game OK; 2-players,
-  zero-durak, and unauthenticated all rejected; every test rolled back).
+  zero-durak, and unauthenticated all rejected; every test rolled back). Changes
+  reviewed and merged via PR.
 
-Remaining for M4:
+### Milestone 5 — Game history ✅
 
-- [ ] Manual end-to-end UI test with a signed-in Google session (add players →
-      log a game → confirm it persists). DB + build are green; the authenticated
-      browser flow hasn't been exercised yet.
+List a group's games so the crew can see who's been the durak:
+
+- **`/games`** server component: auth + `getCurrentGroup()` + an RLS-scoped query
+  over `games` (uses the existing `games(group_id, started_at desc)` index, capped
+  at 100). Each row shows the start time (rendered in the group's timezone), the
+  durak, the participants, and trump suit / deck count when present. Embeds
+  `game_players → players` in one PostgREST select.
+- **Date-range filter** (`?start=&end=`): a small client component (`history-filter.tsx`)
+  pushes the bounds to the URL; the server re-validates with a shared **Zod** schema
+  (`src/lib/validation/history.ts`). Dates are wall-clock days in the group's
+  timezone, converted to UTC instants via `src/lib/time.ts` (DST-aware, `gte` start /
+  `lt` next-day-after-end). Empty state distinguishes "no games yet" from "none in
+  this range".
+- Home links to the history page; logging a game now redirects to `/games`.
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; changes reviewed
+  and merged via PR.
+
+Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game**,
+**per-player stats**, and **pagination** beyond the simple 100-row cap. `ended_at`
+is queried but not yet surfaced in the row UI.
 
 ## Not yet implemented
 
-- App screens: game history, group stats, player stats.
+- App screens: group stats, player stats.
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
 - Roadmap features: edit/delete game, invitations, guest claiming, offline, etc.
