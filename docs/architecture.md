@@ -98,6 +98,54 @@ and scopes rows through `group_members`.
   (no edit/delete in v1, matching the product non-goal); a game's `logged_by` must
   equal `auth.uid()` on insert.
 
+### Client access & key-exposure model
+
+The browser talks to Supabase's **PostgREST gateway**
+(`https://<ref>.supabase.co`), never to Postgres directly — the database password
+and connection are unreachable from the client.
+
+**Two keys, two trust levels:**
+
+| Key                             | Secret?                   | Runs                | Grants                                  |
+| ------------------------------- | ------------------------- | ------------------- | --------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No — **public by design** | Browser + server    | The low-privilege `anon` role           |
+| `SUPABASE_SERVICE_ROLE_KEY`     | **Yes — server only**     | Server only         | Full DB access, **bypasses RLS**        |
+| `SUPABASE_DB_PASSWORD`          | Yes                       | CLI/migrations only | Direct Postgres (never used by the app) |
+
+The **`NEXT_PUBLIC_` prefix is the dividing line**: Next.js inlines those vars into
+the client bundle (public), while unprefixed vars stay server-only. So the
+service_role key must never get that prefix or be used in a Client Component.
+
+```
+Browser ──(anon key + user's JWT cookie)──▶ PostgREST gateway
+                                                │ query runs as `authenticated`
+                                                ▼ with auth.uid() = the user
+                                        Postgres + RLS policies
+```
+
+The anon key is safe to ship because it is a low-privilege token; the actual access
+control is **RLS + the user's session JWT**. This makes **RLS load-bearing** — a
+table without RLS or a wrong policy is a public data leak — which is why RLS is
+enabled on all five tables and the cross-group isolation is tested. In production,
+all four values are Vercel environment variables; only the two `NEXT_PUBLIC_` ones
+reach the browser.
+
+### Why RLS — fit and trade-offs
+
+RLS fits this app: a single Postgres as source of truth, a direct browser→Supabase
+pattern (no custom API tier), group isolation cleanly expressible in SQL, and a
+small team — authorization lives in exactly one place. Policies are arbitrary SQL
+booleans (relationship-, role-, or attribute-based), not merely per-user; ours are
+**relationship-based** ("are you a member of this row's group?" via `group_members`).
+
+Trade-offs to keep in mind: policies run on every query, so complex ones cost
+performance (mitigated by the `SECURITY DEFINER` helpers and indexes above); they
+are harder to reason about and need explicit tests; they only protect Postgres (a
+future search index, cache, or analytics store would need its own authorization);
+and the service_role key bypasses them entirely. If authorization ever outgrows what
+SQL expresses comfortably, the escalation path is an app-tier check or a dedicated
+authz service (e.g. OPA, or a Zanzibar-style ReBAC system) layered on top.
+
 ### Onboarding RPC — `create_group(name, timezone, display_name)`
 
 A `players`/membership row must exist for RLS to grant access, but a brand-new user
