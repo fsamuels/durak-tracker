@@ -37,6 +37,12 @@ export default async function Home() {
           Log a game
         </Link>
         <Link
+          href="/games"
+          className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
+        >
+          Game history
+        </Link>
+        <Link
           href="/players"
           className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
         >

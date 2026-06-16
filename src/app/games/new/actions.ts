@@ -51,6 +51,6 @@ export async function logGameAction(input: unknown): Promise<LogGameState> {
   });
   if (error) return { error: error.message };
 
-  // No history page yet (M5); land back on home.
-  redirect("/");
+  // Land on the history list so the just-logged game is visible.
+  redirect("/games");
 }
