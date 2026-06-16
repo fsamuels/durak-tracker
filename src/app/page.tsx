@@ -46,7 +46,7 @@ export default async function Home() {
             {group.name}
           </Link>
           <Link
-            href="/group"
+            href="/group/switch"
             className="shrink-0 text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
           >
             Change group →

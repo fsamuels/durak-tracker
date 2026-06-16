@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -44,9 +45,12 @@ export async function switchGroup(formData: FormData) {
   const cookieStore = await cookies();
   setActiveGroupCookie(cookieStore, group.id);
 
-  // Redirect (rather than revalidatePath) so the active group is re-read from a
-  // fresh request that includes the cookie we just set. Re-rendering inline would
-  // still see the *previous* cookie value, leaving the page on the old group.
+  // Every page keys off the active group (home, /games, /stats, /players), so
+  // purge the whole client Router Cache — otherwise the redirect below can land
+  // on a *stale, prefetched* home rendered with the previous group's cookie,
+  // making the switch look like it did nothing. Revalidate, then redirect so the
+  // active group is re-read from a fresh request including the new cookie.
+  revalidatePath("/", "layout");
   redirect("/");
 }
 

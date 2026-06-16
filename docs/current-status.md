@@ -167,13 +167,20 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
   `src/lib/data/games.ts` (`getGameHistory`) reused by home (limit 6, no filter) and
   the history page (capped, date-range filter). Row markup moved to a shared
   `src/components/game-list.tsx` (`GameList`).
-- **New `/group` (Manage group) page** holds the group switcher (`switchGroup`) +
-  create-new-group form and links to Manage Players. The create form was generalized
-  into `src/components/create-group-form.tsx` (reused by onboarding); `createGroupAction`
+- **New `/group` (Manage group) page** links to Manage Players, to the switch page,
+  and holds the create-new-group form. The create form was generalized into
+  `src/components/create-group-form.tsx` (reused by onboarding); `createGroupAction`
   moved to `src/app/actions.ts` and now sets the active-group cookie so a just-created
   group becomes active.
-- **Home layout.** A single primary **Log a game** action; the group name (and a
-  "Change group →" link beside it) link to `/group`; a **Group stats** summary card
+- **Dedicated `/group/switch` page** — a simple tap-to-switch list of the user's
+  groups (the switcher was pulled out of Manage group). The `switchGroup` action sets
+  the cookie, then `revalidatePath("/", "layout")` **before** `redirect("/")` — without
+  busting the client Router Cache the redirect could land on a stale, prefetched home
+  rendered with the old group, making the switch look like a no-op (the prior
+  redirect-only fix regressed for this reason).
+- **Home layout.** A single primary **Log a game** action; the group name links to
+  `/group` and a "Change group →" link beside it goes to `/group/switch`; a **Group
+  stats** summary card
   (total games played + top durak, "More stats →" to `/stats`); and **Recent games**
   (last 6, "View all →" to `/games`). The standalone Game history / Group stats /
   Manage group buttons were dropped — those destinations are reachable from the new
