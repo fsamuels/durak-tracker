@@ -25,7 +25,7 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 | Layer           | Choice                                     | Status       |
 | --------------- | ------------------------------------------ | ------------ |
 | Frontend        | Next.js (App Router) + TypeScript          | In use       |
-| Styling         | Tailwind CSS v4                            | In use       |
+| Styling         | Tailwind CSS v4 + aurora theme tokens (`globals.css`) | In use |
 | Database / Auth | Supabase (Postgres 17), RLS                | In use       |
 | Hosting / CI    | Vercel + GitHub auto-deploy                | In use       |
 | Package manager | pnpm                                       | In use       |

@@ -199,6 +199,27 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
   Test Group, 0 in Walla Walla) resolves to Test Group, a single-group member gets
   their group, and a non-member gets null (RLS holds).
 
+### UI polish — aurora theme refresh ✅ (non-milestone)
+
+A visual pass on top of M7 (branch `ui-tweaks`); no schema or data changes.
+
+- **Brand theme via design tokens.** `src/app/globals.css` defines an "aurora"
+  gradient palette (teal → blue → violet → pink) plus reusable utility classes —
+  `.btn-brand` (gradient CTA), `.app-bg` (soft brand-tinted background glows),
+  `.card-surface` (frosted card), `.text-brand-gradient` (gradient headings).
+  Applied across login, onboarding, home, the game list, and the log-game /
+  create-group forms; light + dark mode aware. Retuning the palette is a
+  one-place token edit.
+- **Google icon** added to the *Continue with Google* button (official multicolor
+  "G" mark, inline SVG in `src/app/login/page.tsx`).
+- **Home stats refresh** (supersedes M7's "total games played + top durak" card):
+  a **🤡 Last durak** heading block under the *Log a game* button, then a **Group
+  stats** section with **games played** + **avg game time** side by side and a
+  full-width **most durak** card (full width so longer names fit). Avg game time
+  reuses the existing `formatDuration` helper and the `group_stats` RPC's
+  `avg_duration_seconds` — no new query.
+- **Verified:** `tsc --noEmit` / `eslint` clean.
+
 ## Not yet implemented
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
