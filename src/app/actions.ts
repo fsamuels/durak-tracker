@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { GROUP_COOKIE } from "@/lib/data/groups";
@@ -34,6 +34,8 @@ export async function switchGroup(formData: FormData) {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  // Stats / history / players all key off the active group.
-  revalidatePath("/", "layout");
+  // Redirect (rather than revalidatePath) so the active group is re-read from a
+  // fresh request that includes the cookie we just set. Re-rendering inline would
+  // still see the *previous* cookie value, leaving the page on the old group.
+  redirect("/");
 }
