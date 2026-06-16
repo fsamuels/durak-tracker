@@ -5,7 +5,7 @@ import { GameList } from "@/components/game-list";
 import { getGameHistory } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
-import { groupStatsSchema } from "@/lib/validation/stats";
+import { formatDuration, groupStatsSchema } from "@/lib/validation/stats";
 
 // How many recent games to surface on the home page.
 const RECENT_GAMES_LIMIT = 6;
@@ -61,25 +61,12 @@ export default async function Home() {
         <span aria-hidden>♠️</span> Log a game
       </Link>
 
-      {gamesPlayed > 0 && (
+      {stats?.last_durak && (
         <div className="-mt-4 flex flex-col gap-1">
-          {stats?.last_durak && (
-            <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
-              Last durak:{" "}
-              <span className="font-semibold text-black dark:text-zinc-50">
-                {stats.last_durak.display_name}
-              </span>
-            </p>
-          )}
-          {topDurak && (
-            <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
-              Most durak:{" "}
-              <span className="font-semibold text-black dark:text-zinc-50">
-                {topDurak.display_name}
-              </span>{" "}
-              ({topDurak.durak_count})
-            </p>
-          )}
+          <h2 className="text-sm font-medium text-zinc-500">🤡 Last durak</h2>
+          <p className="truncate text-lg font-semibold text-black dark:text-zinc-50">
+            {stats.last_durak.display_name}
+          </p>
         </div>
       )}
 
@@ -104,12 +91,20 @@ export default async function Home() {
               </span>
             </div>
             <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
+              <span className="text-brand-gradient text-3xl font-bold tracking-tight">
+                {formatDuration(stats?.avg_duration_seconds ?? null)}
+              </span>
+              <span className="text-xs font-medium text-zinc-500">
+                avg game time
+              </span>
+            </div>
+            <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                {topDurak ? `🤡 ${topDurak.display_name}` : "—"}
+                {topDurak ? topDurak.display_name : "—"}
               </span>
               <span className="text-xs font-medium text-zinc-500">
                 {topDurak
-                  ? `top durak (${topDurak.durak_count})`
+                  ? `most durak (${topDurak.durak_count})`
                   : "no durak yet"}
               </span>
             </div>
