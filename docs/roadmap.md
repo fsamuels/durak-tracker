@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–5 are complete; M6 (stats v1) is next (see
+Milestones 1–5 are complete; M6 (stats v1) is in progress (see
 [current-status.md](./current-status.md)). M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
 the [spec](../durak-tracker-spec.md).
@@ -12,12 +12,27 @@ the [spec](../durak-tracker-spec.md).
    validated client-side and re-checked server-side via the `log_game` RPC.
 5. **Game history** _(done)_ — list games per group, most-recent first, with
    a date-range filter scoped to the group's timezone.
-6. **Stats v1** _(next)_ — group stats and player stats pages computing all defined
-   metrics.
+6. **Stats v1** _(in progress)_ — group stats and player stats pages computing the
+   spec metrics at all-time, in-group granularity via two `SECURITY INVOKER` RPCs
+   (`group_stats` / `player_stats`). Deferred to later milestones: time-span buckets
+   (week/month/year), cross-group account-level aggregates, head-to-head, and
+   charts (see below).
 7. **PWA polish** — manifest, icons, install prompt, offline static-asset caching
    (introduces `next-pwa`).
 8. **Iterate** — additional metrics, claiming flow, invite system, refinements from
    real usage.
+
+## Deferred from M6 (stats follow-ups)
+
+- **Time-span buckets** — durak counts and "most durak" per week/month/year, bucketed
+  over `started_at` in the group's timezone (the architecture rule is already
+  documented; only the UI + queries remain).
+- **Cross-group / account-level aggregates** — the spec's per-player cross-group
+  stats, for registered players joined via `auth_user_id`.
+- **Head-to-head** — each player's durak % against another; still an open question
+  below (profile-only vs a dedicated comparison screen).
+- **Charts / visualizations** — v1 ships simple numbers only.
+- **`round_count`** — the per-game metric isn't captured at log time yet.
 
 ## Post-v1 backlog
 

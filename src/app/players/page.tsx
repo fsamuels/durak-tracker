@@ -44,7 +44,12 @@ export default async function PlayersPage() {
             key={p.id}
             className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-3 py-2 text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
           >
-            <span>{p.display_name}</span>
+            <Link
+              href={`/stats/players/${p.id}`}
+              className="underline-offset-4 hover:underline"
+            >
+              {p.display_name}
+            </Link>
             {!p.auth_user_id && (
               <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
                 guest

@@ -1,10 +1,10 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-15.
+Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M5 — Game history shipped; next up is M6 — Stats v1.
+- **Current milestone:** M6 — Stats v1 in progress (group + player stats pages).
 
 ## Done
 
@@ -92,13 +92,47 @@ List a group's games so the crew can see who's been the durak:
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; changes reviewed
   and merged via PR.
 
-Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game**,
-**per-player stats**, and **pagination** beyond the simple 100-row cap. `ended_at`
-is queried but not yet surfaced in the row UI.
+Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game** and
+**pagination** beyond the simple 100-row cap. `ended_at` is queried but not yet
+surfaced in the row UI. (Per-player stats landed in M6.)
+
+### Milestone 6 — Stats v1 🚧
+
+Group- and player-level stats, computed from stored data (spec "Metrics"):
+
+- **Stats migration** (`20260616120000_stats.sql`, pushed to remote; types
+  regenerated). Two `SECURITY INVOKER` SQL functions — `group_stats(group_id)` and
+  `player_stats(group_id, player_id)` — each returns one `jsonb` blob so the page
+  does a single round trip; RLS still scopes every row to the caller's groups,
+  mirroring M4's `log_game`. Raw counts come back; rates/percentages are derived in
+  TS. Streaks are computed in SQL via gaps-and-islands over the player's
+  participated games ordered by `started_at`.
+- **`/stats`** (server component): games played, avg game duration (over games with
+  both times), last durak, most durak, per-player leaderboard (games / durak count +
+  rate / first- & last-out counts), games-per-player min/max/avg, and trump-suit
+  frequency with %. Times rendered in the group's timezone.
+- **`/stats/players/[playerId]`** (server component): the same player scoped to one
+  player — durak / first-out / last-out counts & rates, plus current/longest durak
+  and win (first-out) streaks. Route param validated with **Zod** (`z.uuid()`); the
+  player is re-checked against the current group (defense in depth) → `notFound()`
+  otherwise. Both pages parse the RPC result with Zod for a typed shape.
+- **Empty states**: group with no games → "Log a game"; player with no games → a
+  "hasn't played any games yet" message.
+- Home links to group stats; the players list and the group leaderboard link to each
+  player's stats page.
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
+  `db push` (Postgres validated the function definitions on create).
+
+Deferred out of M6 (see [roadmap](./roadmap.md)): **time-span buckets**
+(per week/month/year durak counts / "most durak this week"), **cross-group /
+account-level aggregates** (registered players only), **head-to-head**, and any
+**charts/visualizations** beyond simple numbers. The per-game `round_count` metric
+isn't captured at log time yet, so it isn't surfaced. Linking to player stats from
+the history list was left out (history doesn't carry player ids); links come from
+home, the players list, and the group leaderboard.
 
 ## Not yet implemented
 
-- App screens: group stats, player stats.
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
 - Roadmap features: edit/delete game, invitations, guest claiming, offline, etc.
