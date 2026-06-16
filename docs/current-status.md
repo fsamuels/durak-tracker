@@ -4,7 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M6 — Stats v1 shipped; next up is M7 — PWA polish.
+- **Current milestone:** M6 — Stats v1 shipped; next up is M7 — home & navigation
+  revamp. (The roadmap was re-sequenced from a real-usage planning pass: M7 home revamp,
+  M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA polish + Iterate
+  shifted to M11+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -152,7 +155,8 @@ home, the players list, and the group leaderboard.
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: edit/delete game, invitations, guest claiming, offline, etc.
+- Roadmap features: home revamp (M7), two-part logging (M8), start-from-existing (M9),
+  account claiming (M10); then PWA, edit/delete game, offline, etc.
 
 ## Action required (owner)
 
