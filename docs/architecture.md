@@ -43,14 +43,15 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 
 Defined in [`supabase/migrations/20260616015925_init_schema.sql`](../supabase/migrations/20260616015925_init_schema.sql).
 
-Enum: `trump_suit = ('hearts','diamonds','clubs','spades')`.
+Enums: `trump_suit = ('hearts','diamonds','clubs','spades')`;
+`game_status = ('in_progress','completed')`.
 
 | Table           | Purpose                         | Key columns / notes                                                                                                           |
 | --------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `groups`        | A circle of players             | `name` (non-empty), `timezone` (IANA, default `UTC`), `created_by` → `auth.users`                                             |
 | `group_members` | Who belongs to a group          | PK `(group_id, user_id)`; `role ∈ {owner, member}`                                                                            |
 | `players`       | Anyone who can appear in a game | `group_id`-scoped; `auth_user_id` null ⇒ guest                                                                                |
-| `games`         | One played game                 | `started_at` (backdatable), optional `ended_at`/`trump_suit`/`deck_count`/`notes`/`metrics` jsonb; `logged_by` → `auth.users` |
+| `games`         | One played game                 | `status` (`in_progress`\|`completed`, default `in_progress`); `started_at` (stamped at start), optional `ended_at` (stamped at finish)/`trump_suit`/`deck_count`/`notes`/`metrics` jsonb; `logged_by` → `auth.users` |
 | `game_players`  | One row per player per game     | PK `(game_id, player_id)`; `is_durak`/`is_first_out`/`is_last_out`                                                            |
 
 **Referential integrity (`ON DELETE`):** `group_id`, `game_id`, and member
@@ -77,10 +78,16 @@ Two invariants span multiple rows and can't be expressed as a row-level CHECK:
 These are enforced by **`DEFERRABLE INITIALLY DEFERRED` constraint triggers**
 (`game_players_integrity` on `game_players`, `games_integrity` on `games`) that
 call `check_game_player_integrity(game_id)` at **COMMIT** — once every row for the
-game is in place. The games-level trigger also catches a game inserted with zero
-players. App-layer Zod validation enforces the same rules earlier for UX (M4), and
-the `log_game` RPC keeps a game and its players in one transaction so the deferred
-checks fire with every row present (see below).
+game is in place. App-layer Zod validation enforces the same rules earlier for UX,
+and the start/finish RPCs (M8; `log_game` before that) keep a game and its players
+in one transaction so the deferred checks fire with every row present (see below).
+
+**Status-aware since M8.** With two-part logging, `check_game_player_integrity`
+branches on `games.status`: an **in-progress** game needs only **≥1 player** (its
+start roster), while the full **≥3 players / exactly-one-durak** invariants apply
+only to **completed** games. Because the games-level trigger fires on the status
+update, finishing a game re-runs the full check at COMMIT with every player row
+present.
 
 `set_updated_at()` BEFORE-UPDATE triggers maintain `updated_at` on
 `groups`, `players`, and `games`.
@@ -96,9 +103,13 @@ and scopes rows through `group_members`.
   `group_members`' own RLS. Membership checks are always against `auth.uid()`, so
   they can't be abused to probe other users.
 - **Policy summary:** members can read their groups' rows; group **owners** manage
-  membership and group settings; games/`game_players` are insert-only for members
-  (no edit/delete in v1, matching the product non-goal); a game's `logged_by` must
-  equal `auth.uid()` on insert.
+  membership and group settings; a game's `logged_by` must equal `auth.uid()` on
+  insert. Games were insert-only in v1; **M8 (two-part logging) adds member
+  `update` on `games` and member `update`/`delete` on `game_players`** so a game can
+  be finished (status flip + roster/outcome reconciliation). This is scoped via the
+  same `is_group_member` / `is_member_of_game` helpers; general-purpose edit/delete
+  of a completed game remains a deferred roadmap item, and the app only mutates
+  through the `start_game` / `finish_game` RPCs.
 
 ### Client access & key-exposure model
 
@@ -168,6 +179,28 @@ it is **`SECURITY INVOKER`**: it runs as the caller so RLS still gates every ins
 and `logged_by` is set from `auth.uid()` inside the function rather than trusted from
 the client. The client (M4) builds forms with React Hook Form + Zod and re-validates
 the same invariants in the server action before calling the RPC.
+
+### Two-part logging — `start_game` / `finish_game` (M8)
+
+Defined in [`supabase/migrations/20260616140000_two_part_logging.sql`](../supabase/migrations/20260616140000_two_part_logging.sql).
+M8 **replaces** the one-shot `log_game` UI with a two-step flow (`log_game` itself
+is left in the DB but unused):
+
+- **`start_game(group_id, participants, trump?, deck?, notes?)`** inserts a game
+  with `status = 'in_progress'`, stamps `started_at`, and inserts the starting
+  roster (≥1 player, no outcomes yet).
+- **`finish_game(game_id, participants, trump?, deck?, notes?)`** is the
+  authoritative finish: it stamps `ended_at`, flips status to `completed`, and
+  reconciles `game_players` for the final roster — upserts outcomes onto existing
+  rows, inserts latecomers, and deletes anyone no longer present — then the deferred
+  trigger validates the completed-game invariants at COMMIT.
+
+Both are **`SECURITY INVOKER`** with `logged_by = auth.uid()`, mirroring `log_game`,
+and each does its multi-row work in a single transaction so the deferred checks see
+every row. There is **no time field in the UI** — `started_at` and `ended_at` are
+stamped server-side; editing them is deferred to a future edit-game screen. A
+standalone "add players to an in-progress game" RPC was folded into `finish_game`'s
+reconciliation and deferred as a separate entry point.
 
 ## Metrics
 

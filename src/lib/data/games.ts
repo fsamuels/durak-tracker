@@ -18,10 +18,11 @@ export type GameHistoryParams = {
 };
 
 /**
- * A group's games, newest first, RLS-scoped to the caller. Used by the home
- * page (last 6, no filter) and the full history page (capped, optional
- * date-range filter). Date bounds are converted to UTC instants via
- * src/lib/time.ts (DST-aware: gte start / lt next-day-after-end).
+ * A group's COMPLETED games, newest first, RLS-scoped to the caller. Used by the
+ * home page (last 6, no filter) and the full history page (capped, optional
+ * date-range filter). In-progress games are excluded here and surfaced
+ * separately (see getInProgressGames). Date bounds are converted to UTC instants
+ * via src/lib/time.ts (DST-aware: gte start / lt next-day-after-end).
  */
 export async function getGameHistory({
   groupId,
@@ -35,6 +36,7 @@ export async function getGameHistory({
     .from("games")
     .select(HISTORY_SELECT)
     .eq("group_id", groupId)
+    .eq("status", "completed")
     .order("started_at", { ascending: false })
     .limit(limit);
 
@@ -48,3 +50,48 @@ export async function getGameHistory({
 export type GameHistoryGame = Awaited<
   ReturnType<typeof getGameHistory>
 >["games"][number];
+
+/**
+ * A group's IN-PROGRESS games (started but not finished), newest first,
+ * RLS-scoped to the caller. Surfaced on home and the history page with a
+ * Resume/Finish CTA.
+ */
+export async function getInProgressGames(groupId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("games")
+    .select(
+      `id, started_at, trump_suit, deck_count,
+       game_players ( players ( display_name ) )`,
+    )
+    .eq("group_id", groupId)
+    .eq("status", "in_progress")
+    .order("started_at", { ascending: false });
+
+  return { games: data ?? [], error };
+}
+
+export type InProgressGame = Awaited<
+  ReturnType<typeof getInProgressGames>
+>["games"][number];
+
+/**
+ * One in-progress game with its current roster, for the finish page. Returns
+ * null when the game doesn't exist, isn't in this group, or is already finished
+ * (RLS also scopes it to groups the caller belongs to).
+ */
+export async function getGameToFinish(groupId: string, gameId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("games")
+    .select(
+      `id, trump_suit, deck_count, notes, status,
+       game_players ( player_id )`,
+    )
+    .eq("id", gameId)
+    .eq("group_id", groupId)
+    .eq("status", "in_progress")
+    .maybeSingle();
+
+  return data;
+}

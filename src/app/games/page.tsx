@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { GameList } from "@/components/game-list";
-import { getGameHistory } from "@/lib/data/games";
+import { InProgressGames } from "@/components/in-progress-games";
+import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { historyFilterSchema } from "@/lib/validation/history";
 
@@ -25,13 +26,16 @@ export default async function GamesPage({
     ? null
     : (parsed.error.issues[0]?.message ?? "Invalid date range.");
 
-  const { games, error } = await getGameHistory({
-    groupId: group.id,
-    timezone: group.timezone,
-    start: filter.start,
-    end: filter.end,
-    limit: GAMES_LIMIT,
-  });
+  const [{ games, error }, { games: inProgress }] = await Promise.all([
+    getGameHistory({
+      groupId: group.id,
+      timezone: group.timezone,
+      start: filter.start,
+      end: filter.end,
+      limit: GAMES_LIMIT,
+    }),
+    getInProgressGames(group.id),
+  ]);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -50,6 +54,8 @@ export default async function GamesPage({
           recent first. Times shown in {group.timezone}.
         </p>
       </div>
+
+      <InProgressGames games={inProgress} timezone={group.timezone} />
 
       <HistoryFilter start={filter.start} end={filter.end} />
 
@@ -76,7 +82,7 @@ export default async function GamesPage({
                 href="/games/new"
                 className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
               >
-                Log a game →
+                Start a game →
               </Link>
             </li>
           }

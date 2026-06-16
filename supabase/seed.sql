@@ -114,19 +114,20 @@ on conflict (id) do nothing;
 -- ---------------------------------------------------------------------------
 -- Games (all logged by Alice).
 -- ---------------------------------------------------------------------------
-insert into games (id, group_id, started_at, ended_at, trump_suit, deck_count, logged_by, notes) values
+-- All seeded games are completed (status defaults to in_progress post-M8).
+insert into games (id, group_id, started_at, ended_at, trump_suit, deck_count, logged_by, notes, status) values
   ('10000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
    '2026-06-01 18:00:00-04', '2026-06-01 18:45:00-04', 'hearts', 1,
-   '11111111-1111-1111-1111-111111111111', 'Season opener'),
+   '11111111-1111-1111-1111-111111111111', 'Season opener', 'completed'),
   ('10000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001',
    '2026-06-03 19:00:00-04', '2026-06-03 19:30:00-04', 'spades', 1,
-   '11111111-1111-1111-1111-111111111111', null),
+   '11111111-1111-1111-1111-111111111111', null, 'completed'),
   ('10000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
    '2026-06-08 18:30:00-04', null, 'hearts', 1,
-   '11111111-1111-1111-1111-111111111111', 'Forgot to stop the clock'),
+   '11111111-1111-1111-1111-111111111111', 'Forgot to stop the clock', 'completed'),
   ('10000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001',
    '2026-06-10 20:00:00-04', '2026-06-10 20:50:00-04', 'diamonds', 2,
-   '11111111-1111-1111-1111-111111111111', 'Two decks, five-ish hands')
+   '11111111-1111-1111-1111-111111111111', 'Two decks, five-ish hands', 'completed')
 on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -221,11 +222,11 @@ begin
     ended := case when random() < 0.1 then null
                   else started + (duration || ' minutes')::interval end;
 
-    insert into games (id, group_id, started_at, ended_at, trump_suit, deck_count, logged_by, notes)
+    insert into games (id, group_id, started_at, ended_at, trump_suit, deck_count, logged_by, notes, status)
     values (gid, test_group, started, ended,
             suits[1 + floor(random() * 4)::int],
             case when random() < 0.7 then 1 else 2 end,
-            forrest, null)
+            forrest, null, 'completed')
     on conflict (id) do nothing;
 
     n_players := 3 + floor(random() * 4)::int;                   -- 3–6 players
