@@ -1,69 +1,66 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import {
-  localToIso,
-  logGameFormSchema,
+  finishGameFormSchema,
+  finishRowsToParticipants,
   OUTCOMES,
   OUTCOME_LABELS,
   outcomeCountError,
-  rowsToParticipants,
   TRUMP_SUITS,
   TRUMP_SUIT_LABELS,
-  type LogGameFormValues,
-  type LogGamePayload,
+  type FinishGameFormValues,
+  type FinishGamePayload,
 } from "@/lib/validation/game";
 
-import { logGameAction } from "./actions";
+import { finishGameAction } from "./actions";
 
 type Player = { id: string; display_name: string };
 
-/** Current local wall-clock as a `datetime-local` value (YYYY-MM-DDTHH:mm). */
-function nowLocalDatetime() {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-}
-
-export function LogGameForm({ players }: { players: Player[] }) {
+export function FinishGameForm({
+  gameId,
+  players,
+  startedPlayerIds,
+  initialTrumpSuit,
+  initialDeckCount,
+  initialNotes,
+}: {
+  gameId: string;
+  players: Player[];
+  /** player_ids already on the roster from the start step (pre-selected). */
+  startedPlayerIds: string[];
+  initialTrumpSuit: string;
+  initialDeckCount: string;
+  initialNotes: string;
+}) {
   const router = useRouter();
+  const started = new Set(startedPlayerIds);
 
   const {
     register,
     control,
     handleSubmit,
-    setValue,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<LogGameFormValues>({
-    resolver: zodResolver(logGameFormSchema),
+  } = useForm<FinishGameFormValues>({
+    resolver: zodResolver(finishGameFormSchema),
     defaultValues: {
-      startedAt: "",
-      endedAt: "",
-      trumpSuit: "",
-      deckCount: "",
-      notes: "",
+      trumpSuit: initialTrumpSuit,
+      deckCount: initialDeckCount,
+      notes: initialNotes,
       rows: players.map((p) => ({
         playerId: p.id,
         displayName: p.display_name,
-        selected: false,
+        selected: started.has(p.id),
         outcome: "none" as const,
       })),
     },
   });
 
   const { fields } = useFieldArray({ control, name: "rows" });
-
-  // Default the start time on the client to avoid an SSR tz hydration mismatch.
-  useEffect(() => {
-    setValue("startedAt", nowLocalDatetime());
-  }, [setValue]);
-
   const rows = useWatch({ control, name: "rows" }) ?? [];
   const selected = rows.filter((r) => r.selected);
   const liveError = outcomeCountError({
@@ -74,18 +71,16 @@ export function LogGameForm({ players }: { players: Player[] }) {
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const payload: LogGamePayload = {
-      startedAt: localToIso(values.startedAt)!,
-      endedAt: localToIso(values.endedAt),
+    const payload: FinishGamePayload = {
       trumpSuit: values.trumpSuit
-        ? (values.trumpSuit as LogGamePayload["trumpSuit"])
+        ? (values.trumpSuit as FinishGamePayload["trumpSuit"])
         : null,
       deckCount: values.deckCount.trim() ? Number(values.deckCount) : null,
       notes: values.notes.trim() ? values.notes.trim() : null,
-      participants: rowsToParticipants(values.rows),
+      participants: finishRowsToParticipants(values.rows),
     };
 
-    const res = await logGameAction(payload);
+    const res = await finishGameAction(gameId, payload);
     if (res?.error) {
       setError("root", { message: res.error });
       return;
@@ -140,39 +135,11 @@ export function LogGameForm({ players }: { players: Player[] }) {
           className={`text-sm ${liveError ? "text-red-600" : "text-emerald-600"}`}
           role={liveError ? "alert" : undefined}
         >
-          {liveError ?? `${selected.length} players · ready to log ✓`}
+          {liveError ?? `${selected.length} players · ready to finish ✓`}
         </p>
       </fieldset>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Started
-          <input
-            type="datetime-local"
-            {...register("startedAt")}
-            className={inputClass}
-          />
-          {errors.startedAt && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.startedAt.message}
-            </span>
-          )}
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Ended <span className="text-zinc-400">(optional)</span>
-          <input
-            type="datetime-local"
-            {...register("endedAt")}
-            className={inputClass}
-          />
-          {errors.endedAt && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.endedAt.message}
-            </span>
-          )}
-        </label>
-
         <label className="flex flex-col gap-1 text-sm font-medium">
           Trump suit <span className="text-zinc-400">(optional)</span>
           <select {...register("trumpSuit")} className={inputClass}>
@@ -220,7 +187,7 @@ export function LogGameForm({ players }: { players: Player[] }) {
         disabled={isSubmitting || !!liveError}
         className="btn-brand h-12 rounded-full px-5 text-base font-semibold"
       >
-        {isSubmitting ? "Saving…" : "Log game"}
+        {isSubmitting ? "Saving…" : "Finish game"}
       </button>
 
       {errors.root && (

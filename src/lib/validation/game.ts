@@ -36,7 +36,8 @@ export const OUTCOME_LABELS: Record<Outcome, string> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Validate the cross-player outcome rules enforced by the DB:
+ * Validate the cross-player outcome rules a COMPLETED game must satisfy (same as
+ * the DB integrity trigger for completed games):
  *  - at least 3 players (heads-up Durak is out of scope),
  *  - exactly one durak,
  *  - at most one first-out and one last-out.
@@ -65,78 +66,102 @@ function tally(outcomes: Outcome[]) {
 }
 
 // ---------------------------------------------------------------------------
-// Client form schema (one row per group player; only "selected" rows count)
+// Shared optional game-detail fields (trump / deck / notes)
 // ---------------------------------------------------------------------------
 
-const rowSchema = z.object({
+const detailFormFields = {
+  trumpSuit: z.string(),
+  deckCount: z.string(),
+  notes: z.string().max(2000, "Notes are too long."),
+};
+
+const deckCountFormCheck = (d: { deckCount: string }) => {
+  const v = d.deckCount.trim();
+  return v === "" || (/^\d+$/.test(v) && Number(v) > 0);
+};
+
+const detailPayloadFields = {
+  trumpSuit: z.enum(TRUMP_SUITS).nullable(),
+  deckCount: z.number().int().positive().nullable(),
+  notes: z.string().nullable(),
+};
+
+// z.guid() not z.uuid(): the DB has non-version-conformant GUIDs (e.g. seed ids)
+// that Zod 4's strict z.uuid() rejects, which would fail the RPC.
+const playerId = z.guid();
+
+// ---------------------------------------------------------------------------
+// START — create an in-progress game with a roster (>= 1 player, no outcomes)
+// ---------------------------------------------------------------------------
+
+const startRowSchema = z.object({
+  playerId: z.string(),
+  displayName: z.string(),
+  selected: z.boolean(),
+});
+
+export const startGameFormSchema = z
+  .object({ ...detailFormFields, rows: z.array(startRowSchema) })
+  .refine(deckCountFormCheck, {
+    message: "Deck count must be a positive whole number.",
+    path: ["deckCount"],
+  })
+  .superRefine((d, ctx) => {
+    if (!d.rows.some((r) => r.selected)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Pick at least one player to start.",
+        path: ["rows"],
+      });
+    }
+  });
+
+export type StartGameFormValues = z.infer<typeof startGameFormSchema>;
+
+export const startGamePayloadSchema = z.object({
+  ...detailPayloadFields,
+  participants: z.array(z.object({ playerId })).min(1),
+});
+
+export type StartGamePayload = z.infer<typeof startGamePayloadSchema>;
+
+// ---------------------------------------------------------------------------
+// FINISH — record final roster + outcomes (>= 3 players, exactly one durak)
+// ---------------------------------------------------------------------------
+
+const finishRowSchema = z.object({
   playerId: z.string(),
   displayName: z.string(),
   selected: z.boolean(),
   outcome: z.enum(OUTCOMES),
 });
 
-export const logGameFormSchema = z
-  .object({
-    startedAt: z.string().min(1, "Start time is required."),
-    endedAt: z.string(),
-    trumpSuit: z.string(),
-    deckCount: z.string(),
-    notes: z.string().max(2000, "Notes are too long."),
-    rows: z.array(rowSchema),
+export const finishGameFormSchema = z
+  .object({ ...detailFormFields, rows: z.array(finishRowSchema) })
+  .refine(deckCountFormCheck, {
+    message: "Deck count must be a positive whole number.",
+    path: ["deckCount"],
   })
-  .refine(
-    (d) => {
-      const v = d.deckCount.trim();
-      return v === "" || (/^\d+$/.test(v) && Number(v) > 0);
-    },
-    {
-      message: "Deck count must be a positive whole number.",
-      path: ["deckCount"],
-    },
-  )
-  .refine(
-    (d) => d.endedAt === "" || Date.parse(d.endedAt) >= Date.parse(d.startedAt),
-    { message: "End time can't be before the start time.", path: ["endedAt"] },
-  )
   .superRefine((d, ctx) => {
     const selected = d.rows.filter((r) => r.selected);
     const err = outcomeCountError(tally(selected.map((r) => r.outcome)));
     if (err) ctx.addIssue({ code: "custom", message: err, path: ["rows"] });
   });
 
-export type LogGameFormValues = z.infer<typeof logGameFormSchema>;
-
-// ---------------------------------------------------------------------------
-// Server payload schema (what the server action re-validates and persists)
-// ---------------------------------------------------------------------------
+export type FinishGameFormValues = z.infer<typeof finishGameFormSchema>;
 
 const participantSchema = z.object({
-  // z.guid() not z.uuid(): the DB has non-version-conformant GUIDs (e.g. seed
-  // ids) that Zod 4's strict z.uuid() rejects, which would fail log-game.
-  playerId: z.guid(),
+  playerId,
   isDurak: z.boolean(),
   isFirstOut: z.boolean(),
   isLastOut: z.boolean(),
 });
 
-const isoInstant = z
-  .string()
-  .refine((v) => !Number.isNaN(Date.parse(v)), "Invalid timestamp.");
-
-export const logGamePayloadSchema = z
+export const finishGamePayloadSchema = z
   .object({
-    startedAt: isoInstant,
-    endedAt: isoInstant.nullable(),
-    trumpSuit: z.enum(TRUMP_SUITS).nullable(),
-    deckCount: z.number().int().positive().nullable(),
-    notes: z.string().nullable(),
+    ...detailPayloadFields,
     participants: z.array(participantSchema),
   })
-  .refine(
-    (d) =>
-      d.endedAt === null || Date.parse(d.endedAt) >= Date.parse(d.startedAt),
-    { message: "End time can't be before the start time.", path: ["endedAt"] },
-  )
   .superRefine((d, ctx) => {
     const err = outcomeCountError({
       total: d.participants.length,
@@ -148,15 +173,21 @@ export const logGamePayloadSchema = z
       ctx.addIssue({ code: "custom", message: err, path: ["participants"] });
   });
 
-export type LogGamePayload = z.infer<typeof logGamePayloadSchema>;
+export type FinishGamePayload = z.infer<typeof finishGamePayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // Form -> payload helpers
 // ---------------------------------------------------------------------------
 
-export function rowsToParticipants(
-  rows: LogGameFormValues["rows"],
-): LogGamePayload["participants"] {
+export function startRowsToParticipants(
+  rows: StartGameFormValues["rows"],
+): StartGamePayload["participants"] {
+  return rows.filter((r) => r.selected).map((r) => ({ playerId: r.playerId }));
+}
+
+export function finishRowsToParticipants(
+  rows: FinishGameFormValues["rows"],
+): FinishGamePayload["participants"] {
   return rows
     .filter((r) => r.selected)
     .map((r) => ({
@@ -165,11 +196,4 @@ export function rowsToParticipants(
       isFirstOut: r.outcome === "first_out",
       isLastOut: r.outcome === "last_out",
     }));
-}
-
-/** A `datetime-local` value is browser wall-clock; convert to a UTC instant. */
-export function localToIso(local: string): string | null {
-  if (!local) return null;
-  const ms = Date.parse(local);
-  return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 }

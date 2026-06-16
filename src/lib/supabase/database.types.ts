@@ -89,6 +89,7 @@ export type Database = {
           metrics: Json | null;
           notes: string | null;
           started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
           trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
           updated_at: string;
         };
@@ -102,6 +103,7 @@ export type Database = {
           metrics?: Json | null;
           notes?: string | null;
           started_at?: string;
+          status?: Database["public"]["Enums"]["game_status"];
           trump_suit?: Database["public"]["Enums"]["trump_suit"] | null;
           updated_at?: string;
         };
@@ -115,6 +117,7 @@ export type Database = {
           metrics?: Json | null;
           notes?: string | null;
           started_at?: string;
+          status?: Database["public"]["Enums"]["game_status"];
           trump_suit?: Database["public"]["Enums"]["trump_suit"] | null;
           updated_at?: string;
         };
@@ -245,6 +248,35 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      finish_game: {
+        Args: {
+          p_deck_count?: number;
+          p_game_id: string;
+          p_notes?: string;
+          p_participants: Json;
+          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
+        };
+        Returns: {
+          created_at: string;
+          deck_count: number | null;
+          ended_at: string | null;
+          group_id: string;
+          id: string;
+          logged_by: string;
+          metrics: Json | null;
+          notes: string | null;
+          started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
+          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "games";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       group_stats: { Args: { p_group_id: string }; Returns: Json };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_group_owner: { Args: { p_group_id: string }; Returns: boolean };
@@ -269,6 +301,7 @@ export type Database = {
           metrics: Json | null;
           notes: string | null;
           started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
           trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
           updated_at: string;
         };
@@ -284,8 +317,38 @@ export type Database = {
         Args: { p_group_id: string; p_player_id: string };
         Returns: Json;
       };
+      start_game: {
+        Args: {
+          p_deck_count?: number;
+          p_group_id: string;
+          p_notes?: string;
+          p_participants: Json;
+          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
+        };
+        Returns: {
+          created_at: string;
+          deck_count: number | null;
+          ended_at: string | null;
+          group_id: string;
+          id: string;
+          logged_by: string;
+          metrics: Json | null;
+          notes: string | null;
+          started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
+          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "games";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
+      game_status: "in_progress" | "completed";
       trump_suit: "hearts" | "diamonds" | "clubs" | "spades";
     };
     CompositeTypes: {
@@ -420,6 +483,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      game_status: ["in_progress", "completed"],
       trump_suit: ["hearts", "diamonds", "clubs", "spades"],
     },
   },

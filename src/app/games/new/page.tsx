@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 
-import { LogGameForm } from "./log-game-form";
+import { StartGameForm } from "./start-game-form";
 
 export default async function NewGamePage() {
   const group = await getCurrentGroup();
@@ -17,7 +17,7 @@ export default async function NewGamePage() {
     .eq("group_id", group.id)
     .order("display_name", { ascending: true });
 
-  const enoughPlayers = (players?.length ?? 0) >= 3;
+  const hasPlayers = (players?.length ?? 0) >= 1;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -29,18 +29,19 @@ export default async function NewGamePage() {
           ← Home
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Log a game
+          Start a game
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Who played, and who got stuck as the durak?
+          Pick who&apos;s in. You&apos;ll record who got stuck as the durak when
+          the game wraps up.
         </p>
       </div>
 
-      {enoughPlayers ? (
-        <LogGameForm players={players ?? []} />
+      {hasPlayers ? (
+        <StartGameForm players={players ?? []} />
       ) : (
         <div className="rounded-lg border border-dashed border-black/15 px-4 py-8 text-center text-sm text-zinc-600 dark:border-white/15 dark:text-zinc-400">
-          <p>You need at least 3 players to log a game.</p>
+          <p>Add some players before starting a game.</p>
           <Link
             href="/players"
             className="mt-3 inline-block font-medium text-black underline underline-offset-4 dark:text-zinc-50"

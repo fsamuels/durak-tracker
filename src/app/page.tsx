@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { GameList } from "@/components/game-list";
-import { getGameHistory } from "@/lib/data/games";
+import { InProgressGames } from "@/components/in-progress-games";
+import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatDuration, groupStatsSchema } from "@/lib/validation/stats";
@@ -21,14 +22,16 @@ export default async function Home() {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const [{ games }, { data: statsRaw }] = await Promise.all([
-    getGameHistory({
-      groupId: group.id,
-      timezone: group.timezone,
-      limit: RECENT_GAMES_LIMIT,
-    }),
-    supabase.rpc("group_stats", { p_group_id: group.id }),
-  ]);
+  const [{ games }, { games: inProgress }, { data: statsRaw }] =
+    await Promise.all([
+      getGameHistory({
+        groupId: group.id,
+        timezone: group.timezone,
+        limit: RECENT_GAMES_LIMIT,
+      }),
+      getInProgressGames(group.id),
+      supabase.rpc("group_stats", { p_group_id: group.id }),
+    ]);
 
   const stats = groupStatsSchema.safeParse(statsRaw).data ?? null;
   const gamesPlayed = stats?.games_played ?? 0;
@@ -58,8 +61,10 @@ export default async function Home() {
         href="/games/new"
         className="btn-brand flex h-12 items-center justify-center gap-2 rounded-full px-5 text-base font-semibold"
       >
-        <span aria-hidden>♠️</span> Log a game
+        <span aria-hidden>♠️</span> Start a game
       </Link>
+
+      <InProgressGames games={inProgress} timezone={group.timezone} />
 
       {stats?.last_durak && (
         <div className="-mt-4 flex flex-col gap-1">
@@ -134,7 +139,7 @@ export default async function Home() {
                 href="/games/new"
                 className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
               >
-                Log a game →
+                Start a game →
               </Link>
             </li>
           }

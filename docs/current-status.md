@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M7 — Home & navigation revamp shipped; next up is M8 —
-  two-part game logging. (The roadmap was re-sequenced from a real-usage planning pass:
-  M7 home revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA
-  polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
+- **Current milestone:** M8 — two-part game logging shipped; next up is M9 —
+  start-from-existing + quick add + search. (The roadmap was re-sequenced from a
+  real-usage planning pass: M7 home revamp, M8 two-part logging, M9 start-from-existing,
+  M10 account claiming; PWA polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -220,12 +220,56 @@ A visual pass on top of M7 (branch `ui-tweaks`); no schema or data changes.
   `avg_duration_seconds` — no new query.
 - **Verified:** `tsc --noEmit` / `eslint` clean.
 
+### Milestone 8 — Two-part game logging ✅
+
+Logging is split into **start** (game created in-progress with a roster) and
+**finish** (record outcomes + mark completed). Replaces the M4 one-shot flow.
+
+- **Schema** (`20260616140000_two_part_logging.sql`, pushed to remote; types
+  regenerated). New `game_status` enum (`in_progress` | `completed`) +
+  `games.status` (default `in_progress`; existing games backfilled to
+  `completed`) + a `games (group_id, status)` index. The deferred integrity check
+  (`check_game_player_integrity`) is now **status-aware**: an in-progress game
+  needs only **≥1 player**; the **≥3 players / exactly-one-durak** invariants apply
+  only once a game is **completed** (re-checked when finish flips the status).
+- **RPCs** `start_game` and `finish_game` (`SECURITY INVOKER`, `logged_by =
+  auth.uid()`, mirroring `log_game`). `start_game` inserts the game + starting
+  roster, stamping `started_at`. `finish_game` is **authoritative**: it stamps
+  `ended_at`, flips status to completed, and reconciles the roster (upserts
+  outcomes onto starters, inserts latecomers, drops no-shows) — all in one
+  transaction so the deferred trigger validates at COMMIT. `log_game` (M4) is left
+  in place but unused; a standalone add-players RPC was folded into `finish_game`'s
+  reconciliation (deferred as a separate RPC).
+- **RLS:** two-part logging makes `games` and `game_players` **updatable** (and
+  `game_players` **deletable**) by group members — a deliberate departure from the
+  v1 insert-only stance, needed to finish a game. Scope mirrors the existing select
+  policies (`is_group_member` / `is_member_of_game`). General-purpose edit/delete of
+  a game remains a deferred roadmap item; the app only mutates via the RPCs.
+- **Stats scoped to completed games** (`20260616150000_stats_completed_only.sql`):
+  `group_stats` / `player_stats` re-defined with a `status = 'completed'` filter so
+  an in-flight game doesn't skew counts, "last durak", or durations.
+- **UI:** `/games/new` is now **"Start a game"** (pick ≥1 player + optional
+  trump/deck/notes; no time/outcome fields). New **`/games/[id]/finish`** pre-fills
+  the started roster, lets you add/remove players and set each outcome, then saves.
+  **No time fields** anywhere — `started_at` / `ended_at` are stamped server-side
+  (editing deferred to a future edit-game screen). In-progress games are surfaced on
+  **home** and **`/games`** via a shared `InProgressGames` component with a
+  **Finish →** CTA; the completed history list (and home "recent") excludes them.
+- **Verified:** `pnpm lint` / `build` / `tsc --noEmit` clean (Prettier clean on
+  changed files). Migrations applied via `db push`; types regenerated from remote.
+  Constraint behaviour tested against the live DB via JWT-simulated psql (rolled
+  back, deferred triggers forced with `SET CONSTRAINTS ALL IMMEDIATE`): start with
+  ≥1 player OK; start with 0 players rejected; finish with 2 players rejected; finish
+  with 3 + one durak OK (incl. adding a latecomer); finish with zero durak rejected;
+  unauthenticated rejected; and in-progress games confirmed excluded from
+  `group_stats`. Owner does the manual UI pass before merge (per the convention).
+
 ## Not yet implemented
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: two-part logging (M8), start-from-existing (M9), account claiming
-  (M10); then PWA, edit/delete game, offline, etc.
+- Roadmap features: start-from-existing (M9), account claiming (M10); then PWA,
+  edit/delete game, offline, etc.
 
 ## Action required (owner)
 

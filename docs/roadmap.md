@@ -1,7 +1,7 @@
 # Roadmap
 
-Milestones 1–7 are complete; M8 (two-part game logging) is next (see
-[current-status.md](./current-status.md)). A milestone's PR carries the docs marking
+Milestones 1–8 are complete; M9 (start-from-existing + quick add + search) is next
+(see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
 the [spec](../durak-tracker-spec.md).
@@ -40,7 +40,7 @@ the open-ended "Iterate" bucket shifted to M11+.
      linking to full stats, and recent games; the group name links to Manage group and
      a "Change group" link goes to the switch page.
 
-8. **Two-part game logging** _(next)_ — split logging into **start** then **finish**;
+8. **Two-part game logging** _(done)_ — split logging into **start** then **finish**;
    this _replaces_ the one-shot log flow.
    - **Start** records ≥1 player + optional trump/deck; **finish** records the remaining
      players + durak / first-out / last-out. **No time fields in the UI** — `started_at`
