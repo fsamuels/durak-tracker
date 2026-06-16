@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–4 are complete; M5 (game history) is in progress (see
+Milestones 1–5 are complete; M6 (stats v1) is next (see
 [current-status.md](./current-status.md)). M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
 the [spec](../durak-tracker-spec.md).
@@ -10,9 +10,10 @@ the [spec](../durak-tracker-spec.md).
 4. **Core flow** _(done)_ — add players (incl. guests); log a game; persist to
    DB. Introduced Zod + React Hook Form, with min-3-players / exactly-one-durak
    validated client-side and re-checked server-side via the `log_game` RPC.
-5. **Game history** _(in progress)_ — list games per group, most-recent first, with
+5. **Game history** _(done)_ — list games per group, most-recent first, with
    a date-range filter scoped to the group's timezone.
-6. **Stats v1** — group stats and player stats pages computing all defined metrics.
+6. **Stats v1** _(next)_ — group stats and player stats pages computing all defined
+   metrics.
 7. **PWA polish** — manifest, icons, install prompt, offline static-asset caching
    (introduces `next-pwa`).
 8. **Iterate** — additional metrics, claiming flow, invite system, refinements from

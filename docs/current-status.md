@@ -4,7 +4,7 @@ Living snapshot of what's built. Last updated: 2026-06-15.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M5 — Game history on branch `milestone5`
+- **Current milestone:** M5 — Game history shipped; next up is M6 — Stats v1.
 
 ## Done
 
@@ -70,17 +70,10 @@ Add players (incl. guests) and log a game, persisted to the DB:
   both. `getCurrentGroup()` resolves the user's group (single-group for now).
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; `log_game` tested
   against the live DB via JWT-simulated psql (valid game OK; 2-players,
-  zero-durak, and unauthenticated all rejected; every test rolled back).
+  zero-durak, and unauthenticated all rejected; every test rolled back). Changes
+  reviewed and merged via PR.
 
-Deferred to a follow-up:
-
-- [ ] Manual end-to-end UI test with a signed-in Google session (add players →
-      log a game → confirm it persists). DB + build are green; the authenticated
-      browser flow hasn't been exercised yet.
-
-## In progress
-
-### Milestone 5 — Game history (on branch `milestone5`)
+### Milestone 5 — Game history ✅
 
 List a group's games so the crew can see who's been the durak:
 
@@ -96,7 +89,8 @@ List a group's games so the crew can see who's been the durak:
   `lt` next-day-after-end). Empty state distinguishes "no games yet" from "none in
   this range".
 - Home links to the history page; logging a game now redirects to `/games`.
-- **Verified:** `pnpm lint` / `build` / `format:check` clean.
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; changes reviewed
+  and merged via PR.
 
 Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game**,
 **per-player stats**, and **pagination** beyond the simple 100-row cap. `ended_at`
