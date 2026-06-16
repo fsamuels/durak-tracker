@@ -5,8 +5,9 @@ card games among groups of friends — who was "the durak" (loser) each game, th
 trump suit, players involved, and computed stats per group and per player.
 
 - **Live:** https://durak-tracker.vercel.app
-- **Status:** Milestones 1–2 complete (scaffold + schema); M3 (Auth) in progress —
-  see [docs/current-status.md](docs/current-status.md).
+- **Status:** Milestones 1–3 complete (scaffold, schema, auth); M4 (core flow —
+  add players + log a game) in progress — see
+  [docs/current-status.md](docs/current-status.md).
 
 ## Documentation
 
@@ -21,10 +22,11 @@ trump suit, players involved, and computed stats per group and per player.
 ## Tech stack
 
 **In use:** Next.js (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres,
-RLS), Vercel (auto-deploy), pnpm, ESLint + Prettier.
+RLS) + Supabase Auth (Google), Zod, React Hook Form, Vercel (auto-deploy), pnpm,
+ESLint + Prettier.
 
-**Planned:** Supabase Auth (Google + Facebook), Zod, React Hook Form, `next-pwa`,
-Vitest/Playwright. See the [architecture stack table](docs/architecture.md#tech-stack).
+**Planned:** Facebook login (deferred), `next-pwa`, Vitest/Playwright. See the
+[architecture stack table](docs/architecture.md#tech-stack).
 
 ## Prerequisites
 

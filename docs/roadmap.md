@@ -1,15 +1,15 @@
 # Roadmap
 
-Milestones 1–2 are complete (see [current-status.md](./current-status.md)).
-Product intent and non-goals live in the [spec](../durak-tracker-spec.md).
+Milestones 1–3 are complete; M4 (core flow) is in progress (see
+[current-status.md](./current-status.md)). M3 shipped **Google** auth only —
+Facebook was deferred to the backlog below. Product intent and non-goals live in
+the [spec](../durak-tracker-spec.md).
 
 ## Remaining milestones (v1)
 
-3. **Auth** — configure Google + Facebook OAuth in Supabase; login/logout; onboarding
-   screen (create group, via the `create_group` RPC); protect all routes (redirect to
-   login if unauthenticated, to onboarding if no group).
-4. **Core flow** — add players (incl. guests); log a game; persist to DB. Introduces
-   Zod + React Hook Form, with min-3-players / exactly-one-durak validated client-side.
+4. **Core flow** _(in progress)_ — add players (incl. guests); log a game; persist to
+   DB. Introduced Zod + React Hook Form, with min-3-players / exactly-one-durak
+   validated client-side and re-checked server-side via the `log_game` RPC.
 5. **Game history** — list games per group, with a date-range filter.
 6. **Stats v1** — group stats and player stats pages computing all defined metrics.
 7. **PWA polish** — manifest, icons, install prompt, offline static-asset caching
@@ -19,6 +19,10 @@ Product intent and non-goals live in the [spec](../durak-tracker-spec.md).
 
 ## Post-v1 backlog
 
+- **Facebook login** — enable the Facebook provider in Supabase and restore the button
+  in `src/app/login/page.tsx` (deferred from M3; see [oauth-setup.md](./oauth-setup.md)).
+- **Auth UX polish** — Supabase custom auth domain + Google consent-screen branding so
+  the login flow doesn't surface the raw Supabase project domain.
 - **Edit/delete game** — scoped to `logged_by` or group owner; soft-delete preferred;
   audit trail.
 - **Group invitations** — owner generates an invite link/code; invitee authenticates

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -26,6 +27,21 @@ export default async function Home() {
         <p className="text-zinc-600 dark:text-zinc-400">
           Signed in as {user.email}
         </p>
+      </div>
+
+      <div className="flex w-full max-w-xs flex-col gap-2">
+        <Link
+          href="/games/new"
+          className="flex h-12 items-center justify-center rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        >
+          Log a game
+        </Link>
+        <Link
+          href="/players"
+          className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
+        >
+          Manage players
+        </Link>
       </div>
 
       <div className="w-full max-w-xs text-left">
