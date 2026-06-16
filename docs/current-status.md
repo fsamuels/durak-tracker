@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M6 — Stats v1 shipped; next up is M7 — home & navigation
-  revamp. (The roadmap was re-sequenced from a real-usage planning pass: M7 home revamp,
-  M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA polish + Iterate
-  shifted to M11+. See [roadmap.md](./roadmap.md).)
+- **Current milestone:** M7 — Home & navigation revamp shipped; next up is M8 —
+  two-part game logging. (The roadmap was re-sequenced from a real-usage planning pass:
+  M7 home revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA
+  polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -151,12 +151,60 @@ isn't captured at log time yet, so it isn't surfaced. Linking to player stats fr
 the history list was left out (history doesn't carry player ids); links come from
 home, the players list, and the group leaderboard.
 
+### Milestone 7 — Home & navigation revamp ✅
+
+Home centers on the user's real group and recent activity; group management moved
+to its own screen:
+
+- **Default active group = most-played** (`20260616130000_most_played_group.sql`,
+  pushed to remote; types regenerated). A `SECURITY INVOKER` `most_played_group()`
+  RPC counts the caller's `game_players` (joined via `players.auth_user_id =
+auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
+  every member group so a user with no games still resolves. `getCurrentGroup()` now
+  uses it: the `durak_group_id` cookie still wins; the RPC is the fallback; an
+  earliest-created query is the defensive last resort. RLS still scopes every row.
+- **Last 6 games on home.** The `/games` history query was extracted into a shared
+  `src/lib/data/games.ts` (`getGameHistory`) reused by home (limit 6, no filter) and
+  the history page (capped, date-range filter). Row markup moved to a shared
+  `src/components/game-list.tsx` (`GameList`).
+- **New `/group` (Manage group) page** links to Manage Players, to the switch page,
+  and holds the create-new-group form. The create form was generalized into
+  `src/components/create-group-form.tsx` (reused by onboarding); `createGroupAction`
+  moved to `src/app/actions.ts` and now sets the active-group cookie so a just-created
+  group becomes active.
+- **Dedicated `/group/switch` page** — a simple tap-to-switch list of the user's
+  groups (the switcher was pulled out of Manage group).
+- **Group switching root-cause fix (`z.uuid()` → `z.guid()`).** The switcher "did
+  nothing" because `switchGroup` validated the posted `groupId` with `z.uuid()`, and
+  Zod 4's `z.uuid()` enforces RFC-9562 version/variant bits — which the DB's ids
+  (e.g. `a0000000-…` groups, `b0000000-…` players) don't satisfy — so the action
+  failed validation and returned early. Same strictness silently blanked the stats
+  pages (the `group_stats`/`player_stats` result parse), the player-stats route param,
+  and `log_game` participant validation. Switched all five id checks to `z.guid()`
+  (shape-only, still accepts real v4 ids). `switchGroup` also now
+  `revalidatePath("/", "layout")` before `redirect("/")` so the post-switch home isn't
+  served stale from the client Router Cache.
+- **Home layout.** A single primary **Log a game** action; the group name links to
+  `/group` and a "Change group →" link beside it goes to `/group/switch`; a **Group
+  stats** summary card
+  (total games played + top durak, "More stats →" to `/stats`); and **Recent games**
+  (last 6, "View all →" to `/games`). The standalone Game history / Group stats /
+  Manage group buttons were dropped — those destinations are reachable from the new
+  inline links — leaving a cleaner page that surfaces more information. The signed-in
+  account is shown on the sign-out button at the bottom (**Sign out as &lt;email&gt;**)
+  rather than a separate "Signed in as" line.
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
+  `db push` (Postgres validated the function on create). `most_played_group()` tested
+  against the live DB via JWT-simulated psql as real members — the owner (8 games in
+  Test Group, 0 in Walla Walla) resolves to Test Group, a single-group member gets
+  their group, and a non-member gets null (RLS holds).
+
 ## Not yet implemented
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: home revamp (M7), two-part logging (M8), start-from-existing (M9),
-  account claiming (M10); then PWA, edit/delete game, offline, etc.
+- Roadmap features: two-part logging (M8), start-from-existing (M9), account claiming
+  (M10); then PWA, edit/delete game, offline, etc.
 
 ## Action required (owner)
 
@@ -171,6 +219,11 @@ home, the players list, and the group leaderboard.
 
 ## Polish / UX backlog
 
+- [ ] **Clean up & improve group management.** The `/group` (Manage group) and
+      `/group/switch` pages are functional but rough — the layout, hierarchy, and
+      discoverability aren't where they should be (e.g. switching vs. managing vs.
+      creating all feel like a stopgap). Revisit the whole group-management flow as a
+      focused pass when it becomes a priority; not blocking for now.
 - [ ] **Review the auth-flow text/branding.** The Google consent screen currently
       shows the raw Supabase project domain (`wjdubpkmzhsfocvgsjuv.supabase.co`, i.e.
       `NEXT_PUBLIC_SUPABASE_URL`), which can look untrustworthy to users. Options to

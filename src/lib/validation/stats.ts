@@ -7,10 +7,15 @@ import { TRUMP_SUITS } from "./game";
  * (typed as `Json` by the generated client), so we parse the result to get a
  * typed, validated shape. Raw counts come back from SQL; rates and percentages
  * are derived in the pages (see helpers below).
+ *
+ * Ids use `z.guid()`, not `z.uuid()`: some ids in the DB are valid 8-4-4-4-12
+ * GUIDs but not RFC-9562 version-conformant (e.g. seed ids like a0000000-…),
+ * which Zod 4's strict `z.uuid()` rejects — that would fail the whole parse and
+ * blank out the stats pages. `guid` validates the shape without the version bit.
  */
 
 const playerLine = z.object({
-  player_id: z.uuid(),
+  player_id: z.guid(),
   display_name: z.string(),
   games_played: z.number().int(),
   durak_count: z.number().int(),
@@ -37,7 +42,7 @@ export const groupStatsSchema = z.object({
     .nullable(),
   last_durak: z
     .object({
-      player_id: z.uuid(),
+      player_id: z.guid(),
       display_name: z.string(),
       started_at: z.string(),
     })
@@ -60,7 +65,7 @@ export const playerStatsSchema = z.object({
 export type PlayerStats = z.infer<typeof playerStatsSchema>;
 
 /** Route param for the player-stats page. */
-export const playerParamSchema = z.object({ playerId: z.uuid() });
+export const playerParamSchema = z.object({ playerId: z.guid() });
 
 /** Format a count / total as a percentage string, e.g. `33%`. `0` games → `—`. */
 export function rate(count: number, total: number): string {

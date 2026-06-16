@@ -111,7 +111,9 @@ export type LogGameFormValues = z.infer<typeof logGameFormSchema>;
 // ---------------------------------------------------------------------------
 
 const participantSchema = z.object({
-  playerId: z.uuid(),
+  // z.guid() not z.uuid(): the DB has non-version-conformant GUIDs (e.g. seed
+  // ids) that Zod 4's strict z.uuid() rejects, which would fail log-game.
+  playerId: z.guid(),
   isDurak: z.boolean(),
   isFirstOut: z.boolean(),
   isLastOut: z.boolean(),

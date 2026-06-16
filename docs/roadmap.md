@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–6 are complete; M7 (home & navigation revamp) is next (see
+Milestones 1–7 are complete; M8 (two-part game logging) is next (see
 [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
@@ -24,21 +24,24 @@ the open-ended "Iterate" bucket shifted to M11+.
    (week/month/year), cross-group account-level aggregates, head-to-head, and
    charts (see below).
 
-7. **Home & navigation revamp** _(next)_ — home centers on the user's real group and
-   recent activity; management moves to its own screen.
+7. **Home & navigation revamp** _(done)_ — home centers on the user's real group and
+   recent activity; management moved to its own screen.
    - Default active group = the group the user has **played the most games in** (cookie
-     still wins when set; tie-break earliest-created). Changes the `getCurrentGroup()`
-     fallback in [src/lib/data/groups.ts](../src/lib/data/groups.ts) — count
+     still wins when set; tie-break earliest-created). Changed the `getCurrentGroup()`
+     fallback in [src/lib/data/groups.ts](../src/lib/data/groups.ts) — counts
      `game_players` joined via `players.auth_user_id = auth.uid()`, grouped by group,
-     behind a `SECURITY INVOKER` RPC so RLS still applies.
-   - Home shows the **last 6 games** (newest→oldest). Extract the `/games` history query
-     into a shared helper (`src/lib/data/games.ts`) reused by home and the history page.
-   - New **`/group` (Manage group)** page holds the group switcher + create-new-group and
-     links to **Manage Players** (removed from home). Home keeps: Log a game, Game
-     history, Group stats, Manage group.
+     behind the `SECURITY INVOKER` `most_played_group()` RPC so RLS still applies.
+   - Home shows the **last 6 games** (newest→oldest). The `/games` history query was
+     extracted into a shared helper (`src/lib/data/games.ts`) reused by home and the
+     history page (plus a shared `GameList` component).
+   - New **`/group` (Manage group)** page holds create-new-group and links to **Manage
+     Players** + a dedicated **`/group/switch`** tap-to-switch page (both removed from
+     home). Home shows: Log a game, a group stats summary (total games + top durak)
+     linking to full stats, and recent games; the group name links to Manage group and
+     a "Change group" link goes to the switch page.
 
-8. **Two-part game logging** — split logging into **start** then **finish**; this
-   _replaces_ the one-shot log flow.
+8. **Two-part game logging** _(next)_ — split logging into **start** then **finish**;
+   this _replaces_ the one-shot log flow.
    - **Start** records ≥1 player + optional trump/deck; **finish** records the remaining
      players + durak / first-out / last-out. **No time fields in the UI** — `started_at`
      is stamped server-side on start, `ended_at` on finish (editing deferred to a future
@@ -61,10 +64,10 @@ the open-ended "Iterate" bucket shifted to M11+.
 10. **Account claiming** — a member shares a link tying a guest player to the right
     person's account. Replaces the backlog "group invitations" + "guest player claiming"
     items (folds them into one flow).
-    - **Any** group member generates a claim link for a guest player (`auth_user_id IS
-      NULL`); links are **single-use, active for 7 days**. New `player_claims` table
-      (`token`, `group_id`, `player_id`, `created_by`, `created_at`, `expires_at`,
-      `claimed_by`, `claimed_at`).
+    - **Any** group member generates a claim link for a guest player
+      (`auth_user_id IS NULL`); links are **single-use, active for 7 days**. New
+      `player_claims` table (`token`, `group_id`, `player_id`, `created_by`,
+      `created_at`, `expires_at`, `claimed_by`, `claimed_at`).
     - Claim flow: `/claim/[token]` → sign in with Google → `claim_player(token)`
       **`SECURITY DEFINER`** RPC (claimer isn't a member yet) sets `players.auth_user_id`,
       inserts a `group_members` (member) row, and marks the link used. Share via
