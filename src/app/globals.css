@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fbf7ff;
-  --foreground: #1a1430;
+  --background: #f3fbff;
+  --foreground: #0f1b2a;
 
-  /* Brand gradient + accent — a playful "card game" palette. */
-  --brand-from: #7c3aed; /* violet-600  */
-  --brand-via: #d946ef; /* fuchsia-500 */
-  --brand-to: #f59e0b; /* amber-500   */
-  --accent: #d946ef;
+  /* Brand gradient + accent — an "aurora" palette: teal → blue → purple → pink. */
+  --brand-from: #14b8a6; /* teal-500    */
+  --brand-via: #3b82f6; /* blue-500    */
+  --brand-via2: #8b5cf6; /* violet-500  */
+  --brand-to: #ec4899; /* pink-500    */
+  --accent: #6366f1; /* indigo-500  */
 }
 
 @theme inline {
@@ -20,8 +21,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0710;
-    --foreground: #ede9f5;
+    --background: #060c14;
+    --foreground: #e6f0f5;
   }
 }
 
@@ -37,17 +38,22 @@ body {
   background:
     radial-gradient(
       40rem 40rem at 110% -10%,
-      color-mix(in oklab, var(--brand-via) 22%, transparent),
+      color-mix(in oklab, var(--brand-via2) 24%, transparent),
       transparent 60%
     ),
     radial-gradient(
       36rem 36rem at -10% 10%,
-      color-mix(in oklab, var(--brand-from) 20%, transparent),
+      color-mix(in oklab, var(--brand-from) 22%, transparent),
       transparent 55%
     ),
     radial-gradient(
-      30rem 30rem at 50% 120%,
-      color-mix(in oklab, var(--brand-to) 16%, transparent),
+      34rem 34rem at 90% 110%,
+      color-mix(in oklab, var(--brand-to) 18%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      30rem 30rem at 20% 120%,
+      color-mix(in oklab, var(--brand-via) 18%, transparent),
       transparent 60%
     );
 }
@@ -58,9 +64,10 @@ body {
     120deg,
     var(--brand-from),
     var(--brand-via),
+    var(--brand-via2),
     var(--brand-to)
   );
-  background-size: 160% 160%;
+  background-size: 200% 200%;
   color: #fff;
   box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--brand-via) 70%, transparent);
   transition:
@@ -86,6 +93,7 @@ body {
     100deg,
     var(--brand-from),
     var(--brand-via),
+    var(--brand-via2),
     var(--brand-to)
   );
   -webkit-background-clip: text;
