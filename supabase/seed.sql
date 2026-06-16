@@ -242,4 +242,85 @@ begin
   end loop;
 end $$;
 
+-- ---------------------------------------------------------------------------
+-- Bulk Walla Walla Run Club games: 36 games over ~14 weeks ending 2026-06-16,
+-- drawn from the full group roster. Generated deterministically (setseed + fixed
+-- game ids '21000000-…-NN') so re-running is a no-op. Michael Thompson-Maret is
+-- the durak in ~60% of games (the group's reigning durak / "king of durak"), but
+-- the most recent game's durak is someone else. The owner (logged_by) and roster
+-- are resolved from the group at runtime so this works identically on a fresh
+-- seed and on the live DB, whose owner / Forrest-player ids differ.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  wallawalla constant uuid := 'a0000000-0000-0000-0000-000000000002';
+  michael    constant uuid := 'b0000000-0000-0000-0000-000000000018';
+  n_games    constant int  := 36;
+  window_days constant numeric := 98;
+  base_ts    constant timestamptz := '2026-03-09 18:00:00-07';
+  newest_ts  constant timestamptz := '2026-06-16 12:00:00-07';   -- most recent game; non-Michael durak
+  suits trump_suit[] := array['hearts','diamonds','clubs','spades']::trump_suit[];
+  logger     uuid;
+  roster     uuid[];
+  others     uuid[];
+  i int; gid uuid; started timestamptz; ended timestamptz; duration int;
+  n_players int; chosen uuid[]; durak_id uuid; first_id uuid; last_id uuid;
+  michael_durak boolean; has_first boolean; has_last boolean; j int;
+begin
+  select user_id into logger from group_members
+    where group_id = wallawalla and role = 'owner' order by joined_at limit 1;
+  roster := array(select id from players where group_id = wallawalla order by id);
+  others := array(select p from unnest(roster) p where p <> michael);
+
+  perform setseed(0.20260617);
+  for i in 1..n_games loop
+    gid := ('21000000-0000-0000-0000-' || lpad(i::text, 12, '0'))::uuid;
+
+    if i = n_games then
+      started := newest_ts;            -- guaranteed most recent...
+      michael_durak := false;          -- ...and NOT Michael
+    else
+      started := base_ts
+        + (((i - 1) * window_days / (n_games - 1)) || ' days')::interval
+        + (floor(random() * 5)::text || ' hours')::interval
+        + (floor(random() * 60)::text || ' minutes')::interval;
+      michael_durak := (i % 5) < 3;    -- ~60% of historical games
+    end if;
+
+    duration := 25 + floor(random() * 45)::int;
+    ended := case when random() < 0.1 then null
+                  else started + (duration || ' minutes')::interval end;
+
+    insert into games (id, group_id, started_at, ended_at, trump_suit, deck_count, logged_by, notes, status)
+    values (gid, wallawalla, started, ended,
+            suits[1 + floor(random() * 4)::int],
+            case when random() < 0.7 then 1 else 2 end,
+            logger, null, 'completed')
+    on conflict (id) do nothing;
+
+    n_players := 3 + floor(random() * 4)::int;     -- 3–6 players
+    if michael_durak then
+      chosen := array[michael] || array(select p from unnest(others) p order by random() limit n_players - 1);
+      durak_id := michael;
+    else
+      chosen := array(select p from unnest(roster) p order by random() limit n_players);
+      durak_id := (select p from unnest(chosen) p where p <> michael order by random() limit 1);
+    end if;
+
+    first_id := (select p from unnest(chosen) p where p <> durak_id order by random() limit 1);
+    last_id  := (select p from unnest(chosen) p where p not in (durak_id, first_id) order by random() limit 1);
+    has_first := random() < 0.9;
+    has_last  := random() < 0.75;
+
+    for j in 1..array_length(chosen, 1) loop
+      insert into game_players (game_id, player_id, is_durak, is_first_out, is_last_out)
+      values (gid, chosen[j],
+              chosen[j] = durak_id,
+              chosen[j] = first_id and has_first,
+              chosen[j] = last_id  and has_last)
+      on conflict (game_id, player_id) do nothing;
+    end loop;
+  end loop;
+end $$;
+
 commit;
