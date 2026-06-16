@@ -35,7 +35,7 @@ export function GameList({
         return (
           <li
             key={game.id}
-            className="flex flex-col gap-2 rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900"
+            className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5"
           >
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm font-medium text-black dark:text-zinc-50">

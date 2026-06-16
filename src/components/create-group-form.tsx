@@ -72,7 +72,7 @@ export function CreateGroupForm({
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 h-12 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        className="btn-brand mt-2 h-12 rounded-full px-5 text-base font-semibold"
       >
         {pending ? "Creating…" : submitLabel}
       </button>

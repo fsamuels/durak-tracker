@@ -36,12 +36,12 @@ export default async function Home() {
   const topDurak = stats?.players.find((p) => p.durak_count > 0) ?? null;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
+    <main className="app-bg mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline justify-between gap-3">
           <Link
             href="/group"
-            className="text-2xl font-semibold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+            className="text-brand-gradient text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
           >
             {group.name}
           </Link>
@@ -56,10 +56,32 @@ export default async function Home() {
 
       <Link
         href="/games/new"
-        className="flex h-12 items-center justify-center rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        className="btn-brand flex h-12 items-center justify-center gap-2 rounded-full px-5 text-base font-semibold"
       >
-        Log a game
+        <span aria-hidden>♠️</span> Log a game
       </Link>
+
+      {gamesPlayed > 0 && (
+        <div className="-mt-4 flex flex-col gap-1">
+          {stats?.last_durak && (
+            <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
+              Last durak:{" "}
+              <span className="font-semibold text-black dark:text-zinc-50">
+                {stats.last_durak.display_name}
+              </span>
+            </p>
+          )}
+          {topDurak && (
+            <p className="truncate text-sm text-zinc-600 dark:text-zinc-400">
+              Most durak:{" "}
+              <span className="font-semibold text-black dark:text-zinc-50">
+                {topDurak.display_name}
+              </span>{" "}
+              ({topDurak.durak_count})
+            </p>
+          )}
+        </div>
+      )}
 
       {gamesPlayed > 0 && (
         <section className="flex flex-col gap-3">
@@ -72,20 +94,20 @@ export default async function Home() {
               More stats →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex flex-col gap-1 rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
-              <span className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
+              <span className="text-brand-gradient text-3xl font-bold tracking-tight">
                 {gamesPlayed}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs font-medium text-zinc-500">
                 {gamesPlayed === 1 ? "game played" : "games played"}
               </span>
             </div>
-            <div className="flex flex-col gap-1 rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
-              <span className="truncate text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-                {topDurak ? topDurak.display_name : "—"}
+            <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
+              <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
+                {topDurak ? `🤡 ${topDurak.display_name}` : "—"}
               </span>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs font-medium text-zinc-500">
                 {topDurak
                   ? `top durak (${topDurak.durak_count})`
                   : "no durak yet"}

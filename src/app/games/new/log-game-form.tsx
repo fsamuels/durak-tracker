@@ -218,7 +218,7 @@ export function LogGameForm({ players }: { players: Player[] }) {
       <button
         type="submit"
         disabled={isSubmitting || !!liveError}
-        className="h-12 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+        className="btn-brand h-12 rounded-full px-5 text-base font-semibold"
       >
         {isSubmitting ? "Saving…" : "Log game"}
       </button>
