@@ -33,11 +33,22 @@ Living snapshot of what's built. Last updated: 2026-06-15.
 
 ## In progress
 
-### Milestone 3 — Auth
+### Milestone 3 — Auth (on branch `milestone3`)
 
-- Configure Google + Facebook OAuth in Supabase.
-- Supabase client setup, login/logout, onboarding (create group), route protection
-  (redirect to login if unauthenticated, to onboarding if no group).
+Scaffolded (code complete, builds clean — needs credentials + OAuth config to run):
+
+- `@supabase/ssr` + `@supabase/supabase-js`; generated DB types
+  (`src/lib/supabase/database.types.ts`).
+- Browser + server Supabase clients; `proxy.ts` session refresh + route protection.
+- Login page (Google/Facebook OAuth); `/auth/callback` + `/auth/signout` routes.
+- Onboarding page → `create_group` RPC; protected home (redirects to login /
+  onboarding).
+
+Remaining for M3:
+
+- [ ] Configure **Google + Facebook OAuth** providers in Supabase (client id/secret
+      from each console; redirect URL `…/auth/callback`).
+- [ ] Add **anon** + **service_role** keys to `.env.local`, then test the flow end to end.
 
 ## Not yet implemented
 
@@ -47,12 +58,18 @@ Living snapshot of what's built. Last updated: 2026-06-15.
 - PWA layer (manifest, icons, install prompt, service worker).
 - Roadmap features: edit/delete game, invitations, guest claiming, offline, etc.
 
-## Follow-ups / housekeeping
+## Action required (owner)
 
-- **Rotate** the Supabase DB password and the dev access token (both were shared in
-  plaintext during setup).
-- Provide the **anon/publishable** and **service_role/secret** API keys for the app
-  (`.env.local` placeholders are empty) — needed for M3.
+- [ ] 🔐 **SECURITY — rotate the credentials pasted in chat:**
+  - [ ] Reset the **database password** (Supabase → Settings → Database → Reset
+        database password), then update `SUPABASE_DB_PASSWORD` in `.env.local`.
+  - [ ] Revoke/regenerate the **personal access token** `sbp_…` (Supabase → Account →
+        Access Tokens), then re-run `supabase login` with the new one.
+- [ ] Provide the **anon/publishable** and **service_role/secret** API keys
+      (`.env.local` placeholders are empty) — needed to run M3.
+
+## Housekeeping
+
 - Unused default `public/*.svg` assets from create-next-app can be removed.
 
 ## Credentials & secrets
