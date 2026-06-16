@@ -1,10 +1,10 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-15.
+Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M3 — Auth (in progress)
+- **Current milestone:** M3 — Auth (Google working end to end; Facebook deferred)
 
 ## Done
 
@@ -35,20 +35,25 @@ Living snapshot of what's built. Last updated: 2026-06-15.
 
 ### Milestone 3 — Auth (on branch `milestone3`)
 
-Scaffolded (code complete, builds clean — needs credentials + OAuth config to run):
+Built and **tested end to end with Google** (login → onboarding → create group →
+protected home):
 
 - `@supabase/ssr` + `@supabase/supabase-js`; generated DB types
   (`src/lib/supabase/database.types.ts`).
-- Browser + server Supabase clients; `proxy.ts` session refresh + route protection.
-- Login page (Google/Facebook OAuth); `/auth/callback` + `/auth/signout` routes.
+- Browser + server Supabase clients; `proxy.ts` session refresh + route protection
+  (verified: `/` and `/onboarding` redirect to `/login` when unauthenticated).
+- Login page (**Google**; Facebook button removed until the provider is configured);
+  `/auth/callback` + `/auth/signout` routes.
 - Onboarding page → `create_group` RPC; protected home (redirects to login /
   onboarding).
+- Supabase: **Google** provider enabled; URL config set (Site URL + `localhost` /
+  Vercel redirect allow-list). Publishable key in `.env.local`.
 
 Remaining for M3:
 
-- [ ] Configure **Google + Facebook OAuth** providers in Supabase — see
-      [oauth-setup.md](./oauth-setup.md).
-- [ ] Add **anon** + **service_role** keys to `.env.local`, then test the flow end to end.
+- [ ] **Facebook** — deferred; re-enable provider in Supabase and restore the button
+      in `src/app/login/page.tsx` once we revisit (see [oauth-setup.md](./oauth-setup.md)).
+- [ ] Polish auth UX (see "Action required" → auth text/branding).
 
 ## Not yet implemented
 
@@ -65,8 +70,18 @@ Remaining for M3:
         database password), then update `SUPABASE_DB_PASSWORD` in `.env.local`.
   - [ ] Revoke/regenerate the **personal access token** `sbp_…` (Supabase → Account →
         Access Tokens), then re-run `supabase login` with the new one.
-- [ ] Provide the **anon/publishable** and **service_role/secret** API keys
-      (`.env.local` placeholders are empty) — needed to run M3.
+- [x] ~~Provide the **anon/publishable** key~~ — done (`sb_publishable_…` in
+      `.env.local`). `SUPABASE_SERVICE_ROLE_KEY` still blank but not needed until we
+      add server-side admin operations.
+
+## Polish / UX backlog
+
+- [ ] **Review the auth-flow text/branding.** The Google consent screen currently
+      shows the raw Supabase project domain (`wjdubpkmzhsfocvgsjuv.supabase.co`, i.e.
+      `NEXT_PUBLIC_SUPABASE_URL`), which can look untrustworthy to users. Options to
+      evaluate: a **Supabase custom auth domain** (so the callback shows a branded
+      domain) and tightening the **Google OAuth consent screen** app name/branding.
+      Also review our own login/onboarding copy while we're there.
 
 ## Housekeeping
 
