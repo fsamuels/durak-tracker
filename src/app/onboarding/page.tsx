@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 
+import { CreateGroupForm } from "@/components/create-group-form";
 import { createClient } from "@/lib/supabase/server";
-
-import { OnboardingForm } from "./onboarding-form";
 
 export default async function OnboardingPage() {
   const supabase = await createClient();
@@ -34,7 +33,7 @@ export default async function OnboardingPage() {
           players (including guests) once it&apos;s created.
         </p>
       </div>
-      <OnboardingForm defaultDisplayName={defaultDisplayName} />
+      <CreateGroupForm defaultDisplayName={defaultDisplayName} autoFocus />
     </main>
   );
 }

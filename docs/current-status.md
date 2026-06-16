@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M6 — Stats v1 shipped; next up is M7 — home & navigation
-  revamp. (The roadmap was re-sequenced from a real-usage planning pass: M7 home revamp,
-  M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA polish + Iterate
-  shifted to M11+. See [roadmap.md](./roadmap.md).)
+- **Current milestone:** M7 — Home & navigation revamp shipped; next up is M8 —
+  two-part game logging. (The roadmap was re-sequenced from a real-usage planning pass:
+  M7 home revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA
+  polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -151,12 +151,40 @@ isn't captured at log time yet, so it isn't surfaced. Linking to player stats fr
 the history list was left out (history doesn't carry player ids); links come from
 home, the players list, and the group leaderboard.
 
+### Milestone 7 — Home & navigation revamp ✅
+
+Home centers on the user's real group and recent activity; group management moved
+to its own screen:
+
+- **Default active group = most-played** (`20260616130000_most_played_group.sql`,
+  pushed to remote; types regenerated). A `SECURITY INVOKER` `most_played_group()`
+  RPC counts the caller's `game_players` (joined via `players.auth_user_id =
+auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
+  every member group so a user with no games still resolves. `getCurrentGroup()` now
+  uses it: the `durak_group_id` cookie still wins; the RPC is the fallback; an
+  earliest-created query is the defensive last resort. RLS still scopes every row.
+- **Last 6 games on home.** The `/games` history query was extracted into a shared
+  `src/lib/data/games.ts` (`getGameHistory`) reused by home (limit 6, no filter) and
+  the history page (capped, date-range filter). Row markup moved to a shared
+  `src/components/game-list.tsx` (`GameList`).
+- **New `/group` (Manage group) page** holds the group switcher (`switchGroup`) +
+  create-new-group form and links to Manage Players. The create form was generalized
+  into `src/components/create-group-form.tsx` (reused by onboarding); `createGroupAction`
+  moved to `src/app/actions.ts` and now sets the active-group cookie so a just-created
+  group becomes active. Home dropped the Manage-players button and the inline switcher;
+  it keeps Log a game / Game history / Group stats / Manage group, plus Recent games.
+- **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
+  `db push` (Postgres validated the function on create). `most_played_group()` tested
+  against the live DB via JWT-simulated psql as real members — the owner (8 games in
+  Test Group, 0 in Walla Walla) resolves to Test Group, a single-group member gets
+  their group, and a non-member gets null (RLS holds).
+
 ## Not yet implemented
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: home revamp (M7), two-part logging (M8), start-from-existing (M9),
-  account claiming (M10); then PWA, edit/delete game, offline, etc.
+- Roadmap features: two-part logging (M8), start-from-existing (M9), account claiming
+  (M10); then PWA, edit/delete game, offline, etc.
 
 ## Action required (owner)
 

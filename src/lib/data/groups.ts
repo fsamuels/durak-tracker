@@ -10,9 +10,10 @@ export const GROUP_COOKIE = "durak_group_id";
 /**
  * The signed-in user's active group. If a group is selected via the cookie and
  * the user can still see it (RLS-checked by the query returning a row), use it;
- * otherwise fall back to the earliest-created group the user belongs to. v1
- * assumes a single primary group, but the cookie lets a multi-group user switch
- * between them (e.g. a test group vs. their real group).
+ * otherwise fall back to the group the user has played the most games in
+ * (tie-break earliest-created), computed by the `most_played_group` RPC so RLS
+ * still applies. The cookie lets a multi-group user switch between them (e.g. a
+ * test group vs. their real group) — see the Manage group page.
  */
 export async function getCurrentGroup(): Promise<CurrentGroup | null> {
   const supabase = await createClient();
@@ -28,6 +29,19 @@ export async function getCurrentGroup(): Promise<CurrentGroup | null> {
     if (data) return data;
   }
 
+  // Default to the most-played group (tie-break / zero-games default is the
+  // earliest-created group, resolved inside the RPC).
+  const { data: groupId } = await supabase.rpc("most_played_group");
+  if (groupId) {
+    const { data } = await supabase
+      .from("groups")
+      .select("id, name, timezone")
+      .eq("id", groupId)
+      .maybeSingle();
+    if (data) return data;
+  }
+
+  // Defensive last resort if the RPC is unavailable: earliest-created group.
   const { data } = await supabase
     .from("groups")
     .select("id, name, timezone")

@@ -279,6 +279,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      most_played_group: { Args: never; Returns: string };
       player_stats: {
         Args: { p_group_id: string; p_player_id: string };
         Returns: Json;

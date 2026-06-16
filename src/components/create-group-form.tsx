@@ -2,14 +2,23 @@
 
 import { useActionState, useEffect, useRef } from "react";
 
-import { createGroupAction, type CreateGroupState } from "./actions";
+import { createGroupAction, type CreateGroupState } from "@/app/actions";
 
 const initialState: CreateGroupState = { error: null };
 
-export function OnboardingForm({
+/**
+ * Create-a-group form, shared by onboarding (first group) and the Manage group
+ * page (additional groups). Captures the creator's browser timezone for
+ * deterministic stat buckets and an optional display name.
+ */
+export function CreateGroupForm({
   defaultDisplayName,
+  submitLabel = "Create group",
+  autoFocus = false,
 }: {
   defaultDisplayName?: string;
+  submitLabel?: string;
+  autoFocus?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(
     createGroupAction,
@@ -44,7 +53,7 @@ export function OnboardingForm({
         <input
           name="name"
           required
-          autoFocus
+          autoFocus={autoFocus}
           placeholder="Run Club"
           className="h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
         />
@@ -65,7 +74,7 @@ export function OnboardingForm({
         disabled={pending}
         className="mt-2 h-12 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
       >
-        {pending ? "Creating…" : "Create group"}
+        {pending ? "Creating…" : submitLabel}
       </button>
 
       {state.error && (

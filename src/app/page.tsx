@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { GameList } from "@/components/game-list";
+import { getGameHistory } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 
-import { switchGroup } from "./actions";
+// How many recent games to surface on the home page.
+const RECENT_GAMES_LIMIT = 6;
 
 export default async function Home() {
   const supabase = await createClient();
@@ -14,27 +17,27 @@ export default async function Home() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: groups } = await supabase
-    .from("groups")
-    .select("id, name")
-    .order("created_at", { ascending: true });
+  const group = await getCurrentGroup();
+  if (!group) redirect("/onboarding");
 
-  if (!groups || groups.length === 0) redirect("/onboarding");
-
-  const currentGroup = await getCurrentGroup();
+  const { games } = await getGameHistory({
+    groupId: group.id,
+    timezone: group.timezone,
+    limit: RECENT_GAMES_LIMIT,
+  });
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-6 bg-zinc-50 px-6 text-center dark:bg-black">
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Hello Durak Tracker
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
+          {group.name}
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Signed in as {user.email}
         </p>
       </div>
 
-      <div className="flex w-full max-w-xs flex-col gap-2">
+      <div className="flex flex-col gap-2">
         <Link
           href="/games/new"
           className="flex h-12 items-center justify-center rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
@@ -54,46 +57,41 @@ export default async function Home() {
           Group stats
         </Link>
         <Link
-          href="/players"
+          href="/group"
           className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
         >
-          Manage players
+          Manage group
         </Link>
       </div>
 
-      <div className="w-full max-w-xs text-left">
-        <h2 className="mb-2 text-sm font-medium text-zinc-500">
-          Your groups
-          {groups.length > 1 && (
-            <span className="font-normal"> — tap to switch</span>
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-zinc-500">Recent games</h2>
+          {games.length > 0 && (
+            <Link
+              href="/games"
+              className="text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
+            >
+              View all →
+            </Link>
           )}
-        </h2>
-        <ul className="flex flex-col gap-1">
-          {groups.map((g) => {
-            const active = g.id === currentGroup?.id;
-            return (
-              <li key={g.id}>
-                <form action={switchGroup}>
-                  <input type="hidden" name="groupId" value={g.id} />
-                  <button
-                    type="submit"
-                    disabled={active}
-                    aria-current={active ? "true" : undefined}
-                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition-colors ${
-                      active
-                        ? "border-black bg-black text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
-                        : "border-black/10 bg-white text-black hover:bg-black/5 dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-white/5"
-                    }`}
-                  >
-                    <span>{g.name}</span>
-                    {active && <span className="text-xs">current</span>}
-                  </button>
-                </form>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+        </div>
+        <GameList
+          games={games}
+          timezone={group.timezone}
+          emptyState={
+            <li className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+              No games logged yet.{" "}
+              <Link
+                href="/games/new"
+                className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
+              >
+                Log a game →
+              </Link>
+            </li>
+          }
+        />
+      </section>
 
       <form action="/auth/signout" method="post">
         <button
