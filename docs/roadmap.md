@@ -1,7 +1,8 @@
 # Roadmap
 
-Milestones 1–5 are complete; M6 (stats v1) is in progress (see
-[current-status.md](./current-status.md)). M3 shipped **Google** auth only —
+Milestones 1–5 are complete (merged); M6 (stats v1) is in review (see
+[current-status.md](./current-status.md)). A milestone is marked complete only once
+its PR is merged — every PR gets a manual review/test pass. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
 the [spec](../durak-tracker-spec.md).
 
@@ -12,7 +13,7 @@ the [spec](../durak-tracker-spec.md).
    validated client-side and re-checked server-side via the `log_game` RPC.
 5. **Game history** _(done)_ — list games per group, most-recent first, with
    a date-range filter scoped to the group's timezone.
-6. **Stats v1** _(in progress)_ — group stats and player stats pages computing the
+6. **Stats v1** _(in review)_ — group stats and player stats pages computing the
    spec metrics at all-time, in-group granularity via two `SECURITY INVOKER` RPCs
    (`group_stats` / `player_stats`). Deferred to later milestones: time-span buckets
    (week/month/year), cross-group account-level aggregates, head-to-head, and
@@ -52,10 +53,17 @@ the [spec](../durak-tracker-spec.md).
   conflict resolution TBD.
 - **Push notifications** — streak alerts, durak taunts, etc.
 - **Native app** — Capacitor wrapper around the PWA for app-store distribution.
+- **Separate Dev/test database** — a dedicated Supabase project (or branch) for
+  testing, so the seeded **Run Club** test group lives apart from real data. Until
+  then the home-page group switcher (M6) lets the owner flip between the seeded group
+  and their real group on the production DB.
 
 ## Open questions / decisions for later
 
-- **Group switching UI** — dropdown vs separate URLs (`/groups/[id]/...`).
+- **Group switching UI** — a basic cookie-backed switcher shipped in M6 (tap a group
+  on the home page; `getCurrentGroup()` honors the cookie). The fuller decision —
+  dropdown vs separate URLs (`/groups/[id]/...`), and where the active-group indicator
+  lives app-wide — is still open.
 - **`ended_at` entry** — log-time only, or a "start/stop timer" flow for real-time
   tracking in a future release?
 - **Head-to-head** — surface on the player profile only, or also a dedicated

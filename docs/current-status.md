@@ -4,7 +4,12 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M6 — Stats v1 in progress (group + player stats pages).
+- **Current milestone:** M6 — Stats v1 in review (group + player stats pages).
+
+> **Milestone convention:** every PR gets a **manual review + manual test** pass, so
+> a milestone is marked **complete (✅) only once its PR is merged**; until then it's
+> in review (🚧). At merge, anything still outstanding other than manual testing must
+> be **explicitly deferred** to a future milestone/feature — no implied-partial TODOs.
 
 ## Done
 
@@ -120,8 +125,18 @@ Group- and player-level stats, computed from stored data (spec "Metrics"):
   "hasn't played any games yet" message.
 - Home links to group stats; the players list and the group leaderboard link to each
   player's stats page.
+- **Group switcher (dev/testing convenience):** the home "Your groups" list is now
+  tappable; a `switchGroup` server action stores the choice in a cookie
+  (`durak_group_id`) that `getCurrentGroup()` reads (falling back to earliest-created
+  when unset/invalid), so a user in more than one group can flip the active group that
+  stats / history / players key off. Added so the owner can test against the seeded
+  **Run Club** group and their real group from one account — a stop-gap until a
+  separate Dev DB exists (see [roadmap](./roadmap.md)). The owner account was added to
+  Run Club manually (group_members + a `players` row) via psql; this is live-DB data,
+  not a migration.
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
-  `db push` (Postgres validated the function definitions on create).
+  `db push` (Postgres validated the function definitions on create). Final behavior is
+  confirmed by the manual review/test pass before merge.
 
 Deferred out of M6 (see [roadmap](./roadmap.md)): **time-span buckets**
 (per week/month/year durak counts / "most durak this week"), **cross-group /
