@@ -16,6 +16,7 @@ trump suit, players involved, and computed stats per group and per player.
 | [docs/architecture.md](docs/architecture.md)     | System design, data model, RLS, integrity, dev workflow      |
 | [docs/current-status.md](docs/current-status.md) | What's built, in progress, and pending                       |
 | [docs/roadmap.md](docs/roadmap.md)               | Remaining milestones, backlog, open questions                |
+| [docs/oauth-setup.md](docs/oauth-setup.md)       | Google/Facebook social-login setup steps                     |
 
 ## Tech stack
 

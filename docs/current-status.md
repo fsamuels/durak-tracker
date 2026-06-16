@@ -46,8 +46,8 @@ Scaffolded (code complete, builds clean — needs credentials + OAuth config to 
 
 Remaining for M3:
 
-- [ ] Configure **Google + Facebook OAuth** providers in Supabase (client id/secret
-      from each console; redirect URL `…/auth/callback`).
+- [ ] Configure **Google + Facebook OAuth** providers in Supabase — see
+      [oauth-setup.md](./oauth-setup.md).
 - [ ] Add **anon** + **service_role** keys to `.env.local`, then test the flow end to end.
 
 ## Not yet implemented
