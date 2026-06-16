@@ -4,12 +4,14 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M6 — Stats v1 in review (group + player stats pages).
+- **Current milestone:** M6 — Stats v1 shipped; next up is M7 — PWA polish.
 
-> **Milestone convention:** every PR gets a **manual review + manual test** pass, so
-> a milestone is marked **complete (✅) only once its PR is merged**; until then it's
-> in review (🚧). At merge, anything still outstanding other than manual testing must
-> be **explicitly deferred** to a future milestone/feature — no implied-partial TODOs.
+> **Milestone convention:** a milestone's PR carries the docs that mark it
+> **complete (✅)**. Any outstanding manual review/testing is done **before that PR
+> merges**, so the docs land already reflecting completion — the moment it hits
+> `main`, the milestone reads as done. Anything still outstanding other than manual
+> testing must be **explicitly deferred** to a future milestone/feature — no
+> implied-partial TODOs.
 
 ## Done
 
@@ -101,7 +103,7 @@ Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game** and
 **pagination** beyond the simple 100-row cap. `ended_at` is queried but not yet
 surfaced in the row UI. (Per-player stats landed in M6.)
 
-### Milestone 6 — Stats v1 🚧
+### Milestone 6 — Stats v1 ✅
 
 Group- and player-level stats, computed from stored data (spec "Metrics"):
 
@@ -135,8 +137,8 @@ Group- and player-level stats, computed from stored data (spec "Metrics"):
   Run Club manually (group_members + a `players` row) via psql; this is live-DB data,
   not a migration.
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
-  `db push` (Postgres validated the function definitions on create). Final behavior is
-  confirmed by the manual review/test pass before merge.
+  `db push` (Postgres validated the function definitions on create); manual
+  review/test pass done before merge.
 
 Deferred out of M6 (see [roadmap](./roadmap.md)): **time-span buckets**
 (per week/month/year durak counts / "most durak this week"), **cross-group /

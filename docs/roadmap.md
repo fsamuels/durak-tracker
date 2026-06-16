@@ -1,8 +1,8 @@
 # Roadmap
 
-Milestones 1–5 are complete (merged); M6 (stats v1) is in review (see
-[current-status.md](./current-status.md)). A milestone is marked complete only once
-its PR is merged — every PR gets a manual review/test pass. M3 shipped **Google** auth only —
+Milestones 1–6 are complete; M7 (PWA polish) is next (see
+[current-status.md](./current-status.md)). A milestone's PR carries the docs marking
+it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
 the [spec](../durak-tracker-spec.md).
 
@@ -13,13 +13,13 @@ the [spec](../durak-tracker-spec.md).
    validated client-side and re-checked server-side via the `log_game` RPC.
 5. **Game history** _(done)_ — list games per group, most-recent first, with
    a date-range filter scoped to the group's timezone.
-6. **Stats v1** _(in review)_ — group stats and player stats pages computing the
+6. **Stats v1** _(done)_ — group stats and player stats pages computing the
    spec metrics at all-time, in-group granularity via two `SECURITY INVOKER` RPCs
    (`group_stats` / `player_stats`). Deferred to later milestones: time-span buckets
    (week/month/year), cross-group account-level aggregates, head-to-head, and
    charts (see below).
-7. **PWA polish** — manifest, icons, install prompt, offline static-asset caching
-   (introduces `next-pwa`).
+7. **PWA polish** _(next)_ — manifest, icons, install prompt, offline static-asset
+   caching (introduces `next-pwa`).
 8. **Iterate** — additional metrics, claiming flow, invite system, refinements from
    real usage.
 
