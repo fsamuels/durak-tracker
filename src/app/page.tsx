@@ -52,9 +52,6 @@ export default async function Home() {
             Change group →
           </Link>
         </div>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Signed in as {user.email}
-        </p>
       </div>
 
       <Link
@@ -132,7 +129,7 @@ export default async function Home() {
           type="submit"
           className="text-sm font-medium text-zinc-500 underline underline-offset-4 hover:text-zinc-800 dark:hover:text-zinc-200"
         >
-          Sign out
+          Sign out as {user.email}
         </button>
       </form>
     </main>

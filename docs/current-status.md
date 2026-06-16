@@ -190,7 +190,9 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
   (total games played + top durak, "More stats →" to `/stats`); and **Recent games**
   (last 6, "View all →" to `/games`). The standalone Game history / Group stats /
   Manage group buttons were dropped — those destinations are reachable from the new
-  inline links — leaving a cleaner page that surfaces more information.
+  inline links — leaving a cleaner page that surfaces more information. The signed-in
+  account is shown on the sign-out button at the bottom (**Sign out as &lt;email&gt;**)
+  rather than a separate "Signed in as" line.
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; migration applied via
   `db push` (Postgres validated the function on create). `most_played_group()` tested
   against the live DB via JWT-simulated psql as real members — the owner (8 games in
@@ -217,6 +219,11 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
 
 ## Polish / UX backlog
 
+- [ ] **Clean up & improve group management.** The `/group` (Manage group) and
+      `/group/switch` pages are functional but rough — the layout, hierarchy, and
+      discoverability aren't where they should be (e.g. switching vs. managing vs.
+      creating all feel like a stopgap). Revisit the whole group-management flow as a
+      focused pass when it becomes a priority; not blocking for now.
 - [ ] **Review the auth-flow text/branding.** The Google consent screen currently
       shows the raw Supabase project domain (`wjdubpkmzhsfocvgsjuv.supabase.co`, i.e.
       `NEXT_PUBLIC_SUPABASE_URL`), which can look untrustworthy to users. Options to
