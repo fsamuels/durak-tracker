@@ -6,6 +6,7 @@ import { InProgressGames } from "@/components/in-progress-games";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
+import { formatInTz } from "@/lib/time";
 import { formatDuration, groupStatsSchema } from "@/lib/validation/stats";
 
 // How many recent games to surface on the home page.
@@ -62,7 +63,10 @@ export default async function Home() {
             >
               {stats.last_durak.display_name}
             </Link>
-            <span className="text-xs font-medium text-zinc-500">last durak</span>
+            <span className="text-xs font-medium text-zinc-500">
+              last durak ·{" "}
+              {formatInTz(stats.last_durak.started_at, group.timezone)}
+            </span>
           </div>
         </div>
       )}

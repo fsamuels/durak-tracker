@@ -5,6 +5,7 @@ import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
+import { periodStartDate } from "@/lib/time";
 import { historyFilterSchema } from "@/lib/validation/history";
 
 import { HistoryFilter } from "./history-filter";
@@ -15,23 +16,20 @@ const GAMES_LIMIT = 100;
 export default async function GamesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ start?: string; end?: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const parsed = historyFilterSchema.safeParse(await searchParams);
-  const filter = parsed.success ? parsed.data : {};
-  const filterError = parsed.success
-    ? null
-    : (parsed.error.issues[0]?.message ?? "Invalid date range.");
+  // `.catch` in the schema means this always succeeds, falling back to month.
+  const { period } = historyFilterSchema.parse(await searchParams);
+  const start = periodStartDate(period, group.timezone);
 
   const [{ games, error }, { games: inProgress }] = await Promise.all([
     getGameHistory({
       groupId: group.id,
       timezone: group.timezone,
-      start: filter.start,
-      end: filter.end,
+      start,
       limit: GAMES_LIMIT,
     }),
     getInProgressGames(group.id),
@@ -57,13 +55,7 @@ export default async function GamesPage({
 
       <InProgressGames games={inProgress} timezone={group.timezone} />
 
-      <HistoryFilter start={filter.start} end={filter.end} />
-
-      {filterError && (
-        <p role="alert" className="text-sm text-red-600">
-          {filterError}
-        </p>
-      )}
+      <HistoryFilter period={period} />
 
       {error ? (
         <p role="alert" className="text-sm text-red-600">
@@ -75,9 +67,9 @@ export default async function GamesPage({
           timezone={group.timezone}
           emptyState={
             <li className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
-              {filter.start || filter.end
-                ? "No games in this date range."
-                : "No games logged yet."}{" "}
+              {period === "all"
+                ? "No games logged yet."
+                : "No games in this period."}{" "}
               <Link
                 href="/games/new"
                 className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
