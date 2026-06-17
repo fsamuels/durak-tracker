@@ -58,10 +58,10 @@ export default async function SwitchGroupPage() {
                   type="submit"
                   disabled={active}
                   aria-current={active ? "true" : undefined}
-                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition ${
                     active
-                      ? "border-black bg-black text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
-                      : "border-black/10 bg-white text-black hover:bg-black/5 dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50 dark:hover:bg-white/5"
+                      ? "border border-black bg-black text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
+                      : "card-surface text-black hover:brightness-95 active:brightness-90 dark:text-zinc-50"
                   }`}
                 >
                   <span className="font-medium">{g.name}</span>

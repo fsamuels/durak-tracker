@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { BottomNav } from "@/components/bottom-nav";
 import { InstallPrompt } from "@/components/install-prompt";
 import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
@@ -27,6 +28,17 @@ export const metadata: Metadata = {
   },
 };
 
+// viewport-fit: cover lets content extend under the notch/status bar so
+// env(safe-area-inset-*) becomes non-zero (the header/footer pad for it below).
+// themeColor matches the page background per color scheme.
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f3fbff" },
+    { media: "(prefers-color-scheme: dark)", color: "#060c14" },
+  ],
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -42,22 +54,29 @@ export default async function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="app-bg min-h-full flex flex-col">
         {user && (
-          <header className="border-b border-black/10 dark:border-white/10">
+          <header className="sticky top-0 z-30 border-b border-black/10 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-md dark:border-white/10">
             <div className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-3">
               <Link
                 href="/"
                 className="text-base font-bold tracking-tight text-black dark:text-zinc-50"
               >
-                ♠️ Durak Tracker
+                🃏 Durak Tracker
               </Link>
               <NavMenu />
             </div>
           </header>
         )}
         {children}
-        <footer className="px-6 py-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
+        <footer
+          className={`px-6 pt-6 text-center text-xs text-zinc-400 dark:text-zinc-600 ${
+            user
+              ? // Clear the fixed bottom tab bar (3.5rem) + its safe-area inset.
+                "pb-[calc(env(safe-area-inset-bottom)+5rem)]"
+              : "pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+          }`}
+        >
           <p>
             <a
               href="https://github.com/fsamuels/durak-tracker"
@@ -71,7 +90,8 @@ export default async function RootLayout({
           </p>
           {user && <p className="mt-1">Logged in as {user.email}</p>}
         </footer>
-        <InstallPrompt />
+        {user && <BottomNav />}
+        <InstallPrompt hasBottomNav={!!user} />
         <ServiceWorkerRegistration />
       </body>
     </html>

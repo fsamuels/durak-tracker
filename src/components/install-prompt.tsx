@@ -7,7 +7,12 @@ interface BeforeInstallPromptEvent extends Event {
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export function InstallPrompt() {
+export function InstallPrompt({
+  hasBottomNav = false,
+}: {
+  /** When the bottom tab bar is present, float above it instead of over it. */
+  hasBottomNav?: boolean;
+}) {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
@@ -32,7 +37,13 @@ export function InstallPrompt() {
   }
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-lg dark:border-white/15 dark:bg-zinc-900">
+    <div
+      className={`fixed left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-lg dark:border-white/15 dark:bg-zinc-900 ${
+        hasBottomNav
+          ? "bottom-[calc(env(safe-area-inset-bottom)+4.5rem)]"
+          : "bottom-[calc(env(safe-area-inset-bottom)+1rem)]"
+      }`}
+    >
       <div className="flex flex-col gap-0.5">
         <p className="text-sm font-medium text-black dark:text-zinc-50">
           Install Durak Tracker

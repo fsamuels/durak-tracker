@@ -39,7 +39,7 @@ export default async function Home() {
   const topDurak = stats?.players.find((p) => p.durak_count > 0) ?? null;
 
   return (
-    <main className="app-bg mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
       <Link
         href="/group"
         className="text-brand-gradient text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
@@ -134,7 +134,7 @@ export default async function Home() {
           games={games}
           timezone={group.timezone}
           emptyState={
-            <li className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+            <li className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
               No games logged yet.{" "}
               <Link
                 href="/games/new"

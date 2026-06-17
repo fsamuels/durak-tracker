@@ -147,7 +147,7 @@ export function FinishGameForm({
             <div
               key={field.id}
               hidden={!isVisible(i)}
-              className="flex items-center gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/15 dark:bg-zinc-900"
+              className="card-surface flex items-center gap-3 rounded-2xl px-3 py-2.5"
             >
               <input type="hidden" {...register(`rows.${i}.playerId`)} />
               <input type="hidden" {...register(`rows.${i}.displayName`)} />

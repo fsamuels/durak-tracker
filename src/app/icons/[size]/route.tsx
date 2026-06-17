@@ -29,11 +29,11 @@ function Icon({ size, maskable }: { size: number; maskable: boolean }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: inner * 0.65,
+          fontSize: inner * 0.72,
           lineHeight: 1,
         }}
       >
-        ♠
+        🃏
       </div>
     </div>
   );
@@ -55,5 +55,6 @@ export async function GET(
   return new ImageResponse(<Icon size={px} maskable={maskable} />, {
     width: px,
     height: px,
+    emoji: "twemoji",
   });
 }

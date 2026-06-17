@@ -70,7 +70,7 @@ export function ClaimLinkButton({
       <button
         onClick={generate}
         disabled={pending}
-        className="rounded-full border border-black/15 px-3 py-1 text-xs font-medium text-zinc-700 transition-colors hover:bg-black/5 disabled:opacity-60 dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/5"
+        className="rounded-full border border-black/15 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-black/5 active:bg-black/10 disabled:opacity-60 dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/5 dark:active:bg-white/10"
       >
         {pending
           ? "Creating…"

@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M10 — account claiming shipped; next up is M11 — PWA
-  polish. (The roadmap was re-sequenced from a real-usage planning pass: M7 home
-  revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA
-  polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
+- **Current milestone:** M11 — PWA polish + mobile design pass shipped; next up is
+  M12 — Iterate. (The roadmap was re-sequenced from a real-usage planning pass: M7
+  home revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming, M11
+  PWA + mobile UX; Iterate is M12+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -349,11 +349,64 @@ items into one flow — claiming a player both links the account and joins the g
   in the group rejected; unauthenticated rejected. Owner does the manual UI pass
   before merge (per the convention).
 
+### Milestone 11 — PWA polish + mobile design pass ✅
+
+Turns the app into an installable PWA and does a focused mobile UX/consistency pass.
+No data-model changes beyond the discard RPC below.
+
+- **PWA layer.** Web App Manifest via Next's `app/manifest.ts` (standalone display,
+  dark theme, portrait); generated icons via `next/og` `ImageResponse` — `app/icon.tsx`
+  (favicon), `app/apple-icon.tsx` (Apple touch), and `app/icons/[size]/route.tsx`
+  (192 / 512 / maskable-512), all rendering the **🃏 joker brand mark** through
+  **Twemoji** (the default OG font lacks color emoji). A dismissible **install prompt**
+  (`beforeinstallprompt`) and a **hand-written service worker** (`public/sw.js`,
+  registered by `service-worker.tsx`) that cache-firsts Next static assets / icons for
+  offline shell loading. **`next-pwa` was evaluated and dropped** — it's webpack-only
+  and Next 16 defaults to Turbopack (the build errors on a webpack config) — so the SW
+  is hand-written instead.
+- **Shared navigation.** A sticky **header** (joker wordmark → home + hamburger
+  `NavMenu`) and a fixed **bottom tab bar** (`BottomNav`: Home / Games / Stats /
+  Players) now live in the root layout, rendered for signed-in users on every page.
+  The hamburger menu holds **Start a game · View stats** then **Switch group · Manage
+  group · Manage account · Sign out**. New **`/account`** stub page (shows the
+  signed-in email + sign-out; settings deferred). Footer carries the repo link and
+  "Logged in as &lt;email&gt;".
+- **Mobile correctness & touch.** `viewport-fit=cover` + `env(safe-area-inset-*)`
+  padding on the header / footer / bottom bar / install prompt (fixes content under the
+  iOS notch in the installed PWA, given the `black-translucent` status bar); per-scheme
+  `themeColor`; 44px minimum touch targets (hamburger, filter/claim buttons) with
+  `active:` press feedback.
+- **Visual unification.** `.app-bg` moved to `<body>` (base color baked in, glows
+  fixed to the viewport) so every page shares the ambient gradient; all remaining plain
+  `rounded-lg` white cards (Stats, player stats, Players, Switch group, start/finish
+  player rows, empty states) migrated to the frosted **`card-surface rounded-2xl`**
+  brand look. Brand mark unified on the **joker** across header, auth heroes, and app
+  icons (was a mix of 🃏 and ♠️). Durak badge recolored from flat red to the aurora
+  **pink** (`.badge-durak`); recent-games rows show their **duration**; "Start again
+  with this roster" → **"Play again"**.
+- **Discard a game** (`20260617120000_discard_game.sql`, pushed to remote; types
+  regenerated). A started-but-unfinished game can be **discarded (deleted)** from the
+  finish page — `discard_game(game_id)` (`SECURITY INVOKER`) deletes the game and
+  cascades to `game_players`, gated by a new **`games_delete`** RLS policy scoped to
+  group members and **`status = 'in_progress'`** only (completed games stay an edit/
+  delete roadmap item).
+- **Start-form player picker** now lists **only selected** players (each with Remove),
+  with search-to-add surfacing the rest of the roster — instead of showing the whole
+  roster as checkboxes.
+- **Verified:** `pnpm tsc --noEmit` / `lint` / `build` clean. Migration applied via
+  `db push`; `discard_game` (SECURITY INVOKER) and `games_delete` (delete policy)
+  confirmed present in the live DB. Generated joker icon visually verified (real
+  Twemoji jester card, not a tofu box). Owner does the manual UI pass before merge
+  (per the convention).
+
 ## Not yet implemented
 
-- Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
-- PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: account claiming (M10); then PWA, edit/delete game, offline, etc.
+- Libraries planned but not installed: **Vitest/Playwright**. (**next-pwa** was
+  evaluated in M11 and rejected — Turbopack-incompatible; a hand-written service worker
+  is used instead.)
+- Roadmap features (M12+): edit/delete a **completed** game, offline write queue,
+  account settings (the `/account` page is a stub), time-span stat buckets,
+  cross-group aggregates, head-to-head, charts.
 
 ## Action required (owner)
 

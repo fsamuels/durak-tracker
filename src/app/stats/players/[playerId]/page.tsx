@@ -61,7 +61,7 @@ export default async function PlayerStatsPage({
           Couldn&apos;t load stats{error ? `: ${error.message}` : "."}
         </p>
       ) : stats.games_played === 0 ? (
-        <div className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+        <div className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
           {player.display_name} hasn&apos;t played any games yet.
         </div>
       ) : (
@@ -124,7 +124,7 @@ function Stat({
   sub?: string;
 }) {
   return (
-    <div className="rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
+    <div className="card-surface rounded-2xl px-4 py-3">
       <p className="text-xs text-zinc-500">{label}</p>
       <p className="text-lg font-semibold text-black dark:text-zinc-50">
         {value}

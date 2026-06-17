@@ -23,7 +23,7 @@ export function NavMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-label="Open menu"
         aria-expanded={open}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-800 dark:hover:bg-white/5 dark:hover:text-zinc-200"
+        className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-800 active:bg-black/10 dark:hover:bg-white/5 dark:hover:text-zinc-200 dark:active:bg-white/10"
       >
         <svg
           width="18"
@@ -40,6 +40,21 @@ export function NavMenu() {
 
       {open && (
         <div className="absolute right-0 top-full z-20 mt-2 min-w-44 rounded-xl border border-black/10 bg-white py-1 shadow-lg dark:border-white/15 dark:bg-zinc-900">
+          <Link
+            href="/games/new"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            Start a game
+          </Link>
+          <Link
+            href="/stats"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            View stats
+          </Link>
+          <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <Link
             href="/group/switch"
             onClick={() => setOpen(false)}

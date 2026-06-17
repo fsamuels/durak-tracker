@@ -15,14 +15,13 @@ export default function Icon() {
           justifyContent: "center",
           background: "#09090b",
           borderRadius: 7,
-          fontSize: 20,
+          fontSize: 22,
           lineHeight: 1,
-          color: "white",
         }}
       >
-        ♠
+        🃏
       </div>
     ),
-    size,
+    { ...size, emoji: "twemoji" },
   );
 }

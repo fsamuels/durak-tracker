@@ -15,14 +15,13 @@ export default function AppleIcon() {
           justifyContent: "center",
           background: "linear-gradient(135deg, #18181b 0%, #27272a 100%)",
           borderRadius: 40,
-          fontSize: 110,
+          fontSize: 120,
           lineHeight: 1,
-          color: "white",
         }}
       >
-        ♠
+        🃏
       </div>
     ),
-    size,
+    { ...size, emoji: "twemoji" },
   );
 }

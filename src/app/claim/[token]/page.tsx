@@ -107,7 +107,7 @@ function ClaimShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="app-bg flex flex-1 flex-col items-center justify-center px-6 py-12">
+    <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
       <div className="card-surface flex w-full max-w-sm flex-col gap-5 rounded-2xl p-7">
         <div className="flex flex-col items-center gap-2 text-center">
           <span className="text-4xl" aria-hidden>

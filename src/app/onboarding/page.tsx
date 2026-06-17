@@ -23,7 +23,7 @@ export default async function OnboardingPage() {
     undefined;
 
   return (
-    <main className="app-bg flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12">
+    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12">
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="text-5xl" aria-hidden>
           🃏

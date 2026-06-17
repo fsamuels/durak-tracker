@@ -49,7 +49,7 @@ export default async function GroupStatsPage() {
           Couldn&apos;t load stats{error ? `: ${error.message}` : "."}
         </p>
       ) : stats.games_played === 0 ? (
-        <div className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+        <div className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
           No games logged yet.{" "}
           <Link
             href="/games/new"
@@ -72,7 +72,7 @@ export default async function GroupStatsPage() {
               value={formatDuration(stats.avg_duration_seconds)}
             />
             {stats.last_durak && (
-              <div className="col-span-2 rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
+              <div className="col-span-2 card-surface rounded-2xl px-4 py-3">
                 <p className="text-xs text-zinc-500">Last durak</p>
                 <p className="text-sm font-medium text-black dark:text-zinc-50">
                   {stats.last_durak.display_name}
@@ -83,7 +83,7 @@ export default async function GroupStatsPage() {
               </div>
             )}
             {mostDurak && mostDurak.length > 0 && (
-              <div className="col-span-2 rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
+              <div className="col-span-2 card-surface rounded-2xl px-4 py-3">
                 <p className="text-xs text-zinc-500">
                   Most durak ({mostDurak[0].durak_count})
                 </p>
@@ -101,7 +101,7 @@ export default async function GroupStatsPage() {
               {stats.players.map((p) => (
                 <li
                   key={p.player_id}
-                  className="rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900"
+                  className="card-surface rounded-2xl px-4 py-3"
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <Link
@@ -143,7 +143,7 @@ export default async function GroupStatsPage() {
                 {stats.trump_frequency.map((t) => (
                   <li
                     key={t.suit}
-                    className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+                    className="card-surface flex items-center justify-between rounded-2xl px-3 py-2 text-sm text-black dark:text-zinc-50"
                   >
                     <span>{TRUMP_SUIT_LABELS[t.suit]}</span>
                     <span className="text-zinc-500">
@@ -162,7 +162,7 @@ export default async function GroupStatsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-black/10 bg-white px-4 py-3 dark:border-white/15 dark:bg-zinc-900">
+    <div className="card-surface rounded-2xl px-4 py-3">
       <p className="text-xs text-zinc-500">{label}</p>
       <p className="text-lg font-semibold text-black dark:text-zinc-50">
         {value}

@@ -115,7 +115,7 @@ export function StartGameForm({
             {selectedIndices.map((i) => (
               <li
                 key={fields[i].id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/15 dark:bg-zinc-900"
+                className="card-surface flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
               >
                 <span className="text-black dark:text-zinc-50">
                   {fields[i].displayName}
@@ -163,7 +163,7 @@ export function StartGameForm({
                       });
                       setSearch("");
                     }}
-                    className="flex w-full items-center justify-between gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 text-left transition-colors hover:bg-black/5 dark:border-white/15 dark:bg-zinc-900 dark:hover:bg-white/5"
+                    className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
                   >
                     <span className="text-black dark:text-zinc-50">
                       {fields[i].displayName}

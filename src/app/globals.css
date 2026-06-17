@@ -32,7 +32,10 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Decorative app background: soft brand-tinted glows behind content. */
+/* Decorative app background: soft brand-tinted glows behind content. Applied
+ * once on <body> so every page shares the same ambient gradient. The glows are
+ * fixed to the viewport so they stay put while content scrolls; the base color
+ * is the bottom layer so transparent areas still fill. */
 .app-bg {
   position: relative;
   background:
@@ -55,7 +58,9 @@ body {
       30rem 30rem at 20% 120%,
       color-mix(in oklab, var(--brand-via) 18%, transparent),
       transparent 60%
-    );
+    ),
+    var(--background);
+  background-attachment: fixed, fixed, fixed, fixed, scroll;
 }
 
 /* Gradient primary action — used for the main CTA on each screen. */

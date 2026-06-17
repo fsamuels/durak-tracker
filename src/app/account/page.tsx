@@ -29,7 +29,7 @@ export default async function AccountPage() {
       </div>
 
       <section className="flex flex-col gap-3">
-        <div className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+        <div className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
           Account settings are coming soon.
         </div>
       </section>
