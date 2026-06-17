@@ -1,23 +1,38 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { z } from "zod";
 
+import { getGameParticipantIds } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
-import { createClient } from "@/lib/supabase/server";
+import { getGroupRoster } from "@/lib/data/players";
 
 import { StartGameForm } from "./start-game-form";
 
-export default async function NewGamePage() {
+// `from` (a prior game id) pre-fills the roster via "Start again". z.guid() not
+// z.uuid(): the DB has non-version-conformant GUIDs (seed ids) Zod rejects.
+const fromSchema = z.guid();
+
+export default async function NewGamePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const supabase = await createClient();
-  const { data: players } = await supabase
-    .from("players")
-    .select("id, display_name")
-    .eq("group_id", group.id)
-    .order("display_name", { ascending: true });
+  const { from } = await searchParams;
+  const parsedFrom = fromSchema.safeParse(from);
+  const preselectedIds = parsedFrom.success
+    ? await getGameParticipantIds(group.id, parsedFrom.data)
+    : [];
 
-  const hasPlayers = (players?.length ?? 0) >= 1;
+  const { roster } = await getGroupRoster(group.id);
+  const players = roster.map((p) => ({
+    id: p.id,
+    display_name: p.display_name,
+  }));
+
+  const hasPlayers = players.length >= 1;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -38,7 +53,7 @@ export default async function NewGamePage() {
       </div>
 
       {hasPlayers ? (
-        <StartGameForm players={players ?? []} />
+        <StartGameForm players={players} preselectedIds={preselectedIds} />
       ) : (
         <div className="rounded-lg border border-dashed border-black/15 px-4 py-8 text-center text-sm text-zinc-600 dark:border-white/15 dark:text-zinc-400">
           <p>Add some players before starting a game.</p>

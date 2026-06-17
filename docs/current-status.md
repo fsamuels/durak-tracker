@@ -4,8 +4,8 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M8 — two-part game logging shipped; next up is M9 —
-  start-from-existing + quick add + search. (The roadmap was re-sequenced from a
+- **Current milestone:** M9 — start-from-existing + quick add + search shipped; next
+  up is M10 — account claiming. (The roadmap was re-sequenced from a
   real-usage planning pass: M7 home revamp, M8 two-part logging, M9 start-from-existing,
   M10 account claiming; PWA polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
 
@@ -264,12 +264,52 @@ Logging is split into **start** (game created in-progress with a roster) and
   unauthenticated rejected; and in-progress games confirmed excluded from
   `group_stats`. Owner does the manual UI pass before merge (per the convention).
 
+### Milestone 9 — Start-from-existing + quick add + search ✅
+
+Frictionless back-to-back games with a dozen+ players, building on M8's start flow:
+
+- **Roster ranking RPC** (`20260616160000_group_roster.sql`, pushed to remote; types
+  regenerated). `group_roster(group_id)` — `SECURITY INVOKER`, like `most_played_group`
+  / `group_stats` — returns the group's players ranked by **completed** games played
+  (desc), then name. Guests and never-played members still appear (LEFT JOIN,
+  `games_played = 0`). Backs a new `getGroupRoster` data helper
+  (`src/lib/data/players.ts`) used by both the start and finish pages (replacing their
+  alphabetical `players` queries).
+- **Name search** — the start/finish player pickers show a client-side search box once
+  the roster exceeds 6 players. It filters rows by name as you type but always keeps
+  **selected** players visible, so searching never hides who's already in. Ranking is
+  server-side (the RPC); search is pure client-side filtering over the loaded roster —
+  no extra round trip.
+- **Add a guest on the fly** — a shared `AddGuestInline` component
+  (`src/components/add-guest-inline.tsx`) in both flows reuses `addPlayerAction`, which
+  now returns the created player (`{ id, display_name }`). On success the new guest is
+  appended to the field array **pre-selected**, so a walk-up player is added without
+  leaving the start/finish screen. Validation mirrors the standalone add-player form
+  (shared `addPlayerSchema`).
+- **"Start again"** — each completed game in `GameList` (home + history) links to
+  `/games/new?from=<gameId>`. The start page validates `from` (`z.guid()`), loads that
+  game's roster via a new `getGameParticipantIds` helper, and passes it as
+  `preselectedIds` so the prior roster is pre-checked. Unknown/foreign ids are ignored
+  (RLS-scoped), and players since removed simply don't pre-select — no crash.
+- **Demo seed decision (resolved):** the 36 Walla Walla Run Club demo games **stay in**
+  the canonical `supabase/seed.sql` (not split into a standalone `supabase/demo/`
+  script), so a fresh reseed always reproduces the populated group the owner flips to
+  for testing.
+- **Verified:** `pnpm tsc --noEmit` / `lint` / `build` clean; Prettier clean on changed
+  files (incl. the regenerated types). Migration applied via `db push`; types
+  regenerated from remote. `group_roster` tested against the live DB via JWT-simulated
+  psql as authenticated members (`current_user = authenticated`, in a transaction so
+  `SET LOCAL` applies): ranking ordered games-played desc (Michael tops Walla Walla at
+  25), all 20 players returned incl. zero-game guests, the non-increasing order
+  invariant holds; and RLS holds — a non-member and a cross-group member both get 0
+  rows for a group they don't belong to, while their own group returns the full roster.
+  Owner does the manual UI pass before merge (per the convention).
+
 ## Not yet implemented
 
 - Libraries planned but not installed: **next-pwa**, **Vitest/Playwright**.
 - PWA layer (manifest, icons, install prompt, service worker).
-- Roadmap features: start-from-existing (M9), account claiming (M10); then PWA,
-  edit/delete game, offline, etc.
+- Roadmap features: account claiming (M10); then PWA, edit/delete game, offline, etc.
 
 ## Action required (owner)
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–8 are complete; M9 (start-from-existing + quick add + search) is next
+Milestones 1–9 are complete; M10 (account claiming) is next
 (see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
@@ -55,11 +55,17 @@ the open-ended "Iterate" bucket shifted to M11+.
      surfaced on home & `/games` with a Resume/Finish CTA. _Largest change in the batch —
      test the negative constraints against the live DB as M2/M4 did._
 
-9. **Start-from-existing + quick add + search** — frictionless back-to-back games with a
-   dozen+ players (builds on M8's start flow).
-   - "Start again" pre-fills the start form with a prior game's roster.
-   - **Add a guest on the fly** inside the start/finish flow (reuse `addPlayerAction`).
-   - **Name search over the current group's roster**, ranked by games-played desc.
+9. **Start-from-existing + quick add + search** _(done)_ — frictionless back-to-back
+   games with a dozen+ players (builds on M8's start flow).
+   - **"Start again"** — each completed game in the history/home list links to
+     `/games/new?from=<id>`, which pre-selects that game's roster on the start form.
+   - **Add a guest on the fly** — a shared inline "Add a guest" control in both the
+     start and finish flows reuses `addPlayerAction` (now returns the created player)
+     and selects the new guest without leaving the page.
+   - **Name search over the current group's roster**, ranked by games-played desc — a
+     `group_roster` RPC orders players by completed games (then name); the picker shows
+     a client-side search box (>6 players) that filters by name while keeping selected
+     players visible.
 
 10. **Account claiming** — a member shares a link tying a guest player to the right
     person's account. Replaces the backlog "group invitations" + "guest player claiming"

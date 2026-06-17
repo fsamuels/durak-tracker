@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
+import { AddGuestInline } from "@/components/add-guest-inline";
 import {
   startGameFormSchema,
   startRowsToParticipants,
@@ -16,7 +18,18 @@ import { startGameAction } from "./actions";
 
 type Player = { id: string; display_name: string };
 
-export function StartGameForm({ players }: { players: Player[] }) {
+export function StartGameForm({
+  players,
+  preselectedIds = [],
+}: {
+  /** Group roster, already ranked by games-played desc (see getGroupRoster). */
+  players: Player[];
+  /** Players to pre-select — e.g. a prior game's roster via "Start again". */
+  preselectedIds?: string[];
+}) {
+  const preselected = new Set(preselectedIds);
+  const [search, setSearch] = useState("");
+
   const {
     register,
     control,
@@ -32,14 +45,23 @@ export function StartGameForm({ players }: { players: Player[] }) {
       rows: players.map((p) => ({
         playerId: p.id,
         displayName: p.display_name,
-        selected: false,
+        selected: preselected.has(p.id),
       })),
     },
   });
 
-  const { fields } = useFieldArray({ control, name: "rows" });
+  const { fields, append } = useFieldArray({ control, name: "rows" });
   const rows = useWatch({ control, name: "rows" }) ?? [];
   const selectedCount = rows.filter((r) => r.selected).length;
+
+  const q = search.trim().toLowerCase();
+  // Show a row when it matches the search, or when it's selected (so filtering
+  // never hides who's already in) — and everything when the search is empty.
+  const isVisible = (i: number) =>
+    q === "" ||
+    rows[i]?.selected ||
+    fields[i].displayName.toLowerCase().includes(q);
+  const anyVisible = fields.some((_, i) => isVisible(i));
 
   const onSubmit = handleSubmit(async (values) => {
     const payload: StartGamePayload = {
@@ -65,9 +87,23 @@ export function StartGameForm({ players }: { players: Player[] }) {
         <legend className="mb-1 text-sm font-medium text-zinc-500">
           Who&apos;s playing?
         </legend>
+
+        {players.length > 6 && (
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search players…"
+            aria-label="Search players"
+            autoComplete="off"
+            className={inputClass}
+          />
+        )}
+
         {fields.map((field, i) => (
           <label
             key={field.id}
+            hidden={!isVisible(i)}
             className="flex items-center gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/15 dark:bg-zinc-900"
           >
             <input type="hidden" {...register(`rows.${i}.playerId`)} />
@@ -82,6 +118,22 @@ export function StartGameForm({ players }: { players: Player[] }) {
             </span>
           </label>
         ))}
+
+        {q !== "" && !anyVisible && (
+          <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+        )}
+
+        <AddGuestInline
+          onAdded={(player) => {
+            append({
+              playerId: player.id,
+              displayName: player.display_name,
+              selected: true,
+            });
+            setSearch("");
+          }}
+        />
+
         <p
           className={`text-sm ${selectedCount === 0 ? "text-red-600" : "text-emerald-600"}`}
           role={selectedCount === 0 ? "alert" : undefined}
