@@ -2,10 +2,13 @@ import { describe, it, expect } from "vitest";
 
 import {
   outcomeCountError,
+  inProgressOutcomeError,
   startGameFormSchema,
   startGamePayloadSchema,
   finishGameFormSchema,
   finishGamePayloadSchema,
+  inProgressGameFormSchema,
+  updateGamePayloadSchema,
   startRowsToParticipants,
   finishRowsToParticipants,
 } from "./game";
@@ -48,6 +51,50 @@ describe("outcomeCountError", () => {
   it("rejects more than one last-out", () => {
     expect(
       outcomeCountError({ total: 4, durak: 1, firstOut: 0, lastOut: 2 }),
+    ).toMatch(/last out/i);
+  });
+});
+
+describe("inProgressOutcomeError", () => {
+  it("accepts a single player with no roles assigned", () => {
+    expect(
+      inProgressOutcomeError({ total: 1, durak: 0, firstOut: 0, lastOut: 0 }),
+    ).toBeNull();
+  });
+
+  it("accepts a first-out without a durak yet (mid-play)", () => {
+    expect(
+      inProgressOutcomeError({ total: 4, durak: 0, firstOut: 1, lastOut: 0 }),
+    ).toBeNull();
+  });
+
+  it("accepts fewer than 3 players (game still in progress)", () => {
+    expect(
+      inProgressOutcomeError({ total: 2, durak: 0, firstOut: 0, lastOut: 0 }),
+    ).toBeNull();
+  });
+
+  it("rejects an empty roster", () => {
+    expect(
+      inProgressOutcomeError({ total: 0, durak: 0, firstOut: 0, lastOut: 0 }),
+    ).toMatch(/at least one/i);
+  });
+
+  it("rejects more than one durak", () => {
+    expect(
+      inProgressOutcomeError({ total: 4, durak: 2, firstOut: 0, lastOut: 0 }),
+    ).toMatch(/durak/i);
+  });
+
+  it("rejects more than one first-out", () => {
+    expect(
+      inProgressOutcomeError({ total: 4, durak: 1, firstOut: 2, lastOut: 0 }),
+    ).toMatch(/first out/i);
+  });
+
+  it("rejects more than one last-out", () => {
+    expect(
+      inProgressOutcomeError({ total: 4, durak: 0, firstOut: 0, lastOut: 2 }),
     ).toMatch(/last out/i);
   });
 });
@@ -248,6 +295,108 @@ describe("finishGamePayloadSchema", () => {
         deckCount: null,
         notes: null,
         participants: [p(GUID_A, {}), p(GUID_B, {}), p(GUID_C, {})],
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("inProgressGameFormSchema", () => {
+  const base = { trumpSuit: "", deckCount: "", notes: "" };
+  const row = (
+    playerId: string,
+    outcome: "none" | "durak" | "first_out" | "last_out",
+  ) => ({ playerId, displayName: playerId, selected: true, outcome });
+
+  it("accepts a single selected player with no outcome (no durak required)", () => {
+    const r = inProgressGameFormSchema.safeParse({
+      ...base,
+      rows: [row(GUID_A, "none")],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("accepts a first-out marked before any durak", () => {
+    const r = inProgressGameFormSchema.safeParse({
+      ...base,
+      rows: [row(GUID_A, "first_out"), row(GUID_B, "none")],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejects when no player is selected", () => {
+    const r = inProgressGameFormSchema.safeParse({
+      ...base,
+      rows: [{ ...row(GUID_A, "none"), selected: false }],
+    });
+    expect(r.success).toBe(false);
+    expect(r.error?.issues.some((i) => i.path.includes("rows"))).toBe(true);
+  });
+
+  it("rejects two first-outs among selected rows", () => {
+    const r = inProgressGameFormSchema.safeParse({
+      ...base,
+      rows: [row(GUID_A, "first_out"), row(GUID_B, "first_out")],
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("updateGamePayloadSchema", () => {
+  const p = (
+    playerId: string,
+    flags: Partial<{
+      isDurak: boolean;
+      isFirstOut: boolean;
+      isLastOut: boolean;
+    }>,
+  ) => ({
+    playerId,
+    isDurak: false,
+    isFirstOut: false,
+    isLastOut: false,
+    ...flags,
+  });
+
+  it("accepts a single participant with no outcome", () => {
+    expect(
+      updateGamePayloadSchema.safeParse({
+        trumpSuit: null,
+        deckCount: null,
+        notes: null,
+        participants: [p(GUID_A, {})],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts a first-out without a durak", () => {
+    expect(
+      updateGamePayloadSchema.safeParse({
+        trumpSuit: "spades",
+        deckCount: 1,
+        notes: null,
+        participants: [p(GUID_A, { isFirstOut: true }), p(GUID_B, {})],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("requires at least one participant", () => {
+    expect(
+      updateGamePayloadSchema.safeParse({
+        trumpSuit: null,
+        deckCount: null,
+        notes: null,
+        participants: [],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects two duraks", () => {
+    expect(
+      updateGamePayloadSchema.safeParse({
+        trumpSuit: null,
+        deckCount: null,
+        notes: null,
+        participants: [p(GUID_A, { isDurak: true }), p(GUID_B, { isDurak: true })],
       }).success,
     ).toBe(false);
   });
