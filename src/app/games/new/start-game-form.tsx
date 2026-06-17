@@ -176,7 +176,9 @@ export function StartGameForm({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+            <p className="text-sm text-zinc-500">
+              No players match “{search}”.
+            </p>
           ))}
 
         <AddGuestInline

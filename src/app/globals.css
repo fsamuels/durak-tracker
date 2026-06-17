@@ -74,7 +74,8 @@ body {
   );
   background-size: 200% 200%;
   color: #fff;
-  box-shadow: 0 8px 24px -8px color-mix(in oklab, var(--brand-via) 70%, transparent);
+  box-shadow: 0 8px 24px -8px
+    color-mix(in oklab, var(--brand-via) 70%, transparent);
   transition:
     transform 0.15s ease,
     box-shadow 0.2s ease,
@@ -82,7 +83,8 @@ body {
 }
 .btn-brand:hover:not(:disabled) {
   background-position: 100% 0;
-  box-shadow: 0 12px 30px -8px color-mix(in oklab, var(--brand-via) 80%, transparent);
+  box-shadow: 0 12px 30px -8px
+    color-mix(in oklab, var(--brand-via) 80%, transparent);
   transform: translateY(-1px);
 }
 .btn-brand:active:not(:disabled) {

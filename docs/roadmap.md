@@ -105,6 +105,29 @@ the open-ended "Iterate" bucket shifted to M11+.
 - **Charts / visualizations** — v1 ships simple numbers only.
 - **`round_count`** — the per-game metric isn't captured at log time yet.
 
+## Testing follow-ups
+
+Automated tests should have been part of the project from M1; building milestones 1–11
+without them was a real oversight. A Vitest unit/component suite + GitHub Actions CI now
+exists (see [current-status.md](./current-status.md)), covering the pure-logic and
+validation layers. What remains:
+
+- **Server-action, data-layer & e2e coverage** — the largest gap. Nothing that renders
+  React, runs a server action, or touches the database is tested yet: the `actions.ts`
+  server actions, `src/lib/data/*` query helpers, the `start_game` / `finish_game` /
+  `claim_player` / `discard_game` RPCs, and the RLS cross-group isolation invariants
+  (today only checked manually via JWT-simulated `psql`). This needs the **separate
+  dev/test database** (see backlog item below) so integration tests and **Playwright**
+  e2e flows (login → onboarding → create group → log game) can run against real Postgres
+  - RLS without touching production data.
+- **Fix coverage reporting** — running the full suite drops the entire
+  `src/lib/validation/` directory from the coverage report (reproducible under both the
+  v8 and istanbul providers, with and without the project split), so the headline
+  percentage understates the tested surface. A single-file run instruments those files
+  correctly, confirming the tests do exercise them. Investigate (single-fork /
+  `isolate: false`, per-project coverage, or provider tuning) so coverage numbers are
+  trustworthy before they gate anything.
+
 ## Post-v1 backlog
 
 - **Facebook login** — enable the Facebook provider in Supabase and restore the button

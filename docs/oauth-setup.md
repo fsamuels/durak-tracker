@@ -20,10 +20,10 @@ common cause of `redirect_uri_mismatch` errors.
 3. Supabase → redirects to OUR APP:  http://localhost:3000/auth/callback  (prod: /auth/callback)
 ```
 
-| URL                                                         | Owner                                      | Where it goes                          | Changeable |
-| ----------------------------------------------------------- | ------------------------------------------ | -------------------------------------- | ---------- |
+| URL                                                         | Owner                                      | Where it goes                                  | Changeable |
+| ----------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------- | ---------- |
 | `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` | Supabase (GoTrue)                          | Google/Facebook/Discord console "redirect URI" | ❌ Fixed   |
-| `…/auth/callback` (localhost + Vercel)                      | Our app (`src/app/auth/callback/route.ts`) | Supabase "Redirect URLs" allow-list    | ✅ Ours    |
+| `…/auth/callback` (localhost + Vercel)                      | Our app (`src/app/auth/callback/route.ts`) | Supabase "Redirect URLs" allow-list            | ✅ Ours    |
 
 ## Part A — Google
 
@@ -62,8 +62,8 @@ Lightweight to set up — no app review, and works for any Discord user immediat
 
 1. [discord.com/developers/applications](https://discord.com/developers/applications)
    → **New Application** → name it, accept terms.
-2. **OAuth2 → General:** copy the **Client ID** and **Client Secret** (click *Reset
-   Secret* if none is shown).
+2. **OAuth2 → General:** copy the **Client ID** and **Client Secret** (click _Reset
+   Secret_ if none is shown).
 3. **OAuth2 → Redirects → Add Redirect:**
    `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` → Save.
 4. **Supabase → Authentication → Sign In / Providers → Discord:** enable, paste Client
