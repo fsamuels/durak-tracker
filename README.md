@@ -5,8 +5,9 @@ card games among groups of friends — who was "the durak" (loser) each game, th
 trump suit, players involved, and computed stats per group and per player.
 
 - **Live:** https://durak-tracker.vercel.app
-- **Status:** Milestones 1–3 complete (scaffold, schema, auth); M4 (core flow —
-  add players + log a game) in progress — see
+- **Status:** Milestones 1–11 complete (scaffold, schema, auth, core flow, history,
+  stats, home/nav revamp, two-part logging, start-from-existing, account claiming,
+  PWA + mobile design pass); M12 (Iterate) is next — see
   [docs/current-status.md](docs/current-status.md).
 
 ## Documentation
@@ -21,11 +22,13 @@ trump suit, players involved, and computed stats per group and per player.
 
 ## Tech stack
 
-**In use:** Next.js (App Router) + TypeScript, Tailwind CSS v4, Supabase (Postgres,
-RLS) + Supabase Auth (Google), Zod, React Hook Form, Vercel (auto-deploy), pnpm,
-ESLint + Prettier.
+**In use:** Next.js (App Router) + TypeScript, Tailwind CSS v4 (aurora theme tokens),
+Supabase (Postgres 17, RLS) + Supabase Auth (Google), Zod, React Hook Form,
+installable PWA (Web App Manifest + a hand-written service worker — `next-pwa` was
+dropped as Turbopack-incompatible), Vercel (auto-deploy), pnpm, ESLint + Prettier.
 
-**Planned:** Facebook login (deferred), `next-pwa`, Vitest/Playwright. See the
+**Planned:** Facebook + Discord login (deferred — see
+[docs/oauth-setup.md](docs/oauth-setup.md)), Vitest/Playwright. See the
 [architecture stack table](docs/architecture.md#tech-stack).
 
 ## Prerequisites
@@ -65,6 +68,20 @@ Get the keys from Supabase → Project Settings → API Keys.
 | `pnpm lint`                         | ESLint                           |
 | `pnpm format` / `pnpm format:check` | Prettier write / check           |
 
+## Testing
+
+No automated test suite yet (**Vitest/Playwright** are planned — see the
+[roadmap](docs/roadmap.md)). Until then, changes are verified with:
+
+```bash
+pnpm lint && pnpm build && pnpm format:check
+```
+
+Database invariants (RLS isolation, deferred integrity triggers, RPC behavior) are
+tested against the live DB via JWT-simulated `psql` in a rolled-back transaction —
+see the per-milestone "Verified" notes in
+[docs/current-status.md](docs/current-status.md).
+
 ## Database
 
 Schema lives in `supabase/migrations/`; sample data in `supabase/seed.sql`.
@@ -78,6 +95,35 @@ supabase db push                     # apply migrations to the remote DB
 Seeding (and ad-hoc SQL) runs through `psql` over the IPv4 session pooler — see
 [docs/architecture.md#local-dev--database-workflow](docs/architecture.md#local-dev--database-workflow)
 for the exact command and the no-Docker rationale.
+
+## Repository structure
+
+```
+src/
+  app/              # Next.js App Router routes
+    page.tsx                home (recent games + group stats summary)
+    login/ onboarding/      auth entry + first-group creation
+    auth/                   OAuth callback + sign-out routes
+    games/                  start (new/) and finish ([id]/finish/) flows + history
+    stats/                  group stats + per-player stats ([playerId]/)
+    players/                roster management + claim-link sharing
+    group/                  manage group + switch active group
+    claim/[token]/          public single-use guest-claim landing page
+    account/                signed-in account stub
+    manifest.ts, icon.tsx, apple-icon.tsx, icons/[size]/  # PWA manifest + generated icons
+  components/        # shared UI (nav, bottom-nav, game-list, forms, install-prompt, sw registration)
+  lib/
+    supabase/         browser + server clients, middleware, generated DB types
+    data/             RLS-scoped query helpers (games, groups, players, claims)
+    validation/       Zod schemas (game, player, history, stats, claim)
+    time.ts           timezone-aware date helpers
+  proxy.ts          # session refresh + route protection (middleware)
+supabase/
+  migrations/        # schema + RPCs (init, log_game, stats, two-part logging, roster, claims, discard)
+  seed.sql           # demo data (Walla Walla Run Club, 36 games)
+public/sw.js         # hand-written service worker
+docs/                # architecture, current-status, roadmap, oauth-setup
+```
 
 ## Deployment
 
