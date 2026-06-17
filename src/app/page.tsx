@@ -7,7 +7,12 @@ import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
-import { formatDuration, groupStatsSchema } from "@/lib/validation/stats";
+import { TRUMP_SUIT_LABELS } from "@/lib/validation/game";
+import {
+  formatDuration,
+  groupStatsSchema,
+  topTrumpSuit,
+} from "@/lib/validation/stats";
 
 // How many recent games to surface on the home page.
 const RECENT_GAMES_LIMIT = 6;
@@ -38,6 +43,7 @@ export default async function Home() {
   const gamesPlayed = stats?.games_played ?? 0;
   // `players` comes back sorted by durak_count desc, so the leader is first.
   const topDurak = stats?.players.find((p) => p.durak_count > 0) ?? null;
+  const topSuit = topTrumpSuit(stats);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
@@ -92,6 +98,16 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
+            <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
+              <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
+                {topDurak ? topDurak.display_name : "—"}
+              </span>
+              <span className="text-xs font-medium text-zinc-500">
+                {topDurak
+                  ? `most durak (${topDurak.durak_count})`
+                  : "no durak yet"}
+              </span>
+            </div>
             <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="text-brand-gradient text-3xl font-bold tracking-tight">
                 {gamesPlayed}
@@ -110,12 +126,10 @@ export default async function Home() {
             </div>
             <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                {topDurak ? topDurak.display_name : "—"}
+                {topSuit ? TRUMP_SUIT_LABELS[topSuit.suit] : "—"}
               </span>
               <span className="text-xs font-medium text-zinc-500">
-                {topDurak
-                  ? `most durak (${topDurak.durak_count})`
-                  : "no durak yet"}
+                {topSuit ? `top suit (${topSuit.count})` : "no trump yet"}
               </span>
             </div>
           </div>

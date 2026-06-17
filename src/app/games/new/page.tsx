@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { getGameParticipantIds } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
-import { getGroupRoster } from "@/lib/data/players";
+import { getCurrentUserPlayerId, getGroupRoster } from "@/lib/data/players";
 
 import { StartGameForm } from "./start-game-form";
 
@@ -22,9 +22,18 @@ export default async function NewGamePage({
 
   const { from } = await searchParams;
   const parsedFrom = fromSchema.safeParse(from);
-  const preselectedIds = parsedFrom.success
-    ? await getGameParticipantIds(group.id, parsedFrom.data)
-    : [];
+
+  // Pre-select the prior game's roster ("Start again") plus the creator's own
+  // player, so the person logging the game is selected by default.
+  const [fromIds, selfId] = await Promise.all([
+    parsedFrom.success
+      ? getGameParticipantIds(group.id, parsedFrom.data)
+      : Promise.resolve([]),
+    getCurrentUserPlayerId(group.id),
+  ]);
+  const preselectedIds = [
+    ...new Set([...fromIds, ...(selfId ? [selfId] : [])]),
+  ];
 
   const { roster } = await getGroupRoster(group.id);
   const players = roster.map((p) => ({
@@ -37,12 +46,6 @@ export default async function NewGamePage({
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
       <div className="flex flex-col gap-1">
-        <Link
-          href="/"
-          className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
-          ← Home
-        </Link>
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
           Start a game
         </h1>

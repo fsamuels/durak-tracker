@@ -5,7 +5,64 @@ import {
   formatDuration,
   groupStatsSchema,
   playerStatsSchema,
+  topTrumpSuit,
+  type GroupStats,
 } from "./stats";
+
+function makeStats(overrides: Partial<GroupStats> = {}): GroupStats {
+  return {
+    games_played: 0,
+    games_with_duration: 0,
+    avg_duration_seconds: null,
+    trump_frequency: [],
+    players: [],
+    player_game_count: null,
+    last_durak: null,
+    ...overrides,
+  };
+}
+
+describe("topTrumpSuit", () => {
+  it("returns null for null stats", () => {
+    expect(topTrumpSuit(null)).toBeNull();
+  });
+
+  it("returns null when no trump suit has been recorded", () => {
+    expect(topTrumpSuit(makeStats({ trump_frequency: [] }))).toBeNull();
+  });
+
+  it("returns the suit with the highest count", () => {
+    const stats = makeStats({
+      trump_frequency: [
+        { suit: "spades", count: 5 },
+        { suit: "hearts", count: 9 },
+        { suit: "clubs", count: 2 },
+      ],
+    });
+    expect(topTrumpSuit(stats)).toEqual({ suit: "hearts", count: 9 });
+  });
+
+  it("does not rely on the array already being sorted by count", () => {
+    const stats = makeStats({
+      trump_frequency: [
+        { suit: "clubs", count: 1 },
+        { suit: "diamonds", count: 7 },
+        { suit: "spades", count: 3 },
+      ],
+    });
+    expect(topTrumpSuit(stats)).toEqual({ suit: "diamonds", count: 7 });
+  });
+
+  it("keeps the first suit on a tie", () => {
+    const stats = makeStats({
+      trump_frequency: [
+        { suit: "hearts", count: 4 },
+        { suit: "spades", count: 4 },
+      ],
+    });
+    expect(topTrumpSuit(stats)).toEqual({ suit: "hearts", count: 4 });
+  });
+});
 
 describe("rate", () => {
   it("returns an em dash for zero total", () => {
