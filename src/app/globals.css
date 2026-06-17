@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: applies when an ancestor (or the element itself) has .dark */
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f3fbff;
   --foreground: #0f1b2a;
@@ -19,11 +22,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #060c14;
-    --foreground: #e6f0f5;
-  }
+.dark {
+  --background: #060c14;
+  --foreground: #e6f0f5;
 }
 
 body {
@@ -124,10 +125,8 @@ body {
   border: 1px solid color-mix(in oklab, var(--accent) 16%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
 }
-@media (prefers-color-scheme: dark) {
-  .card-surface {
-    background: color-mix(in oklab, var(--background) 70%, white 8%);
-    border-color: color-mix(in oklab, var(--accent) 26%, transparent);
-    box-shadow: none;
-  }
+.dark .card-surface {
+  background: color-mix(in oklab, var(--background) 70%, white 8%);
+  border-color: color-mix(in oklab, var(--accent) 26%, transparent);
+  box-shadow: none;
 }

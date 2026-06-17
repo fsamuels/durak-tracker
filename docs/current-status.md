@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-17.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M11 — PWA polish + mobile design pass shipped; next up is
-  M12 — Iterate. (The roadmap was re-sequenced from a real-usage planning pass: M7
+- **Current milestone:** M12 — account management + OAuth expansion shipped; next up is
+  M13 — Iterate. (The roadmap was re-sequenced from a real-usage planning pass: M7
   home revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming, M11
-  PWA + mobile UX; Iterate is M12+. See [roadmap.md](./roadmap.md).)
+  PWA + mobile UX, M12 account management + OAuth; Iterate is M13+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -399,6 +399,38 @@ No data-model changes beyond the discard RPC below.
   Twemoji jester card, not a tofu box). Owner does the manual UI pass before merge
   (per the convention).
 
+### Milestone 12 — Account management + OAuth expansion ✅
+
+Full `/account` page replacing the stub:
+
+- **Theme switching** — System (default) / Light / Dark via `next-themes`. Injects a
+  blocking script before first paint to avoid flash. Tailwind v4 dark variant updated
+  to class-based (`@variant dark (&:where(.dark, .dark *))`); CSS variables migrated from
+  `@media (prefers-color-scheme: dark)` to `.dark { ... }` selectors.
+- **Display name editor** — single global name field; updates all `players` rows linked
+  to `auth_user_id` at once. Server action with Zod validation (trimmed, 1–50 chars),
+  success/error feedback inline.
+- **Sign-in methods** — shows each provider (Google / Facebook / Discord) as connected or
+  unconnected. "Disconnect" calls Supabase `unlinkIdentity`; disabled when only one
+  provider is linked to prevent lockout. "Connect" calls Supabase `linkIdentity` with
+  `redirectTo: /auth/callback?next=/account`.
+- **Facebook + Discord login** — added buttons to the login page alongside Google.
+  Provider SVG icons (official Facebook `f` mark in #1877F2; Discord Clyde in #5865F2).
+- **Navigation cleanup** — removed redundant `← Home` back links from all secondary pages
+  (`/games`, `/stats`, `/players`, `/group`, `/account`); header logo already links home.
+  Hamburger menu cleaned up: removed "View stats" (it's in the bottom nav); renamed
+  "Manage account" → "Account".
+- **Manual steps required (owner):**
+  - Enable Facebook provider in Supabase → Auth → Providers (see
+    [oauth-setup.md](./oauth-setup.md)). Facebook requires Meta app Live mode for public
+    users; works immediately for app admins/testers.
+  - Enable Discord provider in Supabase → Auth → Providers (no review gate, works for
+    any Discord user).
+  - Enable **"Allow manual linking"** in Supabase → Auth → Settings for the Connect
+    button to work.
+- **Verified:** `pnpm lint` / `format:check` / `test` (64 tests passing) / `build` clean.
+  TypeScript clean. Owner does manual UI pass before merge.
+
 ### Automated test suite ✅ (non-milestone)
 
 > **Candid note:** an automated test suite should have existed from **M1**. Shipping
@@ -426,9 +458,8 @@ No data-model changes beyond the discard RPC below.
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
   not installed. (**next-pwa** was evaluated in M11 and rejected —
   Turbopack-incompatible; a hand-written service worker is used instead.)
-- Roadmap features (M12+): edit/delete a **completed** game, offline write queue,
-  account settings (the `/account` page is a stub), time-span stat buckets,
-  cross-group aggregates, head-to-head, charts.
+- Roadmap features (M13+): edit/delete a **completed** game, offline write queue,
+  time-span stat buckets, cross-group aggregates, head-to-head, charts.
 
 ## Action required (owner)
 
