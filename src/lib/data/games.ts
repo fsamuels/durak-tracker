@@ -3,7 +3,7 @@ import { zonedDayEndUtc, zonedDayStartUtc } from "@/lib/time";
 
 /** Columns + embedded players the history list needs. Shared so home and the
  * full history page render identical rows. */
-const HISTORY_SELECT = `id, started_at, ended_at, trump_suit, deck_count,
+const HISTORY_SELECT = `id, started_at, ended_at, trump_suit, deck_count, logged_by,
    game_players ( is_durak, players ( display_name ) )`;
 
 export type GameHistoryParams = {
@@ -37,6 +37,7 @@ export async function getGameHistory({
     .select(HISTORY_SELECT)
     .eq("group_id", groupId)
     .eq("status", "completed")
+    .is("deleted_at", null)
     .order("started_at", { ascending: false })
     .limit(limit);
 
@@ -44,7 +45,32 @@ export async function getGameHistory({
   if (end) query = query.lt("started_at", zonedDayEndUtc(end, timezone));
 
   const { data, error } = await query;
-  return { games: data ?? [], error };
+  const games = data ?? [];
+
+  // Resolve logger display names: join players on auth_user_id = logged_by
+  // within the same group. No FK exists between the two, so a secondary query
+  // is used and the mapping is done in JS.
+  const loggedByUids = [...new Set(games.map((g) => g.logged_by))];
+  let loggerNames = new Map<string, string>();
+  if (loggedByUids.length > 0) {
+    const { data: loggers } = await supabase
+      .from("players")
+      .select("auth_user_id, display_name")
+      .eq("group_id", groupId)
+      .in("auth_user_id", loggedByUids);
+    loggerNames = new Map(
+      (loggers ?? []).flatMap((p) =>
+        p.auth_user_id ? [[p.auth_user_id, p.display_name]] : [],
+      ),
+    );
+  }
+
+  const gamesWithLogger = games.map((g) => ({
+    ...g,
+    logged_by_name: loggerNames.get(g.logged_by) ?? null,
+  }));
+
+  return { games: gamesWithLogger, error };
 }
 
 export type GameHistoryGame = Awaited<
@@ -94,6 +120,36 @@ export async function getGameParticipantIds(
     .maybeSingle();
 
   return (data?.game_players ?? []).map((gp) => gp.player_id);
+}
+
+/**
+ * One completed game with its full roster + outcomes, for the edit page. Returns
+ * null when the game doesn't exist, isn't in this group, is already deleted, or
+ * the caller isn't the original logger (only logged_by may edit).
+ */
+export async function getGameToEdit(groupId: string, gameId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("games")
+    .select(
+      `id, started_at, ended_at, trump_suit, deck_count, notes, status, logged_by,
+       game_players ( player_id, is_durak, is_first_out, is_last_out )`,
+    )
+    .eq("id", gameId)
+    .eq("group_id", groupId)
+    .eq("status", "completed")
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!data) return null;
+  if (data.logged_by !== user.id) return null;
+
+  return data;
 }
 
 /**

@@ -57,6 +57,7 @@ export type Database = {
         Row: {
           created_at: string;
           deck_count: number | null;
+          deleted_at: string | null;
           ended_at: string | null;
           group_id: string;
           id: string;
@@ -71,6 +72,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           deck_count?: number | null;
+          deleted_at?: string | null;
           ended_at?: string | null;
           group_id: string;
           id?: string;
@@ -85,6 +87,7 @@ export type Database = {
         Update: {
           created_at?: string;
           deck_count?: number | null;
+          deleted_at?: string | null;
           ended_at?: string | null;
           group_id?: string;
           id?: string;
@@ -253,6 +256,38 @@ export type Database = {
       check_game_player_integrity: {
         Args: { p_game_id: string };
         Returns: undefined;
+      };
+      edit_completed_game: {
+        Args: {
+          p_game_id: string;
+          p_participants: Json;
+          p_started_at: string;
+          p_ended_at: string;
+          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
+          p_deck_count?: number;
+          p_notes?: string;
+        };
+        Returns: {
+          created_at: string;
+          deck_count: number | null;
+          deleted_at: string | null;
+          ended_at: string | null;
+          group_id: string;
+          id: string;
+          logged_by: string;
+          metrics: Json | null;
+          notes: string | null;
+          started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
+          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "games";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       discard_game: {
         Args: { p_game_id: string };

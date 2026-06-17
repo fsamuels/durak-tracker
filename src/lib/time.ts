@@ -66,6 +66,42 @@ export function formatInTz(iso: string, timeZone: string): string {
   }).format(new Date(iso));
 }
 
+/**
+ * Format a UTC ISO instant as a `datetime-local` input value (`YYYY-MM-DDTHH:mm`)
+ * expressed in `timeZone`. Used to pre-fill edit forms with the correct local time.
+ */
+export function toDatetimeLocal(iso: string, timeZone: string): string {
+  const instant = new Date(iso);
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(instant);
+
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+
+  const hour = map.hour === "24" ? "00" : map.hour;
+  return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
+}
+
+/**
+ * Convert a `datetime-local` string (`YYYY-MM-DDTHH:mm`, expressed in
+ * `timeZone`) to a UTC ISO instant. Inverse of `toDatetimeLocal`.
+ */
+export function localDatetimeToUtc(
+  localDatetime: string,
+  timeZone: string,
+): string {
+  const naive = Date.parse(`${localDatetime}:00Z`);
+  const offset = tzOffsetMs(new Date(naive), timeZone);
+  return new Date(naive - offset).toISOString();
+}
+
 /** Today's calendar date (YYYY-MM-DD) as it reads right now in `timeZone`. */
 export function todayInTz(timeZone: string): string {
   // en-CA formats as YYYY-MM-DD.
