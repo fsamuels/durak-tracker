@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { GameHistoryGame } from "@/lib/data/games";
@@ -66,6 +67,13 @@ export function GameList({
                   .join(" · ")}
               </p>
             )}
+
+            <Link
+              href={`/games/new?from=${game.id}`}
+              className="self-start text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
+            >
+              ↻ Start again with this roster
+            </Link>
           </li>
         );
       })}

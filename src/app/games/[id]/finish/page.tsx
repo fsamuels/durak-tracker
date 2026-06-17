@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { getGameToFinish } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
-import { createClient } from "@/lib/supabase/server";
+import { getGroupRoster } from "@/lib/data/players";
 
 import { FinishGameForm } from "./finish-game-form";
 
@@ -25,12 +25,11 @@ export default async function FinishGamePage({
   const game = await getGameToFinish(group.id, parsedId.data);
   if (!game) notFound();
 
-  const supabase = await createClient();
-  const { data: players } = await supabase
-    .from("players")
-    .select("id, display_name")
-    .eq("group_id", group.id)
-    .order("display_name", { ascending: true });
+  const { roster } = await getGroupRoster(group.id);
+  const players = roster.map((p) => ({
+    id: p.id,
+    display_name: p.display_name,
+  }));
 
   const startedPlayerIds = (game.game_players ?? []).map((gp) => gp.player_id);
 
@@ -54,7 +53,7 @@ export default async function FinishGamePage({
 
       <FinishGameForm
         gameId={game.id}
-        players={players ?? []}
+        players={players}
         startedPlayerIds={startedPlayerIds}
         initialTrumpSuit={game.trump_suit ?? ""}
         initialDeckCount={

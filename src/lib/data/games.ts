@@ -76,6 +76,27 @@ export type InProgressGame = Awaited<
 >["games"][number];
 
 /**
+ * The participant player_ids of one prior game in this group, for the "Start
+ * again" pre-fill on /games/new. Works for completed or in-progress games (RLS
+ * scopes it to the caller's groups); returns [] when the game doesn't exist or
+ * isn't in this group.
+ */
+export async function getGameParticipantIds(
+  groupId: string,
+  gameId: string,
+): Promise<string[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("games")
+    .select(`id, game_players ( player_id )`)
+    .eq("id", gameId)
+    .eq("group_id", groupId)
+    .maybeSingle();
+
+  return (data?.game_players ?? []).map((gp) => gp.player_id);
+}
+
+/**
  * One in-progress game with its current roster, for the finish page. Returns
  * null when the game doesn't exist, isn't in this group, or is already finished
  * (RLS also scopes it to groups the caller belongs to).

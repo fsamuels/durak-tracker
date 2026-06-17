@@ -277,6 +277,14 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      group_roster: {
+        Args: { p_group_id: string };
+        Returns: {
+          display_name: string;
+          games_played: number;
+          id: string;
+        }[];
+      };
       group_stats: { Args: { p_group_id: string }; Returns: Json };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_group_owner: { Args: { p_group_id: string }; Returns: boolean };

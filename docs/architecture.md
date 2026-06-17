@@ -202,6 +202,19 @@ stamped server-side; editing them is deferred to a future edit-game screen. A
 standalone "add players to an in-progress game" RPC was folded into `finish_game`'s
 reconciliation and deferred as a separate entry point.
 
+### Roster ranking — `group_roster(group_id)` (M9)
+
+Defined in [`supabase/migrations/20260616160000_group_roster.sql`](../supabase/migrations/20260616160000_group_roster.sql).
+The start/finish player pickers (M8) list the group's roster; with a dozen+ players
+they rank by **completed games played** (desc, then name) so frequent players surface
+first. `group_roster` is a **`SECURITY INVOKER`** SQL function (like `group_stats` /
+`most_played_group`) returning `(id, display_name, games_played)`; a LEFT JOIN keeps
+guests and never-played members in the list with `games_played = 0`. Name search over
+this list is **client-side** filtering once the ranked roster is loaded — no extra round
+trip — and selected players stay visible while filtering. "Start again" pre-fills the
+start form from a prior game's roster (`/games/new?from=<id>`); on-the-fly guest add in
+both flows reuses `addPlayerAction`.
+
 ## Metrics
 
 All metrics are **computed from stored data, not cached**, unless performance later

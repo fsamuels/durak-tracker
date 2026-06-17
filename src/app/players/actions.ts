@@ -6,7 +6,13 @@ import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { addPlayerSchema } from "@/lib/validation/player";
 
-export type AddPlayerState = { error: string | null };
+export type AddedPlayer = { id: string; display_name: string };
+export type AddPlayerState = {
+  error: string | null;
+  /** The created player, returned so callers (e.g. the on-the-fly guest add in
+   * the start/finish flows) can select it without a reload. */
+  player?: AddedPlayer;
+};
 
 export async function addPlayerAction(input: unknown): Promise<AddPlayerState> {
   const parsed = addPlayerSchema.safeParse(input);
@@ -18,12 +24,16 @@ export async function addPlayerAction(input: unknown): Promise<AddPlayerState> {
   if (!group) return { error: "No group found. Create a group first." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("players").insert({
-    group_id: group.id,
-    display_name: parsed.data.displayName,
-  });
+  const { data, error } = await supabase
+    .from("players")
+    .insert({
+      group_id: group.id,
+      display_name: parsed.data.displayName,
+    })
+    .select("id, display_name")
+    .single();
   if (error) return { error: error.message };
 
   revalidatePath("/players");
-  return { error: null };
+  return { error: null, player: data };
 }
