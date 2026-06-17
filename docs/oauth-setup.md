@@ -1,4 +1,4 @@
-# OAuth Provider Setup (Google + Facebook)
+# OAuth Provider Setup (Google + Facebook + Discord)
 
 How to configure social login for Durak Tracker. This is the **social login** flow:
 Durak Tracker _consumes_ Google/Facebook as identity providers via Supabase Auth.
@@ -22,7 +22,7 @@ common cause of `redirect_uri_mismatch` errors.
 
 | URL                                                         | Owner                                      | Where it goes                          | Changeable |
 | ----------------------------------------------------------- | ------------------------------------------ | -------------------------------------- | ---------- |
-| `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` | Supabase (GoTrue)                          | Google/Facebook console "redirect URI" | ❌ Fixed   |
+| `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` | Supabase (GoTrue)                          | Google/Facebook/Discord console "redirect URI" | ❌ Fixed   |
 | `…/auth/callback` (localhost + Vercel)                      | Our app (`src/app/auth/callback/route.ts`) | Supabase "Redirect URLs" allow-list    | ✅ Ours    |
 
 ## Part A — Google
@@ -55,7 +55,23 @@ app admins/testers log in). Do Google first, then circle back.
    ID + Secret, Save.
 6. Flip the app to **Live** when ready for non-admin users.
 
-## Part C — Supabase URL configuration (once)
+## Part C — Discord
+
+Lightweight to set up — no app review, and works for any Discord user immediately
+(no testers/Live-mode gate like Facebook).
+
+1. [discord.com/developers/applications](https://discord.com/developers/applications)
+   → **New Application** → name it, accept terms.
+2. **OAuth2 → General:** copy the **Client ID** and **Client Secret** (click *Reset
+   Secret* if none is shown).
+3. **OAuth2 → Redirects → Add Redirect:**
+   `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` → Save.
+4. **Supabase → Authentication → Sign In / Providers → Discord:** enable, paste Client
+   ID + Secret, Save. (Supabase requests the `identify` + `email` scopes by default.)
+5. Add a **Continue with Discord** button in `src/app/login/page.tsx` (same
+   `signInWithOAuth({ provider: 'discord' })` pattern as Google).
+
+## Part D — Supabase URL configuration (once)
 
 **Authentication → URL Configuration:**
 
