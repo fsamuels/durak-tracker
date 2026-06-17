@@ -1,100 +1,55 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
-import { historyFilterSchema } from "@/lib/validation/history";
+import {
+  DEFAULT_HISTORY_PERIOD,
+  HISTORY_PERIODS,
+  type HistoryPeriod,
+} from "@/lib/validation/history";
+
+const LABELS: Record<HistoryPeriod, string> = {
+  week: "Past week",
+  month: "Past month",
+  all: "All time",
+};
 
 /**
- * Date-range filter for the history list. Pushes the chosen bounds to the URL
- * as `?start=&end=`; the server component reads + re-validates them. Kept
- * client-side only for the inputs and a friendly pre-navigation check.
+ * Look-back window selector for the history list. Pushes the chosen period to
+ * the URL as `?period=`; the server component reads + re-validates it. The
+ * default period is left out of the URL to keep it clean.
  */
-export function HistoryFilter({
-  start,
-  end,
-}: {
-  start?: string;
-  end?: string;
-}) {
+export function HistoryFilter({ period }: { period: HistoryPeriod }) {
   const router = useRouter();
-  const [from, setFrom] = useState(start ?? "");
-  const [to, setTo] = useState(end ?? "");
-  const [error, setError] = useState<string | null>(null);
-
-  function apply(e: React.FormEvent) {
-    e.preventDefault();
-    const parsed = historyFilterSchema.safeParse({ start: from, end: to });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Invalid date range.");
-      return;
-    }
-    setError(null);
-    const params = new URLSearchParams();
-    if (parsed.data.start) params.set("start", parsed.data.start);
-    if (parsed.data.end) params.set("end", parsed.data.end);
-    const qs = params.toString();
-    router.push(qs ? `/games?${qs}` : "/games");
-  }
-
-  function clear() {
-    setFrom("");
-    setTo("");
-    setError(null);
-    router.push("/games");
-  }
-
-  const inputClass =
-    "h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
 
   return (
-    <form onSubmit={apply} className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          From
-          <input
-            type="date"
-            value={from}
-            max={to || undefined}
-            onChange={(e) => setFrom(e.target.value)}
-            className={inputClass}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          To
-          <input
-            type="date"
-            value={to}
-            min={from || undefined}
-            onChange={(e) => setTo(e.target.value)}
-            className={inputClass}
-          />
-        </label>
-      </div>
-
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
-
-      <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          className="h-11 rounded-full bg-black px-5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 active:brightness-90 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
-        >
-          Apply filter
-        </button>
-        {(from || to) && (
+    <div
+      role="group"
+      aria-label="Filter by period"
+      className="flex flex-wrap gap-2"
+    >
+      {HISTORY_PERIODS.map((p) => {
+        const active = p === period;
+        return (
           <button
+            key={p}
             type="button"
-            onClick={clear}
-            className="text-sm font-medium text-zinc-500 underline underline-offset-4 hover:text-zinc-800 dark:hover:text-zinc-200"
+            aria-pressed={active}
+            onClick={() =>
+              router.push(
+                p === DEFAULT_HISTORY_PERIOD ? "/games" : `/games?period=${p}`,
+              )
+            }
+            className={
+              active
+                ? "h-9 rounded-full bg-black px-4 text-sm font-medium text-white dark:bg-zinc-50 dark:text-black"
+                : "h-9 rounded-full border border-black/15 px-4 text-sm font-medium text-zinc-600 transition-colors hover:border-black/30 hover:text-black dark:border-white/15 dark:text-zinc-400 dark:hover:border-white/30 dark:hover:text-zinc-50"
+            }
           >
-            Clear
+            {LABELS[p]}
           </button>
-        )}
-      </div>
-    </form>
+        );
+      })}
+    </div>
   );
 }

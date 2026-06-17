@@ -1,26 +1,24 @@
 import { z } from "zod";
 
-/** A `YYYY-MM-DD` calendar date, or omitted. Empty strings become undefined. */
-const optionalDate = z.preprocess(
-  (v) => (v === "" || v == null ? undefined : v),
-  z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.")
-    .optional(),
-);
+/** Selectable look-back windows for the game history list. */
+export const HISTORY_PERIODS = ["week", "month", "all"] as const;
+
+export type HistoryPeriod = (typeof HISTORY_PERIODS)[number];
+
+/** The default window when none is specified in the URL. */
+export const DEFAULT_HISTORY_PERIOD: HistoryPeriod = "month";
 
 /**
- * Date-range filter for the game history list. Both bounds are optional and
- * interpreted as wall-clock days in the group's timezone (see `@/lib/time`).
+ * Period filter for the game history list. A single rolling window relative to
+ * "now"; empty/missing/invalid values fall back to the default (past month).
+ * The window's start is resolved to a wall-clock day in the group's timezone
+ * (see `periodStartDate` in `@/lib/time`).
  */
-export const historyFilterSchema = z
-  .object({
-    start: optionalDate,
-    end: optionalDate,
-  })
-  .refine((d) => !d.start || !d.end || d.start <= d.end, {
-    message: "Start date can't be after the end date.",
-    path: ["end"],
-  });
+export const historyFilterSchema = z.object({
+  period: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.enum(HISTORY_PERIODS).catch(DEFAULT_HISTORY_PERIOD),
+  ),
+});
 
 export type HistoryFilter = z.infer<typeof historyFilterSchema>;

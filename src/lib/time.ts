@@ -6,6 +6,8 @@
  * so a "date" the user picks is a wall-clock day in that zone, not in UTC.
  */
 
+import type { HistoryPeriod } from "@/lib/validation/history";
+
 /**
  * Milliseconds to add to an instant to express it as wall-clock time in
  * `timeZone`. Derived via `Intl` so it tracks DST for the given instant.
@@ -62,4 +64,34 @@ export function formatInTz(iso: string, timeZone: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(iso));
+}
+
+/** Today's calendar date (YYYY-MM-DD) as it reads right now in `timeZone`. */
+export function todayInTz(timeZone: string): string {
+  // en-CA formats as YYYY-MM-DD.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+/**
+ * Inclusive start day (YYYY-MM-DD) for a history look-back window, in
+ * `timeZone`. Returns undefined for "all" (no lower bound). Calendar-accurate:
+ * "month" steps a whole month back, not a fixed day count.
+ */
+export function periodStartDate(
+  period: HistoryPeriod,
+  timeZone: string,
+): string | undefined {
+  if (period === "all") return undefined;
+
+  const [y, m, d] = todayInTz(timeZone).split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (period === "week") dt.setUTCDate(dt.getUTCDate() - 7);
+  else dt.setUTCMonth(dt.getUTCMonth() - 1);
+
+  return dt.toISOString().slice(0, 10);
 }
