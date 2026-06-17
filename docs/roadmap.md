@@ -1,10 +1,10 @@
 # Roadmap
 
-Milestones 1–11 are complete; M12 (Iterate) is next
+Milestones 1–12 are complete; M13 (Iterate) is next
 (see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
-it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
-Facebook was deferred to the backlog below. Product intent and non-goals live in
-the [spec](../durak-tracker-spec.md).
+it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only;
+M12 added **Facebook** and **Discord** login along with a full account management page.
+Product intent and non-goals live in the [spec](../durak-tracker-spec.md).
 
 M7–M10 came out of a real-usage planning pass (see decisions in each milestone). The
 app is **pre-release with no live data**, so schema changes can wipe + reseed
@@ -91,7 +91,19 @@ the open-ended "Iterate" bucket shifted to M11+.
     unification onto the frosted `card-surface` / `app-bg` brand look. Also added
     **discard (delete) an in-progress game** (`discard_game` RPC + `games_delete` RLS)
     and a "selected-only" start-form player picker.
-12. **Iterate** — additional metrics and refinements from real usage.
+12. **Account management + OAuth expansion** _(done)_ — full `/account` page replacing the
+    stub: theme switcher (System / Light / Dark via `next-themes`), global display name
+    editor (updates all groups at once), connected sign-in providers with connect/disconnect
+    (Supabase `linkIdentity` / `unlinkIdentity`). Added **Facebook** and **Discord** login
+    buttons to the login page alongside Google. Navigation cleanup: removed redundant
+    `← Home` back links from all secondary pages (header logo already links home); cleaned
+    up the hamburger menu (removed "View stats" duplicate, renamed to "Account").
+    **Manual step required:** enable Facebook and Discord providers in Supabase dashboard →
+    Auth → Providers (see [oauth-setup.md](./oauth-setup.md)). Also enable "Allow manual
+    linking" in Supabase Auth settings for the Connect button to work. Facebook requires
+    a Meta app in Live mode for public users (app admins can test immediately).
+
+13. **Iterate** — additional metrics and refinements from real usage.
 
 ## Deferred from M6 (stats follow-ups)
 
@@ -130,10 +142,6 @@ validation layers. What remains:
 
 ## Post-v1 backlog
 
-- **Facebook login** — enable the Facebook provider in Supabase and restore the button
-  in `src/app/login/page.tsx` (deferred from M3; see [oauth-setup.md](./oauth-setup.md)).
-- **Discord login** — enable the Discord provider in Supabase and add a button in
-  `src/app/login/page.tsx` (see [oauth-setup.md](./oauth-setup.md)).
 - **Auth UX polish** — Supabase custom auth domain + Google consent-screen branding so
   the login flow doesn't surface the raw Supabase project domain.
 - **Edit/delete game** — scoped to `logged_by` or group owner; soft-delete preferred;

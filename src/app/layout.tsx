@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { InstallPrompt } from "@/components/install-prompt";
 import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
+import { ThemeProvider } from "@/components/theme-provider";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -55,44 +56,46 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="app-bg min-h-full flex flex-col">
-        {user && (
-          <header className="sticky top-0 z-30 border-b border-black/10 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-md dark:border-white/10">
-            <div className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-3">
-              <Link
-                href="/"
-                className="text-base font-bold tracking-tight text-black dark:text-zinc-50"
+        <ThemeProvider>
+          {user && (
+            <header className="sticky top-0 z-30 border-b border-black/10 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-md dark:border-white/10">
+              <div className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-3">
+                <Link
+                  href="/"
+                  className="text-base font-bold tracking-tight text-black dark:text-zinc-50"
+                >
+                  🃏 Durak Tracker
+                </Link>
+                <NavMenu />
+              </div>
+            </header>
+          )}
+          {children}
+          <footer
+            className={`px-6 pt-6 text-center text-xs text-zinc-400 dark:text-zinc-600 ${
+              user
+                ? // Clear the fixed bottom tab bar (3.5rem) + its safe-area inset.
+                  "pb-[calc(env(safe-area-inset-bottom)+5rem)]"
+                : "pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+            }`}
+          >
+            <p>
+              <a
+                href="https://github.com/fsamuels/durak-tracker"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline-offset-4 hover:text-zinc-600 hover:underline dark:hover:text-zinc-400"
               >
-                🃏 Durak Tracker
-              </Link>
-              <NavMenu />
-            </div>
-          </header>
-        )}
-        {children}
-        <footer
-          className={`px-6 pt-6 text-center text-xs text-zinc-400 dark:text-zinc-600 ${
-            user
-              ? // Clear the fixed bottom tab bar (3.5rem) + its safe-area inset.
-                "pb-[calc(env(safe-area-inset-bottom)+5rem)]"
-              : "pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
-          }`}
-        >
-          <p>
-            <a
-              href="https://github.com/fsamuels/durak-tracker"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline-offset-4 hover:text-zinc-600 hover:underline dark:hover:text-zinc-400"
-            >
-              Durak Tracker
-            </a>{" "}
-            v1.0 · created by Forrest Samuels and AI
-          </p>
-          {user && <p className="mt-1">Logged in as {user.email}</p>}
-        </footer>
-        {user && <BottomNav />}
-        <InstallPrompt hasBottomNav={!!user} />
-        <ServiceWorkerRegistration />
+                Durak Tracker
+              </a>{" "}
+              v1.0 · created by Forrest Samuels and AI
+            </p>
+            {user && <p className="mt-1">Logged in as {user.email}</p>}
+          </footer>
+          {user && <BottomNav />}
+          <InstallPrompt hasBottomNav={!!user} />
+          <ServiceWorkerRegistration />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -19,12 +19,6 @@ export default async function ManageGroupPage() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
       <div className="flex flex-col gap-1">
-        <Link
-          href="/"
-          className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
-          ← Home
-        </Link>
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
           Manage group
         </h1>
