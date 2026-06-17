@@ -460,7 +460,7 @@ data-model changes.
 
 - **Start form pre-selects the creator.** `/games/new` now default-selects the player
   linked to the signed-in user (`getCurrentUserPlayerId` — `players.auth_user_id =
-  auth.uid()` in the current group), merged with any "Play again" roster. So the person
+auth.uid()` in the current group), merged with any "Play again" roster. So the person
   logging the game no longer has to add themselves.
 - **Finishing a game lands Home.** `finishGameAction` now redirects to `/` (was
   `/games`).
