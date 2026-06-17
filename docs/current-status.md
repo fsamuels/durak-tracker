@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-16.
+Living snapshot of what's built. Last updated: 2026-06-17.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -399,11 +399,33 @@ No data-model changes beyond the discard RPC below.
   Twemoji jester card, not a tofu box). Owner does the manual UI pass before merge
   (per the convention).
 
+### Automated test suite ✅ (non-milestone)
+
+> **Candid note:** an automated test suite should have existed from **M1**. Shipping
+> milestones 1–11 with zero automated tests — leaning entirely on manual checks and
+> JWT-simulated `psql` for DB invariants — was a significant oversight in how this
+> project was built. This entry is the first step at correcting it; the follow-ups
+> below are the rest.
+
+- **Vitest** (two projects: a Node env for `src/lib`, jsdom + React Testing Library
+  for components); `pnpm test` / `test:watch` / `test:coverage`. **64 tests** cover the
+  timezone helpers ([src/lib/time.ts](../src/lib/time.ts)) and every Zod schema
+  ([src/lib/validation/\*](../src/lib/validation/)), plus the `BottomNav` active-tab
+  logic.
+- **CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs lint →
+  format:check → test → build on every push/PR. Free on GitHub-hosted standard runners
+  (public repo).
+- **Coverage today:** the pure-logic / validation layer and `BottomNav` are covered;
+  **everything that renders React, runs a server action, or touches the database is
+  still at 0%** — pages/routes, `actions.ts` server actions, `src/lib/data/*`,
+  `src/lib/supabase/*`, and the remaining components. See the two testing follow-ups in
+  [roadmap.md](./roadmap.md#testing-follow-ups).
+
 ## Not yet implemented
 
-- Libraries planned but not installed: **Vitest/Playwright**. (**next-pwa** was
-  evaluated in M11 and rejected — Turbopack-incompatible; a hand-written service worker
-  is used instead.)
+- **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
+  not installed. (**next-pwa** was evaluated in M11 and rejected —
+  Turbopack-incompatible; a hand-written service worker is used instead.)
 - Roadmap features (M12+): edit/delete a **completed** game, offline write queue,
   account settings (the `/account` page is a stub), time-span stat buckets,
   cross-group aggregates, head-to-head, charts.

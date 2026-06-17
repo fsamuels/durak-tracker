@@ -32,9 +32,30 @@ export function NavMenu() {
           fill="none"
           aria-hidden="true"
         >
-          <rect x="2" y="4" width="14" height="1.5" rx="0.75" fill="currentColor" />
-          <rect x="2" y="8.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
-          <rect x="2" y="12.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
+          <rect
+            x="2"
+            y="4"
+            width="14"
+            height="1.5"
+            rx="0.75"
+            fill="currentColor"
+          />
+          <rect
+            x="2"
+            y="8.25"
+            width="14"
+            height="1.5"
+            rx="0.75"
+            fill="currentColor"
+          />
+          <rect
+            x="2"
+            y="12.5"
+            width="14"
+            height="1.5"
+            rx="0.75"
+            fill="currentColor"
+          />
         </svg>
       </button>
 

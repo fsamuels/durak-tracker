@@ -28,7 +28,8 @@ installable PWA (Web App Manifest + a hand-written service worker — `next-pwa`
 dropped as Turbopack-incompatible), Vercel (auto-deploy), pnpm, ESLint + Prettier.
 
 **Planned:** Facebook + Discord login (deferred — see
-[docs/oauth-setup.md](docs/oauth-setup.md)), Vitest/Playwright. See the
+[docs/oauth-setup.md](docs/oauth-setup.md)), Playwright e2e. Vitest unit/component
+tests are now in use. See the
 [architecture stack table](docs/architecture.md#tech-stack).
 
 ## Prerequisites
@@ -67,15 +68,21 @@ Get the keys from Supabase → Project Settings → API Keys.
 | `pnpm start`                        | Serve the production build       |
 | `pnpm lint`                         | ESLint                           |
 | `pnpm format` / `pnpm format:check` | Prettier write / check           |
+| `pnpm test` / `pnpm test:watch`     | Vitest run / watch               |
+| `pnpm test:coverage`                | Vitest with v8 coverage report   |
 
 ## Testing
 
-No automated test suite yet (**Vitest/Playwright** are planned — see the
-[roadmap](docs/roadmap.md)). Until then, changes are verified with:
+**Unit/component:** [Vitest](https://vitest.dev) — pure logic (`src/lib/**`) runs in
+a Node env, components (`*.test.tsx`) in jsdom with React Testing Library. Run:
 
 ```bash
-pnpm lint && pnpm build && pnpm format:check
+pnpm test
 ```
+
+CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs lint, format check,
+tests, and build on every push and PR. **Playwright e2e is still planned** — see the
+[roadmap](docs/roadmap.md).
 
 Database invariants (RLS isolation, deferred integrity triggers, RPC behavior) are
 tested against the live DB via JWT-simulated `psql` in a rolled-back transaction —

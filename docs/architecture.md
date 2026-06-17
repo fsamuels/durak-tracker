@@ -22,19 +22,20 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 
 ## Tech stack
 
-| Layer           | Choice                                     | Status       |
-| --------------- | ------------------------------------------ | ------------ |
-| Frontend        | Next.js (App Router) + TypeScript          | In use       |
-| Styling         | Tailwind CSS v4 + aurora theme tokens (`globals.css`) | In use |
-| Database / Auth | Supabase (Postgres 17), RLS                | In use       |
-| Hosting / CI    | Vercel + GitHub auto-deploy                | In use       |
-| Package manager | pnpm                                       | In use       |
-| Lint / format   | ESLint (flat config) + Prettier            | In use       |
-| Auth providers  | Supabase Auth — Google (Facebook deferred) | In use       |
+| Layer           | Choice                                                                                           | Status       |
+| --------------- | ------------------------------------------------------------------------------------------------ | ------------ |
+| Frontend        | Next.js (App Router) + TypeScript                                                                | In use       |
+| Styling         | Tailwind CSS v4 + aurora theme tokens (`globals.css`)                                            | In use       |
+| Database / Auth | Supabase (Postgres 17), RLS                                                                      | In use       |
+| Hosting / CI    | Vercel + GitHub auto-deploy                                                                      | In use       |
+| Package manager | pnpm                                                                                             | In use       |
+| Lint / format   | ESLint (flat config) + Prettier                                                                  | In use       |
+| Auth providers  | Supabase Auth — Google (Facebook deferred)                                                       | In use       |
 | PWA             | Web App Manifest + **hand-written service worker** (`next-pwa` dropped — Turbopack-incompatible) | In use (M11) |
-| Validation      | Zod                                        | In use       |
-| Forms           | React Hook Form + Zod                      | In use       |
-| Testing         | Vitest (unit), Playwright (e2e)            | Planned      |
+| Validation      | Zod                                                                                              | In use       |
+| Forms           | React Hook Form + Zod                                                                            | In use       |
+| Testing (unit)  | Vitest + React Testing Library; CI via GitHub Actions                                            | In use       |
+| Testing (e2e)   | Playwright                                                                                       | Planned      |
 
 > Only the "In use" rows are installed today. "Planned" rows are introduced in the
 > milestone noted; see [roadmap.md](./roadmap.md).
@@ -46,13 +47,13 @@ Defined in [`supabase/migrations/20260616015925_init_schema.sql`](../supabase/mi
 Enums: `trump_suit = ('hearts','diamonds','clubs','spades')`;
 `game_status = ('in_progress','completed')`.
 
-| Table           | Purpose                         | Key columns / notes                                                                                                           |
-| --------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `groups`        | A circle of players             | `name` (non-empty), `timezone` (IANA, default `UTC`), `created_by` → `auth.users`                                             |
-| `group_members` | Who belongs to a group          | PK `(group_id, user_id)`; `role ∈ {owner, member}`                                                                            |
-| `players`       | Anyone who can appear in a game | `group_id`-scoped; `auth_user_id` null ⇒ guest                                                                                |
+| Table           | Purpose                         | Key columns / notes                                                                                                                                                                                                  |
+| --------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `groups`        | A circle of players             | `name` (non-empty), `timezone` (IANA, default `UTC`), `created_by` → `auth.users`                                                                                                                                    |
+| `group_members` | Who belongs to a group          | PK `(group_id, user_id)`; `role ∈ {owner, member}`                                                                                                                                                                   |
+| `players`       | Anyone who can appear in a game | `group_id`-scoped; `auth_user_id` null ⇒ guest                                                                                                                                                                       |
 | `games`         | One played game                 | `status` (`in_progress`\|`completed`, default `in_progress`); `started_at` (stamped at start), optional `ended_at` (stamped at finish)/`trump_suit`/`deck_count`/`notes`/`metrics` jsonb; `logged_by` → `auth.users` |
-| `game_players`  | One row per player per game     | PK `(game_id, player_id)`; `is_durak`/`is_first_out`/`is_last_out`                                                            |
+| `game_players`  | One row per player per game     | PK `(game_id, player_id)`; `is_durak`/`is_first_out`/`is_last_out`                                                                                                                                                   |
 
 **Referential integrity (`ON DELETE`):** `group_id`, `game_id`, and member
 `user_id` **cascade**; `players.auth_user_id` **set null** (a deleted user's
