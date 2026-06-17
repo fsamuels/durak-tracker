@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
   public: {
     Tables: {
       game_players: {
@@ -187,6 +162,54 @@ export type Database = {
         };
         Relationships: [];
       };
+      player_claims: {
+        Row: {
+          claimed_at: string | null;
+          claimed_by: string | null;
+          created_at: string;
+          created_by: string;
+          expires_at: string;
+          group_id: string;
+          player_id: string;
+          token: string;
+        };
+        Insert: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          created_by: string;
+          expires_at?: string;
+          group_id: string;
+          player_id: string;
+          token?: string;
+        };
+        Update: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          created_at?: string;
+          created_by?: string;
+          expires_at?: string;
+          group_id?: string;
+          player_id?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "player_claims_group_id_fkey";
+            columns: ["group_id"];
+            isOneToOne: false;
+            referencedRelation: "groups";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "player_claims_player_id_fkey";
+            columns: ["player_id"];
+            isOneToOne: false;
+            referencedRelation: "players";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       players: {
         Row: {
           auth_user_id: string | null;
@@ -231,6 +254,32 @@ export type Database = {
         Args: { p_game_id: string };
         Returns: undefined;
       };
+      claim_details: {
+        Args: { p_token: string };
+        Returns: {
+          already_member: boolean;
+          group_name: string;
+          player_name: string;
+          status: string;
+        }[];
+      };
+      claim_player: {
+        Args: { p_token: string };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          id: string;
+          name: string;
+          timezone: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "groups";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_group: {
         Args: { p_display_name?: string; p_name: string; p_timezone?: string };
         Returns: {
@@ -244,6 +293,25 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "groups";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_player_claim: {
+        Args: { p_player_id: string };
+        Returns: {
+          claimed_at: string | null;
+          claimed_by: string | null;
+          created_at: string;
+          created_by: string;
+          expires_at: string;
+          group_id: string;
+          player_id: string;
+          token: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "player_claims";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -486,9 +554,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       game_status: ["in_progress", "completed"],

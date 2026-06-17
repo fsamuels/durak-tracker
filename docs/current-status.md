@@ -4,10 +4,10 @@ Living snapshot of what's built. Last updated: 2026-06-16.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
-- **Current milestone:** M9 — start-from-existing + quick add + search shipped; next
-  up is M10 — account claiming. (The roadmap was re-sequenced from a
-  real-usage planning pass: M7 home revamp, M8 two-part logging, M9 start-from-existing,
-  M10 account claiming; PWA polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
+- **Current milestone:** M10 — account claiming shipped; next up is M11 — PWA
+  polish. (The roadmap was re-sequenced from a real-usage planning pass: M7 home
+  revamp, M8 two-part logging, M9 start-from-existing, M10 account claiming; PWA
+  polish + Iterate shifted to M11+. See [roadmap.md](./roadmap.md).)
 
 > **Milestone convention:** a milestone's PR carries the docs that mark it
 > **complete (✅)**. Any outstanding manual review/testing is done **before that PR
@@ -210,10 +210,10 @@ A visual pass on top of M7 (branch `ui-tweaks`); no schema or data changes.
   Applied across login, onboarding, home, the game list, and the log-game /
   create-group forms; light + dark mode aware. Retuning the palette is a
   one-place token edit.
-- **Google icon** added to the *Continue with Google* button (official multicolor
+- **Google icon** added to the _Continue with Google_ button (official multicolor
   "G" mark, inline SVG in `src/app/login/page.tsx`).
 - **Home stats refresh** (supersedes M7's "total games played + top durak" card):
-  a **🤡 Last durak** heading block under the *Log a game* button, then a **Group
+  a **🤡 Last durak** heading block under the _Log a game_ button, then a **Group
   stats** section with **games played** + **avg game time** side by side and a
   full-width **most durak** card (full width so longer names fit). Avg game time
   reuses the existing `formatDuration` helper and the `group_stats` RPC's
@@ -233,7 +233,7 @@ Logging is split into **start** (game created in-progress with a roster) and
   needs only **≥1 player**; the **≥3 players / exactly-one-durak** invariants apply
   only once a game is **completed** (re-checked when finish flips the status).
 - **RPCs** `start_game` and `finish_game` (`SECURITY INVOKER`, `logged_by =
-  auth.uid()`, mirroring `log_game`). `start_game` inserts the game + starting
+auth.uid()`, mirroring `log_game`). `start_game` inserts the game + starting
   roster, stamping `started_at`. `finish_game` is **authoritative**: it stamps
   `ended_at`, flips status to completed, and reconciles the roster (upserts
   outcomes onto starters, inserts latecomers, drops no-shows) — all in one
@@ -304,6 +304,50 @@ Frictionless back-to-back games with a dozen+ players, building on M8's start fl
   invariant holds; and RLS holds — a non-member and a cross-group member both get 0
   rows for a group they don't belong to, while their own group returns the full roster.
   Owner does the manual UI pass before merge (per the convention).
+
+### Milestone 10 — Account claiming ✅
+
+A group member shares a single-use link that ties a guest player to the right
+person's account. Folds the backlog "group invitations" + "guest player claiming"
+items into one flow — claiming a player both links the account and joins the group:
+
+- **Schema** (`20260616170000_player_claims.sql`, pushed to remote; types
+  regenerated). New `player_claims` table (`token` PK, `group_id`, `player_id`,
+  `created_by`, `created_at`, `expires_at` default `now() + 7 days`, `claimed_by`,
+  `claimed_at`) — links are **single-use, active 7 days**. Added the
+  **`players_one_account_per_group`** partial unique index
+  (`(group_id, auth_user_id) where auth_user_id is not null`) — the
+  one-account-per-person-per-group guard the claim flow relies on, which didn't
+  exist before M10. RLS: members can `select` / `insert` claims for their own
+  groups; the redemption lifecycle goes through the RPCs (no client update/delete).
+- **RPCs.** `create_player_claim(player_id)` — `SECURITY INVOKER` (RLS gates the
+  player it can see), additionally requires the player to still be a guest.
+  `claim_details(token)` and `claim_player(token)` are **`SECURITY DEFINER`**
+  because the claimer isn't a group member yet (RLS would hide the group/player and
+  block the `group_members` insert). `claim_details` returns a coarse status
+  (`valid` / `expired` / `claimed` / `not_found`) + group/player names for the
+  landing page (granted to `anon` too, for signed-out visitors). `claim_player`
+  locks the claim row `for update`, validates not-used / not-expired / still-a-guest
+  / caller-has-no-player-in-group, then links the player, inserts the membership,
+  and stamps the link used — all in one transaction.
+- **UI.** `/players` shows a **"Share claim link"** button on each **guest** row
+  (`ClaimLinkButton`) — mints a link and shares via the **Web Share API** (text /
+  email / Messenger), falling back to copy-to-clipboard. New public
+  **`/claim/[token]`** page (added to `PUBLIC_PATHS`) shows who/what is being
+  claimed and the link status; signed-out visitors get a **Sign in with Google**
+  CTA that returns to the claim page (`/auth/callback?next=/claim/<token>`),
+  signed-in non-members get a **Claim** button, and the expired / already-claimed /
+  already-a-member cases each render a clear message.
+- **Verified:** `pnpm tsc --noEmit` / `lint` / `build` clean; Prettier clean
+  (incl. regenerated types). Migration applied via `db push`; types regenerated
+  from remote. RPCs tested against the live DB via JWT-simulated psql (one
+  transaction, rolled back; a throwaway `auth.users` claimer): mint-for-guest OK;
+  mint on a linked player rejected ("already linked"); mint on an unseeable player
+  rejected via RLS ("not found"); `claim_details` valid→claimed; redeem links the
+  player + adds the membership + marks the link used; re-redeem rejected ("already
+  used"); expired link rejected (details + redeem); caller who already has a player
+  in the group rejected; unauthenticated rejected. Owner does the manual UI pass
+  before merge (per the convention).
 
 ## Not yet implemented
 

@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
 /** Routes reachable without an authenticated session. */
-const PUBLIC_PATHS = ["/login", "/auth"];
+// /claim is public so an invitee can open a claim link and see who they'd be
+// claiming before signing in (the redemption itself is gated by claim_player).
+const PUBLIC_PATHS = ["/login", "/auth", "/claim"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(
