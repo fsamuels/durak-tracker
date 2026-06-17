@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–9 are complete; M10 (account claiming) is next
+Milestones 1–10 are complete; M11 (PWA polish) is next
 (see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
@@ -67,9 +67,9 @@ the open-ended "Iterate" bucket shifted to M11+.
      a client-side search box (>6 players) that filters by name while keeping selected
      players visible.
 
-10. **Account claiming** — a member shares a link tying a guest player to the right
-    person's account. Replaces the backlog "group invitations" + "guest player claiming"
-    items (folds them into one flow).
+10. **Account claiming** _(done)_ — a member shares a link tying a guest player to the
+    right person's account. Replaces the backlog "group invitations" + "guest player
+    claiming" items (folds them into one flow).
     - **Any** group member generates a claim link for a guest player
       (`auth_user_id IS NULL`); links are **single-use, active for 7 days**. New
       `player_claims` table (`token`, `group_id`, `player_id`, `created_by`,
@@ -120,7 +120,9 @@ the open-ended "Iterate" bucket shifted to M11+.
 
 - **Head-to-head** — surface on the player profile only, or also a dedicated
   comparison screen?
-- **Claim-link revocation** (M10) — can a member revoke an unused link before it expires?
+- **Claim-link revocation** (M10) — M10 ships links as single-use + 7-day expiry but
+  **no manual revoke** of an unused link. Could add a member-facing list of pending
+  links with a delete/expire action (a `delete` RLS policy or a small RPC). Deferred.
 - **Cross-group player suggestions** (M9) — when the same person plays in multiple
   groups, suggest them across groups? (Out of scope for M9 — search is current-group
   only.)

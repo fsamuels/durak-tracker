@@ -5,6 +5,7 @@ import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 
 import { AddPlayerForm } from "./add-player-form";
+import { ClaimLinkButton } from "./claim-link-button";
 
 export default async function PlayersPage() {
   const group = await getCurrentGroup();
@@ -51,9 +52,12 @@ export default async function PlayersPage() {
               {p.display_name}
             </Link>
             {!p.auth_user_id && (
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
-                guest
-              </span>
+              <div className="flex flex-col items-end gap-1">
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
+                  guest
+                </span>
+                <ClaimLinkButton playerId={p.id} playerName={p.display_name} />
+              </div>
             )}
           </li>
         ))}

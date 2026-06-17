@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
+import { claimPlayerIdSchema } from "@/lib/validation/claim";
 import { addPlayerSchema } from "@/lib/validation/player";
 
 export type AddedPlayer = { id: string; display_name: string };
@@ -36,4 +37,32 @@ export async function addPlayerAction(input: unknown): Promise<AddPlayerState> {
 
   revalidatePath("/players");
   return { error: null, player: data };
+}
+
+export type CreateClaimState = {
+  error: string | null;
+  /** The minted claim token; the client builds the absolute /claim/<token> URL
+   * from window.location.origin so the share link works on any deployment. */
+  token?: string;
+};
+
+/**
+ * Mint a single-use, 7-day claim link for a guest player (any group member can).
+ * The `create_player_claim` RPC re-checks membership (RLS) and that the player is
+ * still a guest, so a forged playerId can't produce a link.
+ */
+export async function createPlayerClaimAction(
+  playerId: unknown,
+): Promise<CreateClaimState> {
+  const parsed = claimPlayerIdSchema.safeParse(playerId);
+  if (!parsed.success) return { error: "Invalid player." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_player_claim", {
+    p_player_id: parsed.data,
+  });
+  if (error) return { error: error.message };
+  if (!data) return { error: "Could not create a claim link." };
+
+  return { error: null, token: data.token };
 }
