@@ -396,7 +396,10 @@ describe("updateGamePayloadSchema", () => {
         trumpSuit: null,
         deckCount: null,
         notes: null,
-        participants: [p(GUID_A, { isDurak: true }), p(GUID_B, { isDurak: true })],
+        participants: [
+          p(GUID_A, { isDurak: true }),
+          p(GUID_B, { isDurak: true }),
+        ],
       }).success,
     ).toBe(false);
   });

@@ -105,7 +105,9 @@ export function FinishGameForm({
           );
 
   // Both submits share the same payload shape; only the action differs.
-  const buildPayload = (values: InProgressGameFormValues): FinishGamePayload => ({
+  const buildPayload = (
+    values: InProgressGameFormValues,
+  ): FinishGamePayload => ({
     trumpSuit: values.trumpSuit
       ? (values.trumpSuit as FinishGamePayload["trumpSuit"])
       : null,
@@ -264,7 +266,9 @@ export function FinishGameForm({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+            <p className="text-sm text-zinc-500">
+              No players match “{search}”.
+            </p>
           ))}
 
         <AddGuestInline
