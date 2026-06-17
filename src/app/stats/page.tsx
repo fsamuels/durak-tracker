@@ -88,6 +88,28 @@ export default async function GroupStatsPage() {
             )}
           </section>
 
+          {/* Trump frequency */}
+          {stats.trump_frequency.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-sm font-medium text-zinc-500">
+                Trump suit frequency
+              </h2>
+              <ul className="flex flex-col gap-1">
+                {stats.trump_frequency.map((t) => (
+                  <li
+                    key={t.suit}
+                    className="card-surface flex items-center justify-between rounded-2xl px-3 py-2 text-sm text-black dark:text-zinc-50"
+                  >
+                    <span>{TRUMP_SUIT_LABELS[t.suit]}</span>
+                    <span className="text-zinc-500">
+                      {t.count} · {rate(t.count, trumpTotal)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {/* Per-player leaderboard */}
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-zinc-500">Players</h2>
@@ -126,28 +148,6 @@ export default async function GroupStatsPage() {
               </p>
             )}
           </section>
-
-          {/* Trump frequency */}
-          {stats.trump_frequency.length > 0 && (
-            <section className="flex flex-col gap-2">
-              <h2 className="text-sm font-medium text-zinc-500">
-                Trump suit frequency
-              </h2>
-              <ul className="flex flex-col gap-1">
-                {stats.trump_frequency.map((t) => (
-                  <li
-                    key={t.suit}
-                    className="card-surface flex items-center justify-between rounded-2xl px-3 py-2 text-sm text-black dark:text-zinc-50"
-                  >
-                    <span>{TRUMP_SUIT_LABELS[t.suit]}</span>
-                    <span className="text-zinc-500">
-                      {t.count} · {rate(t.count, trumpTotal)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
         </>
       )}
     </main>

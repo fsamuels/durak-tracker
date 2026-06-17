@@ -453,6 +453,27 @@ Full `/account` page replacing the stub:
   `src/lib/supabase/*`, and the remaining components. See the two testing follow-ups in
   [roadmap.md](./roadmap.md#testing-follow-ups).
 
+### Tweaks — flow & stats polish ✅ (non-milestone)
+
+A small batch of real-usage refinements (branch `fsamuels/tweaks-2`); no schema or
+data-model changes.
+
+- **Start form pre-selects the creator.** `/games/new` now default-selects the player
+  linked to the signed-in user (`getCurrentUserPlayerId` — `players.auth_user_id =
+  auth.uid()` in the current group), merged with any "Play again" roster. So the person
+  logging the game no longer has to add themselves.
+- **Finishing a game lands Home.** `finishGameAction` now redirects to `/` (was
+  `/games`).
+- **Back-link cleanup.** Removed the per-page **"← Home"** links from every screen
+  (group, switch, players, account, games, new game, finish, stats) — the bottom tab
+  bar already covers Home.
+- **Stats reordering.** Group-stats page now shows **Trump suit frequency above** the
+  players leaderboard. The home **Group stats** card was reordered to **most durak →
+  games played / avg time → top suit**, and a new **top suit** tile was added (backed by
+  a `topTrumpSuit` helper in `lib/validation/stats.ts`).
+- **Verified:** `pnpm lint` / `build` / `test` clean; new/changed files pass
+  `prettier --check`.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still

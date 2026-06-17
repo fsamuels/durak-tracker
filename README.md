@@ -67,6 +67,7 @@ Get the keys from Supabase → Project Settings → API Keys.
 | `pnpm build`                        | Production build                 |
 | `pnpm start`                        | Serve the production build       |
 | `pnpm lint`                         | ESLint                           |
+| `pnpm test` / `pnpm test:watch`     | Vitest unit tests (run / watch)  |
 | `pnpm format` / `pnpm format:check` | Prettier write / check           |
 | `pnpm test` / `pnpm test:watch`     | Vitest run / watch               |
 | `pnpm test:coverage`                | Vitest with v8 coverage report   |

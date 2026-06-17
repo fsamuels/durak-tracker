@@ -28,3 +28,28 @@ export async function getGroupRoster(
 
   return { roster, error };
 }
+
+/**
+ * The player row in `groupId` linked to the signed-in user (via
+ * `players.auth_user_id = auth.uid()`), or null if the user has no player in the
+ * group (e.g. they only manage it) or isn't signed in. Used to default-select
+ * the game's creator on the start form. RLS-scoped to the caller.
+ */
+export async function getCurrentUserPlayerId(
+  groupId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("players")
+    .select("id")
+    .eq("group_id", groupId)
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+
+  return data?.id ?? null;
+}

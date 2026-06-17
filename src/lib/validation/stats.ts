@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { TRUMP_SUITS } from "./game";
+import { TRUMP_SUITS, type TrumpSuit } from "./game";
 
 /**
  * Schemas for the `group_stats` / `player_stats` RPCs. The RPCs return `jsonb`
@@ -66,6 +66,21 @@ export type PlayerStats = z.infer<typeof playerStatsSchema>;
 
 /** Route param for the player-stats page. */
 export const playerParamSchema = z.object({ playerId: z.guid() });
+
+/**
+ * The group's most-frequent trump suit (the "top suit"). The `group_stats` RPC
+ * already orders `trump_frequency` by count desc, but we pick the max defensively
+ * so the result is correct regardless of ordering. Returns null when no completed
+ * game has recorded a trump suit.
+ */
+export function topTrumpSuit(
+  stats: GroupStats | null,
+): { suit: TrumpSuit; count: number } | null {
+  if (!stats || stats.trump_frequency.length === 0) return null;
+  return stats.trump_frequency.reduce((top, t) =>
+    t.count > top.count ? t : top,
+  );
+}
 
 /** Format a count / total as a percentage string, e.g. `33%`. `0` games → `—`. */
 export function rate(count: number, total: number): string {

@@ -87,8 +87,8 @@ export async function finishGameAction(
   });
   if (error) return { error: error.message };
 
-  // Land on the history list so the just-finished game is visible.
-  redirect("/games");
+  // Land home after finishing so the player returns to the main screen.
+  redirect("/");
 }
 
 /**
