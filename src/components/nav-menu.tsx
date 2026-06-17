@@ -1,0 +1,77 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+export function NavMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Open menu"
+        aria-expanded={open}
+        className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-black/5 hover:text-zinc-800 dark:hover:bg-white/5 dark:hover:text-zinc-200"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect x="2" y="4" width="14" height="1.5" rx="0.75" fill="currentColor" />
+          <rect x="2" y="8.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
+          <rect x="2" y="12.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-2 min-w-44 rounded-xl border border-black/10 bg-white py-1 shadow-lg dark:border-white/15 dark:bg-zinc-900">
+          <Link
+            href="/group/switch"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            Switch group
+          </Link>
+          <Link
+            href="/group"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            Manage group
+          </Link>
+          <Link
+            href="/account"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            Manage account
+          </Link>
+          <div className="my-1 border-t border-black/5 dark:border-white/10" />
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              className="flex w-full items-center px-4 py-2.5 text-left text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}

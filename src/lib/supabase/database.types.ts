@@ -254,6 +254,10 @@ export type Database = {
         Args: { p_game_id: string };
         Returns: undefined;
       };
+      discard_game: {
+        Args: { p_game_id: string };
+        Returns: undefined;
+      };
       claim_details: {
         Args: { p_token: string };
         Returns: {

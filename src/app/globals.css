@@ -101,6 +101,15 @@ body {
   color: transparent;
 }
 
+/* Durak (loser) badge — the warm pink end of the aurora palette, replacing the
+ * old flat red. Mixes with the theme background/foreground so it reads in both
+ * light and dark. */
+.badge-durak {
+  background: color-mix(in oklab, var(--brand-to) 14%, var(--background));
+  color: color-mix(in oklab, var(--brand-to) 78%, var(--foreground));
+  border: 1px solid color-mix(in oklab, var(--brand-to) 24%, transparent);
+}
+
 /* Frosted card surface that lifts content off the tinted background. */
 .card-surface {
   background: color-mix(in oklab, var(--background) 78%, white 22%);

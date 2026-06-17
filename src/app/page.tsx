@@ -40,22 +40,32 @@ export default async function Home() {
 
   return (
     <main className="app-bg mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <div className="flex items-baseline justify-between gap-3">
-          <Link
-            href="/group"
-            className="text-brand-gradient text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
+      <Link
+        href="/group"
+        className="text-brand-gradient text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
+      >
+        {group.name}
+      </Link>
+
+      {stats?.last_durak && (
+        <div className="card-surface flex items-stretch gap-4 rounded-2xl px-4 py-3">
+          <span
+            aria-hidden
+            className="flex items-center self-stretch text-5xl leading-none"
           >
-            {group.name}
-          </Link>
-          <Link
-            href="/group/switch"
-            className="shrink-0 text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-          >
-            Change group →
-          </Link>
+            🤡
+          </span>
+          <div className="flex min-w-0 flex-col justify-center gap-1">
+            <Link
+              href={`/stats/players/${stats.last_durak.player_id}`}
+              className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+            >
+              {stats.last_durak.display_name}
+            </Link>
+            <span className="text-xs font-medium text-zinc-500">last durak</span>
+          </div>
         </div>
-      </div>
+      )}
 
       <Link
         href="/games/new"
@@ -65,15 +75,6 @@ export default async function Home() {
       </Link>
 
       <InProgressGames games={inProgress} timezone={group.timezone} />
-
-      {stats?.last_durak && (
-        <div className="-mt-4 flex flex-col gap-1">
-          <h2 className="text-sm font-medium text-zinc-500">🤡 Last durak</h2>
-          <p className="truncate text-lg font-semibold text-black dark:text-zinc-50">
-            {stats.last_durak.display_name}
-          </p>
-        </div>
-      )}
 
       {gamesPlayed > 0 && (
         <section className="flex flex-col gap-3">
@@ -145,15 +146,6 @@ export default async function Home() {
           }
         />
       </section>
-
-      <form action="/auth/signout" method="post">
-        <button
-          type="submit"
-          className="text-sm font-medium text-zinc-500 underline underline-offset-4 hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
-          Sign out as {user.email}
-        </button>
-      </form>
     </main>
   );
 }

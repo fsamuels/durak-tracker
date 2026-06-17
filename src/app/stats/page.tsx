@@ -110,7 +110,7 @@ export default async function GroupStatsPage() {
                     >
                       {p.display_name}
                     </Link>
-                    <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
+                    <span className="badge-durak shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
                       Durak {p.durak_count} ·{" "}
                       {rate(p.durak_count, p.games_played)}
                     </span>
