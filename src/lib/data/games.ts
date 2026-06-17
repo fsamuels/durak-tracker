@@ -97,9 +97,11 @@ export async function getGameParticipantIds(
 }
 
 /**
- * One in-progress game with its current roster, for the finish page. Returns
- * null when the game doesn't exist, isn't in this group, or is already finished
- * (RLS also scopes it to groups the caller belongs to).
+ * One in-progress game with its current roster + any outcomes recorded so far,
+ * for the finish/update page. Outcomes are included because update_game lets a
+ * first-out (etc.) be saved mid-play, and reopening the game must reflect that.
+ * Returns null when the game doesn't exist, isn't in this group, or is already
+ * finished (RLS also scopes it to groups the caller belongs to).
  */
 export async function getGameToFinish(groupId: string, gameId: string) {
   const supabase = await createClient();
@@ -107,7 +109,7 @@ export async function getGameToFinish(groupId: string, gameId: string) {
     .from("games")
     .select(
       `id, trump_suit, deck_count, notes, status,
-       game_players ( player_id )`,
+       game_players ( player_id, is_durak, is_first_out, is_last_out )`,
     )
     .eq("id", gameId)
     .eq("group_id", groupId)

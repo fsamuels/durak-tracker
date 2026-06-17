@@ -56,6 +56,24 @@ export function outcomeCountError(counts: {
   return null;
 }
 
+/**
+ * Validate the (looser) outcome rules an IN-PROGRESS game must satisfy. A game
+ * being saved mid-play needn't have a durak yet or three players — but the
+ * single-holder roles still can't be double-assigned. Returns an error, or null.
+ */
+export function inProgressOutcomeError(counts: {
+  total: number;
+  durak: number;
+  firstOut: number;
+  lastOut: number;
+}): string | null {
+  if (counts.total < 1) return "Add at least one player.";
+  if (counts.durak > 1) return "Only one player can be the durak.";
+  if (counts.firstOut > 1) return "Only one player can be marked first out.";
+  if (counts.lastOut > 1) return "Only one player can be marked last out.";
+  return null;
+}
+
 function tally(outcomes: Outcome[]) {
   return {
     total: outcomes.length,
@@ -174,6 +192,45 @@ export const finishGamePayloadSchema = z
   });
 
 export type FinishGamePayload = z.infer<typeof finishGamePayloadSchema>;
+
+// ---------------------------------------------------------------------------
+// UPDATE — save an in-progress game's roster/outcomes/details mid-play
+// ---------------------------------------------------------------------------
+// Same fields as FINISH, but the looser in-progress rules apply (>= 1 player,
+// no durak required yet). The form is shared; the strict finish rules are
+// enforced only when the player chooses to finish.
+
+export const inProgressGameFormSchema = z
+  .object({ ...detailFormFields, rows: z.array(finishRowSchema) })
+  .refine(deckCountFormCheck, {
+    message: "Deck count must be a positive whole number.",
+    path: ["deckCount"],
+  })
+  .superRefine((d, ctx) => {
+    const selected = d.rows.filter((r) => r.selected);
+    const err = inProgressOutcomeError(tally(selected.map((r) => r.outcome)));
+    if (err) ctx.addIssue({ code: "custom", message: err, path: ["rows"] });
+  });
+
+export type InProgressGameFormValues = z.infer<typeof inProgressGameFormSchema>;
+
+export const updateGamePayloadSchema = z
+  .object({
+    ...detailPayloadFields,
+    participants: z.array(participantSchema).min(1),
+  })
+  .superRefine((d, ctx) => {
+    const err = inProgressOutcomeError({
+      total: d.participants.length,
+      durak: d.participants.filter((p) => p.isDurak).length,
+      firstOut: d.participants.filter((p) => p.isFirstOut).length,
+      lastOut: d.participants.filter((p) => p.isLastOut).length,
+    });
+    if (err)
+      ctx.addIssue({ code: "custom", message: err, path: ["participants"] });
+  });
+
+export type UpdateGamePayload = z.infer<typeof updateGamePayloadSchema>;
 
 // ---------------------------------------------------------------------------
 // Form -> payload helpers
