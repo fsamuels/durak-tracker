@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { GameHistoryGame } from "@/lib/data/games";
 import { formatInTz } from "@/lib/time";
 import { TRUMP_SUIT_LABELS, type TrumpSuit } from "@/lib/validation/game";
+import { formatDuration } from "@/lib/validation/stats";
 
 /**
  * Renders a list of games (newest first). Shared by the home page (last 6) and
@@ -32,6 +33,11 @@ export function GameList({
         const trump = game.trump_suit
           ? TRUMP_SUIT_LABELS[game.trump_suit as TrumpSuit]
           : null;
+        const durationSeconds = game.ended_at
+          ? (new Date(game.ended_at).getTime() -
+              new Date(game.started_at).getTime()) /
+            1000
+          : null;
 
         return (
           <li
@@ -43,7 +49,7 @@ export function GameList({
                 {formatInTz(game.started_at, timezone)}
               </span>
               {durak && (
-                <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950 dark:text-red-300">
+                <span className="badge-durak shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
                   Durak: {durak}
                 </span>
               )}
@@ -68,12 +74,19 @@ export function GameList({
               </p>
             )}
 
-            <Link
-              href={`/games/new?from=${game.id}`}
-              className="self-start text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-            >
-              ↻ Start again with this roster
-            </Link>
+            <div className="flex items-baseline justify-between gap-3">
+              <Link
+                href={`/games/new?from=${game.id}`}
+                className="text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
+              >
+                ↻ Play again
+              </Link>
+              {durationSeconds != null && (
+                <span className="shrink-0 text-xs text-zinc-500">
+                  ⏱ {formatDuration(durationSeconds)}
+                </span>
+              )}
+            </div>
           </li>
         );
       })}

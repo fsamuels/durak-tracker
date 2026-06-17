@@ -74,7 +74,7 @@ export default async function GamesPage({
           games={games}
           timezone={group.timezone}
           emptyState={
-            <li className="rounded-lg border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+            <li className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
               {filter.start || filter.end
                 ? "No games in this date range."
                 : "No games logged yet."}{" "}

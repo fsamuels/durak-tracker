@@ -32,7 +32,10 @@ body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-/* Decorative app background: soft brand-tinted glows behind content. */
+/* Decorative app background: soft brand-tinted glows behind content. Applied
+ * once on <body> so every page shares the same ambient gradient. The glows are
+ * fixed to the viewport so they stay put while content scrolls; the base color
+ * is the bottom layer so transparent areas still fill. */
 .app-bg {
   position: relative;
   background:
@@ -55,7 +58,9 @@ body {
       30rem 30rem at 20% 120%,
       color-mix(in oklab, var(--brand-via) 18%, transparent),
       transparent 60%
-    );
+    ),
+    var(--background);
+  background-attachment: fixed, fixed, fixed, fixed, scroll;
 }
 
 /* Gradient primary action — used for the main CTA on each screen. */
@@ -99,6 +104,15 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Durak (loser) badge — the warm pink end of the aurora palette, replacing the
+ * old flat red. Mixes with the theme background/foreground so it reads in both
+ * light and dark. */
+.badge-durak {
+  background: color-mix(in oklab, var(--brand-to) 14%, var(--background));
+  color: color-mix(in oklab, var(--brand-to) 78%, var(--foreground));
+  border: 1px solid color-mix(in oklab, var(--brand-to) 24%, transparent);
 }
 
 /* Frosted card surface that lifts content off the tinted background. */

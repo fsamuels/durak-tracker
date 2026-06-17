@@ -39,11 +39,11 @@ export default async function PlayersPage() {
 
       <AddPlayerForm />
 
-      <ul className="flex flex-col gap-1">
+      <ul className="flex flex-col gap-2">
         {(players ?? []).map((p) => (
           <li
             key={p.id}
-            className="flex items-center justify-between rounded-lg border border-black/10 bg-white px-3 py-2 text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+            className="card-surface flex items-center justify-between rounded-2xl px-3 py-2.5 text-black dark:text-zinc-50"
           >
             <Link
               href={`/stats/players/${p.id}`}
@@ -62,7 +62,7 @@ export default async function PlayersPage() {
           </li>
         ))}
         {(!players || players.length === 0) && (
-          <li className="rounded-lg border border-dashed border-black/15 px-3 py-6 text-center text-sm text-zinc-500 dark:border-white/15">
+          <li className="rounded-2xl border border-dashed border-black/15 px-3 py-6 text-center text-sm text-zinc-500 dark:border-white/15">
             No players yet. Add a few to start logging games.
           </li>
         )}

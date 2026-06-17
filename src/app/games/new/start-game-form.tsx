@@ -35,6 +35,7 @@ export function StartGameForm({
     control,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<StartGameFormValues>({
     resolver: zodResolver(startGameFormSchema),
@@ -55,13 +56,21 @@ export function StartGameForm({
   const selectedCount = rows.filter((r) => r.selected).length;
 
   const q = search.trim().toLowerCase();
-  // Show a row when it matches the search, or when it's selected (so filtering
-  // never hides who's already in) — and everything when the search is empty.
-  const isVisible = (i: number) =>
-    q === "" ||
-    rows[i]?.selected ||
-    fields[i].displayName.toLowerCase().includes(q);
-  const anyVisible = fields.some((_, i) => isVisible(i));
+  // The main list shows only who's in the game. The search surfaces players from
+  // the roster who aren't in yet, so you add rather than wade through everyone.
+  const selectedIndices = fields
+    .map((_, i) => i)
+    .filter((i) => rows[i]?.selected);
+  const searchMatches =
+    q === ""
+      ? []
+      : fields
+          .map((_, i) => i)
+          .filter(
+            (i) =>
+              !rows[i]?.selected &&
+              fields[i].displayName.toLowerCase().includes(q),
+          );
 
   const onSubmit = handleSubmit(async (values) => {
     const payload: StartGamePayload = {
@@ -88,40 +97,87 @@ export function StartGameForm({
           Who&apos;s playing?
         </legend>
 
-        {players.length > 6 && (
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search players…"
-            aria-label="Search players"
-            autoComplete="off"
-            className={inputClass}
-          />
-        )}
-
-        {fields.map((field, i) => (
-          <label
-            key={field.id}
-            hidden={!isVisible(i)}
-            className="flex items-center gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/15 dark:bg-zinc-900"
-          >
-            <input type="hidden" {...register(`rows.${i}.playerId`)} />
-            <input type="hidden" {...register(`rows.${i}.displayName`)} />
-            <input
-              type="checkbox"
-              {...register(`rows.${i}.selected`)}
-              className="size-5"
-            />
-            <span className="text-black dark:text-zinc-50">
-              {field.displayName}
+        {/* Keep every row registered (hidden) so RHF tracks/submits each
+            player's selected state regardless of what the list shows. */}
+        <div hidden aria-hidden>
+          {fields.map((field, i) => (
+            <span key={field.id}>
+              <input type="hidden" {...register(`rows.${i}.playerId`)} />
+              <input type="hidden" {...register(`rows.${i}.displayName`)} />
+              <input type="checkbox" {...register(`rows.${i}.selected`)} />
             </span>
-          </label>
-        ))}
+          ))}
+        </div>
 
-        {q !== "" && !anyVisible && (
-          <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+        {/* In the game */}
+        {selectedIndices.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {selectedIndices.map((i) => (
+              <li
+                key={fields[i].id}
+                className="card-surface flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
+              >
+                <span className="text-black dark:text-zinc-50">
+                  {fields[i].displayName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setValue(`rows.${i}.selected`, false, { shouldDirty: true })
+                  }
+                  aria-label={`Remove ${fields[i].displayName}`}
+                  className="shrink-0 text-sm font-medium text-zinc-500 underline-offset-4 hover:text-red-600 hover:underline"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-500">
+            No players yet — search to add them.
+          </p>
         )}
+
+        {/* Search the roster to add more players */}
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search players to add…"
+          aria-label="Search players to add"
+          autoComplete="off"
+          className={inputClass}
+        />
+
+        {q !== "" &&
+          (searchMatches.length > 0 ? (
+            <ul className="flex flex-col gap-2">
+              {searchMatches.map((i) => (
+                <li key={fields[i].id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue(`rows.${i}.selected`, true, {
+                        shouldDirty: true,
+                      });
+                      setSearch("");
+                    }}
+                    className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
+                  >
+                    <span className="text-black dark:text-zinc-50">
+                      {fields[i].displayName}
+                    </span>
+                    <span className="shrink-0 text-sm font-medium text-emerald-600">
+                      + Add
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+          ))}
 
         <AddGuestInline
           onAdded={(player) => {

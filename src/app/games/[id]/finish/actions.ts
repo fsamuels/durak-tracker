@@ -74,3 +74,34 @@ export async function finishGameAction(
   // Land on the history list so the just-finished game is visible.
   redirect("/games");
 }
+
+/**
+ * Discard an in-progress game: delete it (game_players cascade). Only an
+ * in_progress game in the caller's current group can be discarded; the
+ * discard_game RPC + games_delete RLS policy both enforce that. Lands home.
+ */
+export async function discardGameAction(
+  gameId: unknown,
+): Promise<FinishGameState> {
+  const gameIdParsed = gameIdSchema.safeParse(gameId);
+  if (!gameIdParsed.success) return { error: "Invalid game." };
+
+  const group = await getCurrentGroup();
+  if (!group) return { error: "No group found." };
+
+  // Confirm the game is in-progress and in the current group before deleting.
+  const game = await getGameToFinish(group.id, gameIdParsed.data);
+  if (!game) {
+    return {
+      error: "This game can't be discarded (already done or not found).",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("discard_game", {
+    p_game_id: gameIdParsed.data,
+  });
+  if (error) return { error: error.message };
+
+  redirect("/");
+}

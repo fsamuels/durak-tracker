@@ -43,7 +43,7 @@ export function AddPlayerForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 shrink-0 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="h-11 shrink-0 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 active:brightness-90 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
         >
           {isSubmitting ? "Adding…" : "Add"}
         </button>

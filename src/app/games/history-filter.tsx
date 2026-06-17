@@ -81,7 +81,7 @@ export function HistoryFilter({
       <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="h-10 rounded-full bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className="h-11 rounded-full bg-black px-5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 active:brightness-90 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
         >
           Apply filter
         </button>

@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–10 are complete; M11 (PWA polish) is next
+Milestones 1–11 are complete; M12 (Iterate) is next
 (see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only —
 Facebook was deferred to the backlog below. Product intent and non-goals live in
@@ -81,8 +81,16 @@ the open-ended "Iterate" bucket shifted to M11+.
     - Edge cases: expired / already-claimed token; claimer already a member; the
       one-player-per-user-per-group unique constraint.
 
-11. **PWA polish** _(shifted from M7)_ — manifest, icons, install prompt, offline
-    static-asset caching (introduces `next-pwa`).
+11. **PWA polish + mobile design pass** _(done; shifted from M7)_ — Web App
+    Manifest, generated icons (joker brand mark via Twemoji), an install prompt, and
+    offline static-asset caching via a **hand-written service worker** (`next-pwa` was
+    evaluated but dropped — it is webpack-only and Next 16 defaults to Turbopack). Grew
+    into a broader mobile UX pass: a shared sticky header + hamburger menu and a bottom
+    tab bar (Home / Games / Stats / Players) in the root layout, an `/account` stub,
+    PWA safe-area insets (`viewport-fit=cover`), 44px touch targets, and a visual
+    unification onto the frosted `card-surface` / `app-bg` brand look. Also added
+    **discard (delete) an in-progress game** (`discard_game` RPC + `games_delete` RLS)
+    and a "selected-only" start-form player picker.
 12. **Iterate** — additional metrics and refinements from real usage.
 
 ## Deferred from M6 (stats follow-ups)

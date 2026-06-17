@@ -31,7 +31,7 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 | Package manager | pnpm                                       | In use       |
 | Lint / format   | ESLint (flat config) + Prettier            | In use       |
 | Auth providers  | Supabase Auth — Google (Facebook deferred) | In use       |
-| PWA             | `next-pwa` (manifest, SW)                  | Planned (M7) |
+| PWA             | Web App Manifest + **hand-written service worker** (`next-pwa` dropped — Turbopack-incompatible) | In use (M11) |
 | Validation      | Zod                                        | In use       |
 | Forms           | React Hook Form + Zod                      | In use       |
 | Testing         | Vitest (unit), Playwright (e2e)            | Planned      |
@@ -214,6 +214,36 @@ this list is **client-side** filtering once the ranked roster is loaded — no e
 trip — and selected players stay visible while filtering. "Start again" pre-fills the
 start form from a prior game's roster (`/games/new?from=<id>`); on-the-fly guest add in
 both flows reuses `addPlayerAction`.
+
+### Discard a game — `discard_game(game_id)` (M11)
+
+Defined in [`supabase/migrations/20260617120000_discard_game.sql`](../supabase/migrations/20260617120000_discard_game.sql).
+A started-but-unfinished game can be abandoned from the finish page. `discard_game`
+is **`SECURITY INVOKER`** and deletes the game row (its `game_players` cascade via the
+FK). RLS still gates the delete through a new **`games_delete`** policy scoped to
+group members **and `status = 'in_progress'`** — so only in-progress games are
+discardable; deleting a **completed** game remains a deferred edit/delete roadmap
+item. The status guard is enforced both in the policy and in the function body.
+
+## PWA & app shell (M11)
+
+The app is installable and loads its static shell offline:
+
+- **Manifest** via `app/manifest.ts` (standalone, dark theme, portrait). **Icons**
+  are generated at build with `next/og` `ImageResponse` — `app/icon.tsx`,
+  `app/apple-icon.tsx`, and `app/icons/[size]/route.tsx` (192 / 512 / maskable) — all
+  rendering the **🃏 joker** brand mark through **Twemoji** (the default OG font has no
+  color emoji). This adds a build-time fetch from the Twemoji CDN.
+- **Service worker** is **hand-written** (`public/sw.js`, registered by
+  `src/components/service-worker.tsx`): cache-first for Next static assets / icons so
+  the shell loads offline; old cache versions are pruned on `activate`. `next-pwa` was
+  evaluated and rejected — it injects a webpack config, but Next 16 defaults to
+  Turbopack and errors on it.
+- **Layout shell:** a sticky header (`NavMenu`) + fixed bottom tab bar (`BottomNav`)
+  render for signed-in users in the root layout. `viewport-fit=cover` plus
+  `env(safe-area-inset-*)` padding keep content clear of the notch in the installed
+  PWA (the status bar is `black-translucent`). Brand surfaces are unified on the
+  `.app-bg` gradient (now on `<body>`) and the frosted `.card-surface` token.
 
 ## Metrics
 

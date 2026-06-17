@@ -18,7 +18,7 @@ import {
   type FinishGamePayload,
 } from "@/lib/validation/game";
 
-import { finishGameAction } from "./actions";
+import { discardGameAction, finishGameAction } from "./actions";
 
 type Player = { id: string; display_name: string };
 
@@ -42,6 +42,7 @@ export function FinishGameForm({
   const router = useRouter();
   const started = new Set(startedPlayerIds);
   const [search, setSearch] = useState("");
+  const [discarding, setDiscarding] = useState(false);
 
   const {
     register,
@@ -101,6 +102,23 @@ export function FinishGameForm({
     router.refresh();
   });
 
+  async function onDiscard() {
+    if (
+      !window.confirm(
+        "Discard this game? This permanently deletes it and can't be undone.",
+      )
+    ) {
+      return;
+    }
+    setDiscarding(true);
+    const res = await discardGameAction(gameId);
+    if (res?.error) {
+      setError("root", { message: res.error });
+      setDiscarding(false);
+    }
+    // On success the action redirects home.
+  }
+
   const inputClass =
     "h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
 
@@ -129,7 +147,7 @@ export function FinishGameForm({
             <div
               key={field.id}
               hidden={!isVisible(i)}
-              className="flex items-center gap-3 rounded-lg border border-black/10 bg-white px-3 py-2 dark:border-white/15 dark:bg-zinc-900"
+              className="card-surface flex items-center gap-3 rounded-2xl px-3 py-2.5"
             >
               <input type="hidden" {...register(`rows.${i}.playerId`)} />
               <input type="hidden" {...register(`rows.${i}.displayName`)} />
@@ -228,10 +246,19 @@ export function FinishGameForm({
 
       <button
         type="submit"
-        disabled={isSubmitting || !!liveError}
+        disabled={isSubmitting || discarding || !!liveError}
         className="btn-brand h-12 rounded-full px-5 text-base font-semibold"
       >
         {isSubmitting ? "Saving…" : "Finish game"}
+      </button>
+
+      <button
+        type="button"
+        onClick={onDiscard}
+        disabled={isSubmitting || discarding}
+        className="h-11 rounded-full border border-red-500/30 px-5 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/10 disabled:opacity-60 dark:text-red-400"
+      >
+        {discarding ? "Discarding…" : "Discard game"}
       </button>
 
       {errors.root && (
