@@ -101,6 +101,8 @@ the open-ended "Iterate" bucket shifted to M11+.
 
 - **Facebook login** — enable the Facebook provider in Supabase and restore the button
   in `src/app/login/page.tsx` (deferred from M3; see [oauth-setup.md](./oauth-setup.md)).
+- **Discord login** — enable the Discord provider in Supabase and add a button in
+  `src/app/login/page.tsx` (see [oauth-setup.md](./oauth-setup.md)).
 - **Auth UX polish** — Supabase custom auth domain + Google consent-screen branding so
   the login flow doesn't surface the raw Supabase project domain.
 - **Edit/delete game** — scoped to `logged_by` or group owner; soft-delete preferred;
