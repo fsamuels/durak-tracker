@@ -6,7 +6,17 @@ import type { Database } from "./database.types";
 /** Routes reachable without an authenticated session. */
 // /claim is public so an invitee can open a claim link and see who they'd be
 // claiming before signing in (the redemption itself is gated by claim_player).
-const PUBLIC_PATHS = ["/login", "/auth", "/claim"];
+// /privacy and /data-deletion must be public so Facebook's app-review crawler
+// (and any logged-out visitor) can read them. /icons backs the PWA manifest,
+// which the browser fetches before sign-in.
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth",
+  "/claim",
+  "/privacy",
+  "/data-deletion",
+  "/icons",
+];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(
