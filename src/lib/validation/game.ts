@@ -233,6 +233,66 @@ export const updateGamePayloadSchema = z
 export type UpdateGamePayload = z.infer<typeof updateGamePayloadSchema>;
 
 // ---------------------------------------------------------------------------
+// EDIT — update a completed game's timestamps, details, and player outcomes
+// ---------------------------------------------------------------------------
+// startedAt / endedAt are submitted as datetime-local strings (YYYY-MM-DDTHH:mm)
+// expressed in the group's timezone; the server action converts them to UTC.
+
+export const editGameFormSchema = z
+  .object({
+    ...detailFormFields,
+    startedAt: z.string().min(1, "Start time is required."),
+    endedAt: z.string().min(1, "End time is required."),
+    rows: z.array(finishRowSchema),
+  })
+  .refine(deckCountFormCheck, {
+    message: "Deck count must be a positive whole number.",
+    path: ["deckCount"],
+  })
+  .superRefine((d, ctx) => {
+    if (d.startedAt && d.endedAt && d.endedAt < d.startedAt) {
+      ctx.addIssue({
+        code: "custom",
+        message: "End time must be after start time.",
+        path: ["endedAt"],
+      });
+    }
+    const selected = d.rows.filter((r) => r.selected);
+    const err = outcomeCountError(tally(selected.map((r) => r.outcome)));
+    if (err) ctx.addIssue({ code: "custom", message: err, path: ["rows"] });
+  });
+
+export type EditGameFormValues = z.infer<typeof editGameFormSchema>;
+
+export const editGamePayloadSchema = z
+  .object({
+    gameId: z.guid(),
+    startedAt: z.string().min(1, "Start time is required."),
+    endedAt: z.string().min(1, "End time is required."),
+    ...detailPayloadFields,
+    participants: z.array(participantSchema),
+  })
+  .superRefine((d, ctx) => {
+    if (d.startedAt && d.endedAt && d.endedAt < d.startedAt) {
+      ctx.addIssue({
+        code: "custom",
+        message: "End time must be after start time.",
+        path: ["endedAt"],
+      });
+    }
+    const err = outcomeCountError({
+      total: d.participants.length,
+      durak: d.participants.filter((p) => p.isDurak).length,
+      firstOut: d.participants.filter((p) => p.isFirstOut).length,
+      lastOut: d.participants.filter((p) => p.isLastOut).length,
+    });
+    if (err)
+      ctx.addIssue({ code: "custom", message: err, path: ["participants"] });
+  });
+
+export type EditGamePayload = z.infer<typeof editGamePayloadSchema>;
+
+// ---------------------------------------------------------------------------
 // Form -> payload helpers
 // ---------------------------------------------------------------------------
 
