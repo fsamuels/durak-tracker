@@ -2,7 +2,8 @@ import { ImageResponse } from "next/og";
 
 export const dynamic = "force-static";
 
-const VALID_SIZES = new Set(["192", "512", "maskable-512"]);
+// 1024 is the App-Store/Facebook listing size; the rest back the PWA manifest.
+const VALID_SIZES = new Set(["192", "512", "1024", "maskable-512"]);
 
 function Icon({ size, maskable }: { size: number; maskable: boolean }) {
   const padding = maskable ? size * 0.15 : size * 0.08;

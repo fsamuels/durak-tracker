@@ -90,6 +90,21 @@ export default async function RootLayout({
               </a>{" "}
               v1.0 · created by Forrest Samuels and AI
             </p>
+            <p className="mt-1">
+              <Link
+                href="/privacy"
+                className="underline-offset-4 hover:text-zinc-600 hover:underline dark:hover:text-zinc-400"
+              >
+                Privacy
+              </Link>{" "}
+              ·{" "}
+              <Link
+                href="/data-deletion"
+                className="underline-offset-4 hover:text-zinc-600 hover:underline dark:hover:text-zinc-400"
+              >
+                Data deletion
+              </Link>
+            </p>
             {user && <p className="mt-1">Logged in as {user.email}</p>}
           </footer>
           {user && <BottomNav />}

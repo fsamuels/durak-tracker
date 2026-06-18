@@ -55,6 +55,24 @@ app admins/testers log in). Do Google first, then circle back.
    ID + Secret, Save.
 6. Flip the app to **Live** when ready for non-admin users.
 
+### Facebook submission fields ("Currently Ineligible for Submission")
+
+Facebook gates submission on four fields. The first three are served by the app
+(all public — no login required); the last is a dashboard pick:
+
+| Field                  | Value                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| App icon (1024 × 1024) | `fb-app-icon-1024.png` (repo root; regenerate via `/icons/1024`)                  |
+| Privacy policy URL     | `https://durak-tracker.vercel.app/privacy`                                        |
+| User data deletion     | `https://durak-tracker.vercel.app/data-deletion` (Data Deletion Instructions URL) |
+| Category               | **Games**                                                                         |
+
+- The privacy/data-deletion pages and the `/icons` route are whitelisted in
+  `src/lib/supabase/middleware.ts` (`PUBLIC_PATHS`) so the review crawler reaches
+  them. Verify they return 200 logged-out before submitting.
+- Regenerate the icon any time with `pnpm dev` then
+  `curl -o fb-app-icon-1024.png http://localhost:3000/icons/1024`.
+
 ## Part C — Discord
 
 Lightweight to set up — no app review, and works for any Discord user immediately
