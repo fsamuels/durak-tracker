@@ -70,13 +70,6 @@ export function NavMenu() {
           </Link>
           <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <Link
-            href="/group/switch"
-            onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
-          >
-            Switch group
-          </Link>
-          <Link
             href="/group"
             onClick={() => setOpen(false)}
             className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"

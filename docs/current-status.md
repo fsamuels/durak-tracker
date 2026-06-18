@@ -474,6 +474,32 @@ auth.uid()` in the current group), merged with any "Play again" roster. So the p
 - **Verified:** `pnpm lint` / `build` / `test` clean; new/changed files pass
   `prettier --check`.
 
+### Group management rework ✅ (non-milestone)
+
+A focused pass on the Manage group flow (branch `group-management`); no schema or
+data-model changes. Resolves the "clean up & improve group management" backlog item.
+
+- **Switching moved back onto `/group`.** The dedicated `/group/switch` page was
+  removed; its tap-to-switch list now lives inline at the top of the Manage group page
+  via a reusable `src/components/group-switcher.tsx` (still posts to the `switchGroup`
+  server action). The header (hamburger) menu's standalone **Switch group** entry was
+  dropped — **Manage group** is the single entry point.
+- **Manage group page hierarchy.** Top-to-bottom: a **group-details** card, then
+  **Switch group**, then **Players** (Manage players link), then a top-level **Create
+  group** heading + form — so switching, managing, and creating read as distinct steps
+  instead of a flat stack of buttons.
+- **Group-details card.** A new `getGroupDetails` helper
+  ([src/lib/data/groups.ts](../src/lib/data/groups.ts)) returns the active group's
+  owner (the creator's player display name, resolved via `players.auth_user_id =
+groups.created_by`), creation date, timezone, and RLS-scoped member / player / game
+  counts; `src/components/group-details.tsx` renders them. A `formatDateInTz` helper was
+  added to `lib/time.ts` for the date-only label.
+- **Tests:** `group-details.test.tsx` (facts, pluralized counts, owner/viewer states),
+  `nav-menu.test.tsx` (Manage group present, Switch group gone), and `formatDateInTz`
+  cases in `time.test.ts`.
+- **Verified:** `pnpm lint` / `build` / `test` clean; new/changed files pass
+  `prettier --check`.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
@@ -495,11 +521,10 @@ auth.uid()` in the current group), merged with any "Play again" roster. So the p
 
 ## Polish / UX backlog
 
-- [ ] **Clean up & improve group management.** The `/group` (Manage group) and
-      `/group/switch` pages are functional but rough — the layout, hierarchy, and
-      discoverability aren't where they should be (e.g. switching vs. managing vs.
-      creating all feel like a stopgap). Revisit the whole group-management flow as a
-      focused pass when it becomes a priority; not blocking for now.
+- [x] ~~**Clean up & improve group management.**~~ Done — see the **Group management
+      rework** section above. The standalone `/group/switch` page was folded back into a
+      single Manage group page (group-details card → switch → players → create), and the
+      header menu's duplicate Switch group entry was removed.
 - [ ] **Review the auth-flow text/branding.** The Google consent screen currently
       shows the raw Supabase project domain (`wjdubpkmzhsfocvgsjuv.supabase.co`, i.e.
       `NEXT_PUBLIC_SUPABASE_URL`), which can look untrustworthy to users. Options to

@@ -4,6 +4,7 @@ import {
   zonedDayStartUtc,
   zonedDayEndUtc,
   formatInTz,
+  formatDateInTz,
   periodStartDate,
 } from "./time";
 
@@ -77,6 +78,23 @@ describe("formatInTz", () => {
     const la = formatInTz(instant, "America/Los_Angeles");
     expect(ny).not.toBe(la);
     expect(la).toContain("Jun 16, 2026"); // 9:00 PM the previous day in PDT
+  });
+});
+
+describe("formatDateInTz", () => {
+  it("renders a medium date with no time component", () => {
+    const out = formatDateInTz("2026-06-17T16:00:00.000Z", "America/New_York");
+    expect(out).toBe("Jun 17, 2026");
+    expect(out).not.toMatch(/AM|PM|:/);
+  });
+
+  it("rolls to the previous day when the zone is behind the instant", () => {
+    // 02:00Z on the 17th is still 6:00 PM on the 16th in Los Angeles (PDT).
+    const out = formatDateInTz(
+      "2026-06-17T02:00:00.000Z",
+      "America/Los_Angeles",
+    );
+    expect(out).toBe("Jun 16, 2026");
   });
 });
 

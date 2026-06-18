@@ -51,3 +51,76 @@ export async function getCurrentGroup(): Promise<CurrentGroup | null> {
 
   return data ?? null;
 }
+
+/** A group plus the at-a-glance facts shown on the Manage group page. */
+export type GroupDetails = {
+  id: string;
+  name: string;
+  timezone: string;
+  /** UTC ISO instant the group was created. */
+  createdAt: string;
+  /** Display name of the group's creator/owner, or null if not resolvable. */
+  ownerName: string | null;
+  /** Whether the signed-in viewer is the group's owner (its creator). */
+  viewerIsOwner: boolean;
+  memberCount: number;
+  playerCount: number;
+  gameCount: number;
+};
+
+/**
+ * The current group's metadata for the Manage group page: who owns it, when it
+ * was created, and how many members / players / games it holds. All queries are
+ * RLS-scoped to the caller, so this only resolves for a group the user belongs
+ * to. The owner's display name comes from the creator's player row in the group
+ * (`players.auth_user_id = groups.created_by`).
+ */
+export async function getGroupDetails(
+  groupId: string,
+): Promise<GroupDetails | null> {
+  const supabase = await createClient();
+
+  const { data: group } = await supabase
+    .from("groups")
+    .select("id, name, timezone, created_at, created_by")
+    .eq("id", groupId)
+    .maybeSingle();
+  if (!group) return null;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const [members, players, games, owner] = await Promise.all([
+    supabase
+      .from("group_members")
+      .select("user_id", { count: "exact", head: true })
+      .eq("group_id", groupId),
+    supabase
+      .from("players")
+      .select("id", { count: "exact", head: true })
+      .eq("group_id", groupId),
+    supabase
+      .from("games")
+      .select("id", { count: "exact", head: true })
+      .eq("group_id", groupId),
+    supabase
+      .from("players")
+      .select("display_name")
+      .eq("group_id", groupId)
+      .eq("auth_user_id", group.created_by)
+      .maybeSingle(),
+  ]);
+
+  return {
+    id: group.id,
+    name: group.name,
+    timezone: group.timezone,
+    createdAt: group.created_at,
+    ownerName: owner.data?.display_name ?? null,
+    viewerIsOwner: !!user && group.created_by === user.id,
+    memberCount: members.count ?? 0,
+    playerCount: players.count ?? 0,
+    gameCount: games.count ?? 0,
+  };
+}
