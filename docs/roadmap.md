@@ -38,7 +38,9 @@ the open-ended "Iterate" bucket shifted to M11+.
      Players** + a dedicated **`/group/switch`** tap-to-switch page (both removed from
      home). Home shows: Log a game, a group stats summary (total games + top durak)
      linking to full stats, and recent games; the group name links to Manage group and
-     a "Change group" link goes to the switch page.
+     a "Change group" link goes to the switch page. _(Later reworked — the switch page
+     was folded back into Manage group; see the **Group management rework** note in
+     [current-status.md](./current-status.md).)_
 
 8. **Two-part game logging** _(done)_ — split logging into **start** then **finish**;
    this _replaces_ the one-shot log flow.

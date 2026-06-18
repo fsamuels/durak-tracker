@@ -115,7 +115,7 @@ src/
     games/                  start (new/) and finish ([id]/finish/) flows + history
     stats/                  group stats + per-player stats ([playerId]/)
     players/                roster management + claim-link sharing
-    group/                  manage group + switch active group
+    group/                  manage group (details, switch active group, players, create)
     claim/[token]/          public single-use guest-claim landing page
     account/                signed-in account stub
     manifest.ts, icon.tsx, apple-icon.tsx, icons/[size]/  # PWA manifest + generated icons

@@ -66,6 +66,14 @@ export function formatInTz(iso: string, timeZone: string): string {
   }).format(new Date(iso));
 }
 
+/** Render a UTC instant as a medium date (no time) in `timeZone`. */
+export function formatDateInTz(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    dateStyle: "medium",
+  }).format(new Date(iso));
+}
+
 /**
  * Format a UTC ISO instant as a `datetime-local` input value (`YYYY-MM-DDTHH:mm`)
  * expressed in `timeZone`. Used to pre-fill edit forms with the correct local time.
