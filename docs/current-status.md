@@ -359,11 +359,14 @@ No data-model changes beyond the discard RPC below.
   (favicon), `app/apple-icon.tsx` (Apple touch), and `app/icons/[size]/route.tsx`
   (192 / 512 / maskable-512), all rendering the **🃏 joker brand mark** through
   **Twemoji** (the default OG font lacks color emoji). A dismissible **install prompt**
-  (`beforeinstallprompt`) and a **hand-written service worker** (`public/sw.js`,
-  registered by `service-worker.tsx`) that cache-firsts Next static assets / icons for
-  offline shell loading. **`next-pwa` was evaluated and dropped** — it's webpack-only
-  and Next 16 defaults to Turbopack (the build errors on a webpack config) — so the SW
-  is hand-written instead.
+  and a **hand-written service worker** (`public/sw.js`, registered by `service-worker.tsx`)
+  that cache-firsts Next static assets / icons for offline shell loading. **`next-pwa`
+  was evaluated and dropped** — it's webpack-only and Next 16 defaults to Turbopack (the
+  build errors on a webpack config) — so the SW is hand-written instead. The install
+  prompt uses `useSyncExternalStore` to subscribe to the `beforeinstallprompt` event
+  (Chrome/Edge only); on iOS Safari, a fallback banner guides users to
+  Share → Add to Home Screen. A tiny inline script in the root layout captures the event
+  before React hydrates to avoid a race condition.
 - **Shared navigation.** A sticky **header** (joker wordmark → home + hamburger
   `NavMenu`) and a fixed **bottom tab bar** (`BottomNav`: Home / Games / Stats /
   Players) now live in the root layout, rendered for signed-in users on every page.

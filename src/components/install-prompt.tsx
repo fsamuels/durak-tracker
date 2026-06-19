@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -13,11 +13,75 @@ type WindowWithPrompt = Window & {
 
 const IOS_DISMISS_KEY = "ios-install-dismissed";
 
-function isIOS() {
-  return (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-    !(navigator as Navigator & { standalone?: boolean }).standalone
-  );
+// --- Install prompt external store ---
+// beforeinstallprompt fires at most once per browser session; we store it at
+// the module level so it survives component re-mounts.
+
+let _installPrompt: BeforeInstallPromptEvent | null = null;
+const _promptSubscribers = new Set<() => void>();
+
+function notifyPromptSubscribers() {
+  _promptSubscribers.forEach((fn) => fn());
+}
+
+function subscribeInstallPrompt(callback: () => void): () => void {
+  _promptSubscribers.add(callback);
+
+  function handler(e: Event) {
+    e.preventDefault();
+    _installPrompt = e as BeforeInstallPromptEvent;
+    notifyPromptSubscribers();
+  }
+
+  window.addEventListener("beforeinstallprompt", handler);
+
+  // Pick up event pre-captured by the inline script before React hydrated.
+  const win = window as WindowWithPrompt;
+  if (win.__installPrompt) {
+    _installPrompt = win.__installPrompt;
+    delete win.__installPrompt;
+    // Notify via microtask — must not call subscribers synchronously inside
+    // subscribe() per the useSyncExternalStore contract.
+    queueMicrotask(callback);
+  }
+
+  return () => {
+    _promptSubscribers.delete(callback);
+    window.removeEventListener("beforeinstallprompt", handler);
+  };
+}
+
+function getInstallPromptSnapshot(): BeforeInstallPromptEvent | null {
+  return _installPrompt;
+}
+
+function getInstallPromptServerSnapshot(): null {
+  return null;
+}
+
+// --- iOS install hint store ---
+// Checked once at subscribe time; iOS detection is stable so no re-subscription
+// is needed. useSyncExternalStore gives us a SSR-compatible server snapshot.
+
+let _showIOS: boolean | null = null;
+
+function subscribeIOS(notify: () => void): () => void {
+  void notify; // iOS detection is stable; no re-subscription needed
+  if (_showIOS === null) {
+    const isIOS =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !(navigator as Navigator & { standalone?: boolean }).standalone;
+    _showIOS = isIOS && !localStorage.getItem(IOS_DISMISS_KEY);
+  }
+  return () => {};
+}
+
+function getIOSSnapshot(): boolean {
+  return _showIOS ?? false;
+}
+
+function getIOSServerSnapshot(): false {
+  return false;
 }
 
 export function InstallPrompt({
@@ -25,31 +89,17 @@ export function InstallPrompt({
 }: {
   hasBottomNav?: boolean;
 }) {
-  const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIOS, setShowIOS] = useState(false);
+  const prompt = useSyncExternalStore(
+    subscribeInstallPrompt,
+    getInstallPromptSnapshot,
+    getInstallPromptServerSnapshot,
+  );
+  const showIOSBase = useSyncExternalStore(
+    subscribeIOS,
+    getIOSSnapshot,
+    getIOSServerSnapshot,
+  );
   const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    // Pick up event captured by the inline script before React hydrated.
-    const pre = (window as WindowWithPrompt).__installPrompt;
-    if (pre) {
-      setPrompt(pre);
-      delete (window as WindowWithPrompt).__installPrompt;
-    }
-
-    function handler(e: Event) {
-      e.preventDefault();
-      setPrompt(e as BeforeInstallPromptEvent);
-    }
-    window.addEventListener("beforeinstallprompt", handler);
-
-    // iOS Safari: no beforeinstallprompt — show manual instructions instead.
-    if (isIOS() && !localStorage.getItem(IOS_DISMISS_KEY)) {
-      setShowIOS(true);
-    }
-
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
 
   const bottomClass = hasBottomNav
     ? "bottom-[calc(env(safe-area-inset-bottom)+4.5rem)]"
@@ -63,7 +113,8 @@ export function InstallPrompt({
       await prompt.prompt();
       const { outcome } = await prompt.userChoice;
       if (outcome === "accepted" || outcome === "dismissed") {
-        setPrompt(null);
+        _installPrompt = null;
+        notifyPromptSubscribers();
       }
     }
 
@@ -93,10 +144,11 @@ export function InstallPrompt({
     );
   }
 
-  if (showIOS) {
+  if (showIOSBase && !dismissed) {
     function dismissIOS() {
       localStorage.setItem(IOS_DISMISS_KEY, "1");
-      setShowIOS(false);
+      _showIOS = false;
+      setDismissed(true);
     }
 
     return (
