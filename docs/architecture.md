@@ -240,6 +240,12 @@ The app is installable and loads its static shell offline:
   the shell loads offline; old cache versions are pruned on `activate`. `next-pwa` was
   evaluated and rejected — it injects a webpack config, but Next 16 defaults to
   Turbopack and errors on it.
+- **Install prompt** (`src/components/install-prompt.tsx`) uses `useSyncExternalStore`
+  to subscribe to the `beforeinstallprompt` event (Chrome/Edge only). A tiny inline
+  script in `layout.tsx` captures the event before React hydrates to avoid a race
+  condition. On iOS Safari (where `beforeinstallprompt` never fires), a fallback banner
+  shows manual Share → Add to Home Screen instructions; dismissal is persisted in
+  `localStorage`.
 - **Layout shell:** a sticky header (`NavMenu`) + fixed bottom tab bar (`BottomNav`)
   render for signed-in users in the root layout. `viewport-fit=cover` plus
   `env(safe-area-inset-*)` padding keep content clear of the notch in the installed
