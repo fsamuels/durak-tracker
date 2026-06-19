@@ -3,50 +3,23 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { createClient } from "@/lib/supabase/client";
+import { OAuthButtons } from "@/components/oauth-buttons";
 
 import { claimPlayerAction } from "./actions";
 
 /**
- * Sign in with Google, returning to this claim page afterwards. We route the
- * OAuth callback through /auth/callback with a `next` back to /claim/<token> so
- * the signed-in user lands on the confirm step.
+ * Sign in to claim, returning to this claim page afterwards. The OAuth callback
+ * is routed through /auth/callback with a `next` back to /claim/<token> so the
+ * signed-in user lands on the confirm step. Supports Google, Facebook and
+ * Discord (see OAuthButtons).
  */
 export function ClaimSignInButton({ token }: { token: string }) {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function signIn() {
-    setPending(true);
-    setError(null);
-    const supabase = createClient();
-    const next = encodeURIComponent(`/claim/${token}`);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${next}`,
-      },
-    });
-    if (error) {
-      setError(error.message);
-      setPending(false);
-    }
-  }
-
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        onClick={signIn}
-        disabled={pending}
-        className="btn-brand flex h-12 items-center justify-center rounded-full px-5 font-medium disabled:opacity-60"
-      >
-        {pending ? "Redirecting…" : "Sign in with Google to claim"}
-      </button>
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
+    <div className="flex flex-col items-center gap-3">
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Sign in to claim this player:
+      </p>
+      <OAuthButtons next={`/claim/${token}`} />
     </div>
   );
 }
