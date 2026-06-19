@@ -6,6 +6,7 @@ import { InstallPrompt } from "@/components/install-prompt";
 import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
+import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -72,7 +73,7 @@ export default async function RootLayout({
                 >
                   🃏 Durak Tracker
                 </Link>
-                <NavMenu />
+                <NavMenu isAdmin={isAdmin(user)} />
               </div>
             </header>
           )}

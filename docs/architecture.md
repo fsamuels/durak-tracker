@@ -144,6 +144,13 @@ enabled on all five tables and the cross-group isolation is tested. In productio
 all four values are Vercel environment variables; only the two `NEXT_PUBLIC_` ones
 reach the browser.
 
+**Admin area — the one server-side, RLS-bypassing path.** The `/admin` route is the
+first (and currently only) place that uses the service-role key. It powers
+account-authority views that span the whole system rather than a single group, so
+they can't go through the anon-key + RLS path. Access is gated by `isAdmin` and the
+service-role client is built only in server-only data helpers — see
+[admin.md](./admin.md) for the full authorization and key-handling model.
+
 ### Why RLS — fit and trade-offs
 
 RLS fits this app: a single Postgres as source of truth, a direct browser→Supabase
