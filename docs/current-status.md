@@ -434,6 +434,27 @@ Full `/account` page replacing the stub:
 - **Verified:** `pnpm lint` / `format:check` / `test` (64 tests passing) / `build` clean.
   TypeScript clean. Owner does manual UI pass before merge.
 
+### Admin area — account authority v0 ✅ (non-milestone)
+
+First operator-only area, at `/admin`, reachable from the hamburger menu (the link
+renders only for admins). Groundwork for a future "account authority" role.
+
+- **Authorization** — single [`isAdmin`](../src/lib/admin.ts) helper, today an
+  email allowlist (`ADMIN_EMAILS` = `fsamuels@gmail.com`, case-insensitive). The page
+  returns `notFound()` for non-admins so the area isn't advertised; the menu link is
+  gated by the same check passed from the root layout. Planned: move the allowlist to a
+  DB-backed authority model — `isAdmin` is the only call site to change.
+- **First feature: external authenticated accounts** — lists every external (OAuth)
+  identity in the system (Google / Facebook / Discord), newest sign-in first, with
+  provider, name/email, and linked / last-sign-in timestamps.
+- **Service-role path** — the first server-side use of `SUPABASE_SERVICE_ROLE_KEY`.
+  [`createAdminClient`](../src/lib/supabase/admin.ts) (RLS-bypassing, server only) backs
+  [`listExternalAccounts`](../src/lib/data/accounts.ts), which pages through the Supabase
+  Auth Admin API. Full model in [admin.md](./admin.md).
+- **Verified:** `pnpm lint` / `format:check` / `test` (101 tests passing) / `build`
+  clean. Note: `SUPABASE_SERVICE_ROLE_KEY` must be set in Vercel (already required) for
+  the accounts list to load.
+
 ### Automated test suite ✅ (non-milestone)
 
 > **Candid note:** an automated test suite should have existed from **M1**. Shipping

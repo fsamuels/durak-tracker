@@ -56,4 +56,23 @@ describe("NavMenu", () => {
       screen.getByRole("button", { name: "Sign out" }),
     ).toBeInTheDocument();
   });
+
+  it("hides the Admin link by default", () => {
+    render(<NavMenu />);
+    openMenu();
+
+    expect(
+      screen.queryByRole("link", { name: "Admin" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the Admin link for admins", () => {
+    render(<NavMenu isAdmin />);
+    openMenu();
+
+    expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute(
+      "href",
+      "/admin",
+    );
+  });
 });

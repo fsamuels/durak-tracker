@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-export function NavMenu() {
+export function NavMenu({ isAdmin = false }: { isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -83,6 +83,15 @@ export function NavMenu() {
           >
             Account
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setOpen(false)}
+              className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            >
+              Admin
+            </Link>
+          )}
           <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <form action="/auth/signout" method="post">
             <button
