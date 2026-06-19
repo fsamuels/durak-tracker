@@ -33,7 +33,13 @@ export default async function AdminPage() {
   // advertised to ordinary users.
   if (!isAdmin(user)) notFound();
 
-  const accounts = await listExternalAccounts();
+  let accounts: Awaited<ReturnType<typeof listExternalAccounts>> = [];
+  let loadError: string | null = null;
+  try {
+    accounts = await listExternalAccounts();
+  } catch (err) {
+    loadError = err instanceof Error ? err.message : String(err);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
@@ -51,16 +57,28 @@ export default async function AdminPage() {
           <h2 className="text-sm font-medium text-zinc-500">
             External accounts
           </h2>
-          <span className="text-xs text-zinc-400 dark:text-zinc-600">
-            {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
-          </span>
+          {!loadError && (
+            <span className="text-xs text-zinc-400 dark:text-zinc-600">
+              {accounts.length}{" "}
+              {accounts.length === 1 ? "account" : "accounts"}
+            </span>
+          )}
         </div>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           Every external (OAuth) identity authenticated across the system,
           newest sign-in first.
         </p>
 
-        {accounts.length === 0 ? (
+        {loadError ? (
+          <div className="card-surface rounded-2xl px-4 py-4">
+            <p className="text-sm font-medium text-red-600 dark:text-red-400">
+              Failed to load accounts
+            </p>
+            <p className="mt-1 font-mono text-xs text-zinc-500 dark:text-zinc-400">
+              {loadError}
+            </p>
+          </div>
+        ) : accounts.length === 0 ? (
           <p className="card-surface rounded-2xl px-4 py-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
             No external accounts yet.
           </p>
