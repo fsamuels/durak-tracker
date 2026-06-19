@@ -159,6 +159,12 @@ validation layers. What remains:
   then the home-page group switcher (M6) lets the owner flip between the seeded group
   and their real group on the production DB.
 
+- **Automated DB migrations in CI** — add a `migrate` job to `.github/workflows/ci.yml`
+  using `supabase/setup-cli@v1` that runs `supabase db push` on pushes to `main` only
+  (not PRs). Requires two GitHub secrets: `SUPABASE_ACCESS_TOKEN` (Supabase dashboard →
+  Account → Access Tokens) and `SUPABASE_DB_PASSWORD` (Project Settings → Database).
+  Currently migrations are applied manually via `supabase db push` locally.
+
 ## Open questions / decisions for later
 
 - **Head-to-head** — surface on the player profile only, or also a dedicated
