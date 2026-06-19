@@ -56,6 +56,12 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="app-bg min-h-full flex flex-col">
+        {/* Capture beforeinstallprompt before React hydrates so the component never misses it. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__installPrompt=e;});`,
+          }}
+        />
         <ThemeProvider>
           {user && (
             <header className="sticky top-0 z-30 border-b border-black/10 bg-background/80 pt-[env(safe-area-inset-top)] backdrop-blur-md dark:border-white/10">
