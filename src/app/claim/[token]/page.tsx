@@ -6,6 +6,9 @@ import { claimTokenSchema } from "@/lib/validation/claim";
 
 import { ClaimButton, ClaimSignInButton } from "./claim-client";
 
+const GUID_PATTERN =
+  /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+
 /**
  * Claim landing page. Public (see PUBLIC_PATHS) so an invitee can open the link
  * while signed out, see who they'd be claiming, then sign in. The actual
@@ -17,7 +20,12 @@ export default async function ClaimPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const parsed = claimTokenSchema.safeParse(token);
+  // The Web Share API hands targets the message text + URL together, so a
+  // shared/copied link can arrive with trailing whitespace or punctuation
+  // appended to the token. Pull the GUID out before validating so a valid link
+  // isn't rejected over stray characters.
+  const normalizedToken = token.trim().match(GUID_PATTERN)?.[0] ?? token;
+  const parsed = claimTokenSchema.safeParse(normalizedToken);
 
   if (!parsed.success) {
     return (
