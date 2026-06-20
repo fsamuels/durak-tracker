@@ -40,36 +40,32 @@ type IdentityData = {
  */
 export async function listExternalAccounts(): Promise<ExternalAccount[]> {
   const supabase = createAdminClient();
+
+  // Fetch up to 1000 users in a single call. Passing `page` triggers
+  // offset-based pagination in GoTrue which can return a "Database error
+  // finding users" on some Supabase project configurations, so we omit it and
+  // rely on a high perPage ceiling instead — adequate for this app's scale.
+  const { data, error } = await supabase.auth.admin.listUsers({
+    perPage: 1000,
+  });
+  if (error) throw error;
+
   const accounts: ExternalAccount[] = [];
+  for (const user of data.users) {
+    for (const identity of user.identities ?? []) {
+      if (!EXTERNAL_PROVIDER_SET.has(identity.provider ?? "")) continue;
 
-  // The Admin API paginates; walk every page so the list is complete even as
-  // the user base grows.
-  const perPage = 200;
-  for (let page = 1; ; page += 1) {
-    const { data, error } = await supabase.auth.admin.listUsers({
-      page,
-      perPage,
-    });
-    if (error) throw error;
-
-    for (const user of data.users) {
-      for (const identity of user.identities ?? []) {
-        if (!EXTERNAL_PROVIDER_SET.has(identity.provider ?? "")) continue;
-
-        const idData = (identity.identity_data ?? {}) as IdentityData;
-        accounts.push({
-          userId: user.id,
-          userEmail: user.email ?? null,
-          provider: identity.provider ?? "unknown",
-          name: idData.full_name ?? idData.name ?? null,
-          email: idData.email ?? null,
-          linkedAt: identity.created_at ?? null,
-          lastSignInAt: identity.last_sign_in_at ?? null,
-        });
-      }
+      const idData = (identity.identity_data ?? {}) as IdentityData;
+      accounts.push({
+        userId: user.id,
+        userEmail: user.email ?? null,
+        provider: identity.provider ?? "unknown",
+        name: idData.full_name ?? idData.name ?? null,
+        email: idData.email ?? null,
+        linkedAt: identity.created_at ?? null,
+        lastSignInAt: identity.last_sign_in_at ?? null,
+      });
     }
-
-    if (data.users.length < perPage) break;
   }
 
   accounts.sort((a, b) => {
