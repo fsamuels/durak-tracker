@@ -59,8 +59,7 @@ export default async function AdminPage() {
           </h2>
           {!loadError && (
             <span className="text-xs text-zinc-400 dark:text-zinc-600">
-              {accounts.length}{" "}
-              {accounts.length === 1 ? "account" : "accounts"}
+              {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
             </span>
           )}
         </div>
