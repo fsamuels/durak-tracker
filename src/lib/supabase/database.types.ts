@@ -384,6 +384,13 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      group_player_avatars: {
+        Args: { p_group_id: string };
+        Returns: {
+          avatar_url: string | null;
+          player_id: string;
+        }[];
+      };
       group_roster: {
         Args: { p_group_id: string };
         Returns: {

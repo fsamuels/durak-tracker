@@ -1,5 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
+import { pickAvatarUrl } from "./avatars";
+
 /**
  * The external identity providers we surface as "authenticated accounts".
  * These are the OAuth providers a user can sign in with (see the login and
@@ -20,6 +22,8 @@ export type ExternalAccount = {
   name: string | null;
   /** Email reported by the provider for this identity, if any. */
   email: string | null;
+  /** Profile-picture URL reported by the provider, if any. */
+  avatarUrl: string | null;
   /** When this identity was first linked (ISO), if known. */
   linkedAt: string | null;
   /** Most recent sign-in via this identity (ISO), if known. */
@@ -62,6 +66,7 @@ export async function listExternalAccounts(): Promise<ExternalAccount[]> {
         provider: identity.provider ?? "unknown",
         name: idData.full_name ?? idData.name ?? null,
         email: idData.email ?? null,
+        avatarUrl: pickAvatarUrl(idData),
         linkedAt: identity.created_at ?? null,
         lastSignInAt: identity.last_sign_in_at ?? null,
       });

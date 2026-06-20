@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-17.
+Living snapshot of what's built. Last updated: 2026-06-20.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -523,6 +523,36 @@ groups.created_by`), creation date, timezone, and RLS-scoped member / player / g
   cases in `time.test.ts`.
 - **Verified:** `pnpm lint` / `build` / `test` clean; new/changed files pass
   `prettier --check`.
+
+### Profile pictures ✅ (non-milestone)
+
+Authenticated players' OAuth profile pictures now appear next to their names across
+the app (branch `claude/user-profile-pictures-om0zg6`).
+
+- **`group_player_avatars(group_id)` RPC** (`20260620000000_group_player_avatars.sql`).
+  A **`SECURITY DEFINER`** SQL function (it must read `auth.users`, unreadable by the
+  `authenticated` role) returning only `(player_id, avatar_url)` and gated to group
+  members via `is_group_member` in the `WHERE` — so a regular member page can show
+  avatars without the service-role key, and no identity data beyond the picture URL
+  leaks. Pictures come from `raw_user_meta_data` (`avatar_url`, falling back to
+  `picture`). Backed by a `getGroupAvatars` helper (`src/lib/data/avatars.ts`) that
+  returns a `Map<player_id, url>`.
+- **`Avatar` component** (`src/components/avatar.tsx`) — circular picture with an
+  initials fallback for guests / pictureless members; a plain `<img>`
+  (`referrerPolicy="no-referrer"`) rather than `next/image` to avoid per-provider
+  `remotePatterns` config.
+- **Shown on:** the **players** list, the home **"most durak"** card, **everywhere** on
+  the **group-stats** page (last durak, most durak, leaderboard), and the **admin**
+  accounts list. **Intentionally not** on the home **🤡 last-durak** card or the
+  **game-history** rows (kept uncluttered). The admin list reads pictures from the Auth
+  Admin API `identity_data` via the same `pickAvatarUrl` extractor (`avatarUrl` added to
+  `ExternalAccount`).
+- **Tests:** `avatar.test.tsx` (picture vs. initials fallback, decorative alt /
+  no-referrer, name parsing) and `avatars.test.ts` (`pickAvatarUrl` precedence/guards
+  and `getGroupAvatars` row→map mapping). **111 tests passing.**
+- **Verified:** `pnpm lint` / `format:check` / `test` / `build` clean. **Manual step
+  (owner):** apply the migration via `supabase db push` (the function reads `auth.users`,
+  so it can't run under the anon path) — pending until the branch merges.
 
 ## Not yet implemented
 
