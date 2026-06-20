@@ -39,7 +39,13 @@ export default async function AdminPage() {
   try {
     accounts = await listExternalAccounts();
   } catch (err) {
-    loadError = err instanceof Error ? err.message : String(err);
+    const e = err as { message?: string; status?: number; code?: string };
+    const parts = [
+      e.status != null ? `HTTP ${e.status}` : null,
+      e.code ? `[${e.code}]` : null,
+      e.message ?? String(err),
+    ].filter(Boolean);
+    loadError = parts.join(" — ");
   }
 
   return (

@@ -47,9 +47,18 @@ anon key + user JWT path the rest of the app relies on. Instead:
 The first admin feature lists **every external (OAuth) authenticated account in the
 system**, newest sign-in first.
 
-- Data comes from the Supabase **Auth Admin API** (`auth.admin.listUsers`), which the
-  anon key can't reach. [`listExternalAccounts`](../src/lib/data/accounts.ts)
-  paginates through all users and flattens their linked identities.
+- Data comes from a **`SECURITY DEFINER` database function**
+  `public.admin_list_external_accounts()` (migration
+  `20260620000001_admin_list_users.sql`), called via `supabase.rpc()` from
+  [`listExternalAccounts`](../src/lib/data/accounts.ts). It joins `auth.users` +
+  `auth.identities` directly, filtering to the supported OAuth providers and ordering
+  by `last_sign_in_at DESC`.
+  - **Why not the Auth Admin API?** `supabase.auth.admin.listUsers` returns HTTP 500
+    `unexpected_failure` ("Database error finding users") on this Supabase project
+    configuration — GoTrue fails its own internal SQL query. The `SECURITY DEFINER`
+    function bypasses GoTrue entirely while keeping the same auth.users data.
+  - The function is granted to `service_role` only (`REVOKE ALL … FROM PUBLIC`), so
+    it can't be reached through the anon key + RLS path.
 - "External" means the OAuth providers the app supports — **Google, Facebook, and
   Discord**. The implicit `email` identity is excluded.
 - Each row shows the provider, the name/email reported by that provider, the auth

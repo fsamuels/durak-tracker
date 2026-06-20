@@ -449,8 +449,12 @@ renders only for admins). Groundwork for a future "account authority" role.
   provider, name/email, and linked / last-sign-in timestamps.
 - **Service-role path** — the first server-side use of `SUPABASE_SERVICE_ROLE_KEY`.
   [`createAdminClient`](../src/lib/supabase/admin.ts) (RLS-bypassing, server only) backs
-  [`listExternalAccounts`](../src/lib/data/accounts.ts), which pages through the Supabase
-  Auth Admin API. Full model in [admin.md](./admin.md).
+  [`listExternalAccounts`](../src/lib/data/accounts.ts). Full model in [admin.md](./admin.md).
+- **GoTrue bypass** — `auth.admin.listUsers` returns HTTP 500 `unexpected_failure`
+  ("Database error finding users") on this project. Fixed by a `SECURITY DEFINER`
+  function `admin_list_external_accounts()` (`20260620000001_admin_list_users.sql`) that
+  queries `auth.users ⋈ auth.identities` directly, granted to `service_role` only.
+  `listExternalAccounts` calls it via `supabase.rpc()`.
 - **Verified:** `pnpm lint` / `format:check` / `test` (101 tests passing) / `build`
   clean. Note: `SUPABASE_SERVICE_ROLE_KEY` must be set in Vercel (already required) for
   the accounts list to load.

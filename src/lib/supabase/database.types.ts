@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       game_players: {
@@ -253,43 +278,18 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      check_game_player_integrity: {
-        Args: { p_game_id: string };
-        Returns: undefined;
-      };
-      edit_completed_game: {
-        Args: {
-          p_game_id: string;
-          p_participants: Json;
-          p_started_at: string;
-          p_ended_at: string;
-          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
-          p_deck_count?: number;
-          p_notes?: string;
-        };
+      admin_list_external_accounts: {
+        Args: never;
         Returns: {
-          created_at: string;
-          deck_count: number | null;
-          deleted_at: string | null;
-          ended_at: string | null;
-          group_id: string;
-          id: string;
-          logged_by: string;
-          metrics: Json | null;
-          notes: string | null;
-          started_at: string;
-          status: Database["public"]["Enums"]["game_status"];
-          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
-          updated_at: string;
-        };
-        SetofOptions: {
-          from: "*";
-          to: "games";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
+          identity_data: Json;
+          last_sign_in_at: string;
+          linked_at: string;
+          provider: string;
+          user_email: string;
+          user_id: string;
+        }[];
       };
-      discard_game: {
+      check_game_player_integrity: {
         Args: { p_game_id: string };
         Returns: undefined;
       };
@@ -355,6 +355,39 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      discard_game: { Args: { p_game_id: string }; Returns: undefined };
+      edit_completed_game: {
+        Args: {
+          p_deck_count?: number;
+          p_ended_at: string;
+          p_game_id: string;
+          p_notes?: string;
+          p_participants: Json;
+          p_started_at: string;
+          p_trump_suit?: Database["public"]["Enums"]["trump_suit"];
+        };
+        Returns: {
+          created_at: string;
+          deck_count: number | null;
+          deleted_at: string | null;
+          ended_at: string | null;
+          group_id: string;
+          id: string;
+          logged_by: string;
+          metrics: Json | null;
+          notes: string | null;
+          started_at: string;
+          status: Database["public"]["Enums"]["game_status"];
+          trump_suit: Database["public"]["Enums"]["trump_suit"] | null;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "games";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       finish_game: {
         Args: {
           p_deck_count?: number;
@@ -366,6 +399,7 @@ export type Database = {
         Returns: {
           created_at: string;
           deck_count: number | null;
+          deleted_at: string | null;
           ended_at: string | null;
           group_id: string;
           id: string;
@@ -387,7 +421,7 @@ export type Database = {
       group_player_avatars: {
         Args: { p_group_id: string };
         Returns: {
-          avatar_url: string | null;
+          avatar_url: string;
           player_id: string;
         }[];
       };
@@ -416,6 +450,7 @@ export type Database = {
         Returns: {
           created_at: string;
           deck_count: number | null;
+          deleted_at: string | null;
           ended_at: string | null;
           group_id: string;
           id: string;
@@ -450,6 +485,7 @@ export type Database = {
         Returns: {
           created_at: string;
           deck_count: number | null;
+          deleted_at: string | null;
           ended_at: string | null;
           group_id: string;
           id: string;
@@ -479,6 +515,7 @@ export type Database = {
         Returns: {
           created_at: string;
           deck_count: number | null;
+          deleted_at: string | null;
           ended_at: string | null;
           group_id: string;
           id: string;
@@ -629,6 +666,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       game_status: ["in_progress", "completed"],
