@@ -53,7 +53,9 @@ system**, newest sign-in first.
 - "External" means the OAuth providers the app supports — **Google, Facebook, and
   Discord**. The implicit `email` identity is excluded.
 - Each row shows the provider, the name/email reported by that provider, the auth
-  user's primary email, and the linked / last-sign-in timestamps.
+  user's primary email, the linked / last-sign-in timestamps, and the account's
+  **profile picture** (from the provider's `identity_data`, via the shared
+  `pickAvatarUrl` extractor; falls back to initials when none is present).
 
 ### Extending the admin area
 

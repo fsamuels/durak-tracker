@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Avatar } from "@/components/avatar";
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
@@ -12,9 +14,10 @@ export default async function GroupStatsPage() {
   if (!group) redirect("/onboarding");
 
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("group_stats", {
-    p_group_id: group.id,
-  });
+  const [{ data, error }, avatars] = await Promise.all([
+    supabase.rpc("group_stats", { p_group_id: group.id }),
+    getGroupAvatars(group.id),
+  ]);
 
   const parsed = error ? null : groupStatsSchema.safeParse(data);
   const stats = parsed?.success ? parsed.data : null;
@@ -66,24 +69,42 @@ export default async function GroupStatsPage() {
               value={formatDuration(stats.avg_duration_seconds)}
             />
             {stats.last_durak && (
-              <div className="col-span-2 card-surface rounded-2xl px-4 py-3">
-                <p className="text-xs text-zinc-500">Last durak</p>
-                <p className="text-sm font-medium text-black dark:text-zinc-50">
-                  {stats.last_durak.display_name}
-                </p>
-                <p className="text-xs text-zinc-500">
-                  {formatInTz(stats.last_durak.started_at, group.timezone)}
-                </p>
+              <div className="col-span-2 card-surface flex items-center gap-3 rounded-2xl px-4 py-3">
+                <Avatar
+                  src={avatars.get(stats.last_durak.player_id)}
+                  name={stats.last_durak.display_name}
+                />
+                <div className="min-w-0">
+                  <p className="text-xs text-zinc-500">Last durak</p>
+                  <p className="truncate text-sm font-medium text-black dark:text-zinc-50">
+                    {stats.last_durak.display_name}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {formatInTz(stats.last_durak.started_at, group.timezone)}
+                  </p>
+                </div>
               </div>
             )}
             {mostDurak && mostDurak.length > 0 && (
-              <div className="col-span-2 card-surface rounded-2xl px-4 py-3">
-                <p className="text-xs text-zinc-500">
-                  Most durak ({mostDurak[0].durak_count})
-                </p>
-                <p className="text-sm font-medium text-black dark:text-zinc-50">
-                  {mostDurak.map((p) => p.display_name).join(", ")}
-                </p>
+              <div className="col-span-2 card-surface flex items-center gap-3 rounded-2xl px-4 py-3">
+                <div className="flex shrink-0 -space-x-2">
+                  {mostDurak.map((p) => (
+                    <Avatar
+                      key={p.player_id}
+                      src={avatars.get(p.player_id)}
+                      name={p.display_name}
+                      className="ring-2 ring-[var(--background)]"
+                    />
+                  ))}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-zinc-500">
+                    Most durak ({mostDurak[0].durak_count})
+                  </p>
+                  <p className="truncate text-sm font-medium text-black dark:text-zinc-50">
+                    {mostDurak.map((p) => p.display_name).join(", ")}
+                  </p>
+                </div>
               </div>
             )}
           </section>
@@ -117,24 +138,32 @@ export default async function GroupStatsPage() {
               {stats.players.map((p) => (
                 <li
                   key={p.player_id}
-                  className="card-surface rounded-2xl px-4 py-3"
+                  className="card-surface flex items-center gap-3 rounded-2xl px-4 py-3"
                 >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <Link
-                      href={`/stats/players/${p.player_id}`}
-                      className="text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
-                    >
-                      {p.display_name}
-                    </Link>
-                    <span className="badge-durak shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-                      Durak {p.durak_count} ·{" "}
-                      {rate(p.durak_count, p.games_played)}
-                    </span>
+                  <Avatar
+                    src={avatars.get(p.player_id)}
+                    name={p.display_name}
+                    size="lg"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <Link
+                        href={`/stats/players/${p.player_id}`}
+                        className="truncate text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                      >
+                        {p.display_name}
+                      </Link>
+                      <span className="badge-durak shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
+                        Durak {p.durak_count} ·{" "}
+                        {rate(p.durak_count, p.games_played)}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {p.games_played} game{p.games_played === 1 ? "" : "s"} ·
+                      first out {p.first_out_count} · last out{" "}
+                      {p.last_out_count}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {p.games_played} game{p.games_played === 1 ? "" : "s"} ·
-                    first out {p.first_out_count} · last out {p.last_out_count}
-                  </p>
                 </li>
               ))}
             </ul>

@@ -223,6 +223,31 @@ trip — and selected players stay visible while filtering. "Start again" pre-fi
 start form from a prior game's roster (`/games/new?from=<id>`); on-the-fly guest add in
 both flows reuses `addPlayerAction`.
 
+### Profile pictures — `group_player_avatars(group_id)`
+
+Defined in [`supabase/migrations/20260620000000_group_player_avatars.sql`](../supabase/migrations/20260620000000_group_player_avatars.sql).
+Authenticated players' profile pictures are shown next to their names (the players
+list, the home "most durak" card, and across the group-stats page). The pictures come
+from each linked auth user's OAuth metadata — Google (and others) store them on
+`auth.users.raw_user_meta_data` as `avatar_url` (some providers use `picture`).
+
+`auth.users` isn't readable by the `authenticated` role, so unlike the other group
+RPCs this one is **`SECURITY DEFINER`**. It stays safe by (a) gating on
+`is_group_member(p_group_id)` in the `WHERE` clause — matching the RLS on `players`,
+so a non-member gets no rows — and (b) returning **only** a `(player_id, avatar_url)`
+pair, never emails or other identity data. It's `STABLE`. The
+[`getGroupAvatars`](../src/lib/data/avatars.ts) helper calls it and returns a
+`Map<player_id, url>`; guests and members without a picture are simply absent, and the
+[`Avatar`](../src/components/avatar.tsx) component falls back to initials. The admin
+accounts list reads pictures straight from the Auth Admin API's `identity_data` (it
+already runs service-role), reusing the same `pickAvatarUrl` extractor.
+
+Avatars render as a plain `<img>` (not `next/image`): the picture hosts are arbitrary
+per-provider domains, so `<img>` with `referrerPolicy="no-referrer"` (which Google's
+`lh3.googleusercontent.com` needs to avoid a 403) avoids per-domain `remotePatterns`
+config. They're intentionally **not** shown on the home "last durak" (🤡) card or on
+the game-history rows, to keep those surfaces uncluttered.
+
 ### Discard a game — `discard_game(game_id)` (M11)
 
 Defined in [`supabase/migrations/20260617120000_discard_game.sql`](../supabase/migrations/20260617120000_discard_game.sql).

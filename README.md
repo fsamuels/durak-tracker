@@ -127,7 +127,7 @@ src/
     time.ts           timezone-aware date helpers
   proxy.ts          # session refresh + route protection (middleware)
 supabase/
-  migrations/        # schema + RPCs (init, log_game, stats, two-part logging, roster, claims, discard)
+  migrations/        # schema + RPCs (init, log_game, stats, two-part logging, roster, claims, discard, avatars)
   seed.sql           # demo data (Walla Walla Run Club, 36 games)
 public/sw.js         # hand-written service worker
 docs/                # architecture, current-status, roadmap, oauth-setup

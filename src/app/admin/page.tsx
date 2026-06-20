@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 
+import { Avatar } from "@/components/avatar";
 import { isAdmin } from "@/lib/admin";
 import { listExternalAccounts } from "@/lib/data/accounts";
 import { createClient } from "@/lib/supabase/server";
@@ -86,26 +87,38 @@ export default async function AdminPage() {
             {accounts.map((account) => (
               <li
                 key={`${account.userId}:${account.provider}`}
-                className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3"
+                className="card-surface flex gap-3 rounded-2xl px-4 py-3"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-black dark:text-zinc-50">
-                    {account.name ?? account.email ?? account.userEmail ?? "—"}
-                  </span>
-                  <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
-                    {PROVIDER_LABELS[account.provider] ?? account.provider}
-                  </span>
-                </div>
-                {(account.email ?? account.userEmail) && (
-                  <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                    {account.email ?? account.userEmail}
-                  </span>
-                )}
-                <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-600">
-                  <span>
-                    Last sign-in: {formatDateTime(account.lastSignInAt)}
-                  </span>
-                  <span>Linked: {formatDateTime(account.linkedAt)}</span>
+                <Avatar
+                  src={account.avatarUrl}
+                  name={
+                    account.name ?? account.email ?? account.userEmail ?? "?"
+                  }
+                  size="lg"
+                />
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="truncate text-sm font-medium text-black dark:text-zinc-50">
+                      {account.name ??
+                        account.email ??
+                        account.userEmail ??
+                        "—"}
+                    </span>
+                    <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+                      {PROVIDER_LABELS[account.provider] ?? account.provider}
+                    </span>
+                  </div>
+                  {(account.email ?? account.userEmail) && (
+                    <span className="truncate text-sm text-zinc-600 dark:text-zinc-400">
+                      {account.email ?? account.userEmail}
+                    </span>
+                  )}
+                  <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-600">
+                    <span>
+                      Last sign-in: {formatDateTime(account.lastSignInAt)}
+                    </span>
+                    <span>Linked: {formatDateTime(account.linkedAt)}</span>
+                  </div>
                 </div>
               </li>
             ))}

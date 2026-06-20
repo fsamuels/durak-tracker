@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Avatar } from "@/components/avatar";
 import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +30,7 @@ export default async function Home() {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const [{ games }, { games: inProgress }, { data: statsRaw }] =
+  const [{ games }, { games: inProgress }, { data: statsRaw }, avatars] =
     await Promise.all([
       getGameHistory({
         groupId: group.id,
@@ -37,6 +39,7 @@ export default async function Home() {
       }),
       getInProgressGames(group.id),
       supabase.rpc("group_stats", { p_group_id: group.id }),
+      getGroupAvatars(group.id),
     ]);
 
   const stats = groupStatsSchema.safeParse(statsRaw).data ?? null;
@@ -98,15 +101,24 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
-              <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                {topDurak ? topDurak.display_name : "—"}
-              </span>
-              <span className="text-xs font-medium text-zinc-500">
-                {topDurak
-                  ? `most durak (${topDurak.durak_count})`
-                  : "no durak yet"}
-              </span>
+            <div className="card-surface col-span-2 flex items-center gap-3 rounded-2xl px-4 py-3">
+              {topDurak && (
+                <Avatar
+                  src={avatars.get(topDurak.player_id)}
+                  name={topDurak.display_name}
+                  size="lg"
+                />
+              )}
+              <div className="flex min-w-0 flex-col gap-1">
+                <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
+                  {topDurak ? topDurak.display_name : "—"}
+                </span>
+                <span className="text-xs font-medium text-zinc-500">
+                  {topDurak
+                    ? `most durak (${topDurak.durak_count})`
+                    : "no durak yet"}
+                </span>
+              </div>
             </div>
             <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="text-brand-gradient text-3xl font-bold tracking-tight">
