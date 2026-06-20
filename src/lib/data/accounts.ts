@@ -2,14 +2,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 import { pickAvatarUrl } from "./avatars";
 
-/**
- * The external identity providers we surface as "authenticated accounts".
- * These are the OAuth providers a user can sign in with (see the login and
- * account pages); the implicit `email` identity is intentionally excluded.
- */
-const EXTERNAL_PROVIDERS = ["google", "facebook", "discord"] as const;
-const EXTERNAL_PROVIDER_SET = new Set<string>(EXTERNAL_PROVIDERS);
-
 /** One external (OAuth) identity linked to an auth user. */
 export type ExternalAccount = {
   /** Stable id of the auth user this identity belongs to. */
@@ -37,47 +29,38 @@ type IdentityData = {
   [key: string]: unknown;
 };
 
+type AdminListRow = {
+  user_id: string;
+  user_email: string | null;
+  provider: string;
+  identity_data: IdentityData | null;
+  linked_at: string | null;
+  last_sign_in_at: string | null;
+};
+
 /**
  * Lists every external authenticated account in the system, newest sign-in
- * first. Uses the Supabase Auth Admin API (service role), so callers MUST
- * confirm the requester is an admin first — see `isAdmin`.
+ * first. Uses a SECURITY DEFINER database function rather than the GoTrue
+ * Auth Admin API — the latter returns HTTP 500 on this project configuration.
+ * Callers MUST confirm the requester is an admin first — see `isAdmin`.
  */
 export async function listExternalAccounts(): Promise<ExternalAccount[]> {
   const supabase = createAdminClient();
 
-  // Fetch up to 1000 users in a single call. Passing `page` triggers
-  // offset-based pagination in GoTrue which can return a "Database error
-  // finding users" on some Supabase project configurations, so we omit it and
-  // rely on a high perPage ceiling instead — adequate for this app's scale.
-  const { data, error } = await supabase.auth.admin.listUsers({
-    perPage: 1000,
-  });
+  const { data, error } = await supabase.rpc("admin_list_external_accounts");
   if (error) throw error;
 
-  const accounts: ExternalAccount[] = [];
-  for (const user of data.users) {
-    for (const identity of user.identities ?? []) {
-      if (!EXTERNAL_PROVIDER_SET.has(identity.provider ?? "")) continue;
-
-      const idData = (identity.identity_data ?? {}) as IdentityData;
-      accounts.push({
-        userId: user.id,
-        userEmail: user.email ?? null,
-        provider: identity.provider ?? "unknown",
-        name: idData.full_name ?? idData.name ?? null,
-        email: idData.email ?? null,
-        avatarUrl: pickAvatarUrl(idData),
-        linkedAt: identity.created_at ?? null,
-        lastSignInAt: identity.last_sign_in_at ?? null,
-      });
-    }
-  }
-
-  accounts.sort((a, b) => {
-    const at = a.lastSignInAt ? Date.parse(a.lastSignInAt) : 0;
-    const bt = b.lastSignInAt ? Date.parse(b.lastSignInAt) : 0;
-    return bt - at;
+  return (data as AdminListRow[]).map((row) => {
+    const idData = row.identity_data ?? {};
+    return {
+      userId: row.user_id,
+      userEmail: row.user_email,
+      provider: row.provider,
+      name: idData.full_name ?? idData.name ?? null,
+      email: idData.email ?? null,
+      avatarUrl: pickAvatarUrl(idData),
+      linkedAt: row.linked_at,
+      lastSignInAt: row.last_sign_in_at,
+    };
   });
-
-  return accounts;
 }

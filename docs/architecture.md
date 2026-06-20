@@ -248,6 +248,24 @@ per-provider domains, so `<img>` with `referrerPolicy="no-referrer"` (which Goog
 config. They're intentionally **not** shown on the home "last durak" (🤡) card or on
 the game-history rows, to keep those surfaces uncluttered.
 
+### Admin accounts — `admin_list_external_accounts()`
+
+Defined in [`supabase/migrations/20260620000001_admin_list_users.sql`](../supabase/migrations/20260620000001_admin_list_users.sql).
+Lists every external (OAuth) identity in the system for the `/admin` accounts view.
+This function exists because the Supabase GoTrue Auth Admin API
+(`auth.admin.listUsers`) returns HTTP 500 `unexpected_failure` on this project
+configuration — GoTrue fails its own internal SQL query — so the function queries
+`auth.users ⋈ auth.identities` directly.
+
+Like `group_player_avatars`, it is **`SECURITY DEFINER`** (the `authenticated` role
+can't read `auth.users`), but with a stricter grant: `REVOKE ALL … FROM PUBLIC` +
+`GRANT EXECUTE … TO service_role` — so **only the service-role client can call it**,
+unlike `group_player_avatars` which is also reachable by the `authenticated` role for
+regular members. The function itself applies no `WHERE` filter (it returns all
+identities for the three supported providers); access control is the service-role key
+gate plus the `isAdmin` check in the page. It is `STABLE` and returns rows already
+ordered by `last_sign_in_at DESC NULLS LAST`, so no post-query sort is needed.
+
 ### Discard a game — `discard_game(game_id)` (M11)
 
 Defined in [`supabase/migrations/20260617120000_discard_game.sql`](../supabase/migrations/20260617120000_discard_game.sql).
