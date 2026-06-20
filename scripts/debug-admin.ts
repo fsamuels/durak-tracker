@@ -32,7 +32,9 @@ const supabase = createClient(url, serviceRoleKey, {
 // --- Test 1: GoTrue Auth Admin API (known to 500 on this project) ---
 console.log("\n[1] auth.admin.listUsers({ perPage: 1000 }) ...");
 {
-  const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  const { data, error } = await supabase.auth.admin.listUsers({
+    perPage: 1000,
+  });
   if (error) {
     console.error("  ERROR:", {
       name: error.name,
