@@ -143,13 +143,39 @@ Group- and player-level stats, computed from stored data (spec "Metrics"):
   `db push` (Postgres validated the function definitions on create); manual
   review/test pass done before merge.
 
-Deferred out of M6 (see [roadmap](./roadmap.md)): **time-span buckets**
-(per week/month/year durak counts / "most durak this week"), **cross-group /
-account-level aggregates** (registered players only), **head-to-head**, and any
+Deferred out of M6 (see [roadmap](./roadmap.md)): **cross-group /
+account-level aggregates** (registered players only) and any
 **charts/visualizations** beyond simple numbers. The per-game `round_count` metric
 isn't captured at log time yet, so it isn't surfaced. Linking to player stats from
 the history list was left out (history doesn't carry player ids); links come from
-home, the players list, and the group leaderboard.
+home, the players list, and the group leaderboard. **Time-span buckets** and
+**head-to-head** shipped later in Stats v2 (below).
+
+### Stats v2 — windows, head-to-head, recent form ✅
+
+Extends M6 (migration `20260620120000_stats_improvements.sql`, pushed; types
+regenerated). See [architecture.md](./architecture.md#stats-v2--time-windows-head-to-head-recent-form)
+for the RPC details.
+
+- **Time-span toggle.** `group_stats` / `player_stats` gained a `p_window`
+  (`all`/`week`/`month`/`year`, group-timezone bucketed); both pages render a segmented
+  toggle as links (`?window=`), keeping them server components. On the player page the
+  window scopes the headline counts; streaks (labelled "all-time") and recent form are not
+  windowed.
+- **Head-to-head.** New `head_to_head` RPC → a per-opponent durak-split list on the
+  player page; `group_stats` returns the group's **biggest rivalry** card.
+- **Recent form.** `player_stats.recent_form` → a chip strip of the last 10 results.
+- **Longest / shortest game** cards added to `/stats`; the **"Games per player"** stat
+  moved up into the primary overview (below "Most durak").
+- **Champion + rate sort.** The leaderboard re-sorts by durak rate and highlights the
+  lowest-rate "champion" (min 3 games).
+- **Verified:** `tsc` / ESLint / Prettier clean; **117** unit tests pass (new coverage for
+  the windows, head-to-head, and recent-form schemas); all four RPCs runtime-checked
+  against the live DB via `psql` (window buckets, rivalry, durations, recent form, and the
+  opponent splits all return correct data).
+
+Still deferred to Stats v3 (see [roadmap](./roadmap.md)): cross-group aggregates, durak
+rate by trump suit, streaks on the group leaderboard, and table-size/deck distribution.
 
 ### Milestone 7 — Home & navigation revamp ✅
 

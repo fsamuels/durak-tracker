@@ -276,6 +276,36 @@ group members **and `status = 'in_progress'`** — so only in-progress games are
 discardable; deleting a **completed** game remains a deferred edit/delete roadmap
 item. The status guard is enforced both in the policy and in the function body.
 
+### Stats v2 — time windows, head-to-head, recent form
+
+Defined in [`supabase/migrations/20260620120000_stats_improvements.sql`](../supabase/migrations/20260620120000_stats_improvements.sql).
+Extends the M6 stats surface (all still **`SECURITY INVOKER`** + `STABLE`, so RLS keeps
+scoping every row):
+
+- **`p_window` time buckets.** `group_stats(group_id, window)` and
+  `player_stats(group_id, player_id, window)` accept `all` (default) / `week` / `month`
+  / `year`. The cutoff is `date_trunc(period, now() at time zone tz) at time zone tz`
+  using the **group's** timezone, so a bucket edge lands on local midnight regardless of
+  viewer location (the [Metrics](#metrics) rule). Adding a defaulted arg makes a
+  named-arg call ambiguous against the old overload, so the migration **drops** the
+  prior `group_stats(uuid)` / `player_stats(uuid, uuid)` signatures before recreating.
+  The window scopes `player_stats`' headline counts only — streaks and `recent_form`
+  are computed over the all-time sequence.
+- **`group_stats` additions:** `longest_game_seconds` / `shortest_game_seconds` (over
+  games with both timestamps), and `biggest_rivalry` — the player pair (unordered, via a
+  self-join with `b.player_id > a.player_id`) sharing the most completed games, with each
+  side's durak count.
+- **`player_stats.recent_form`:** the last 10 results, most-recent first, each tagged
+  `durak` / `first_out` / `last_out` / `middle`.
+- **`head_to_head(group_id, player_id)`:** for every opponent the player has shared a
+  completed game with, the games together plus each side's durak count, ordered by games
+  together. Powers the per-opponent list on the player page.
+
+The `group_stats` `players` array is still ordered by **raw durak count** (the home page
+depends on that). The group leaderboard re-sorts a copy by durak _rate_ client-side and
+derives the lowest-rate "champion" (`durakChampion`, min 3 games) in
+[`src/lib/validation/stats.ts`](../src/lib/validation/stats.ts).
+
 ## PWA & app shell (M11)
 
 The app is installable and loads its static shell offline:
