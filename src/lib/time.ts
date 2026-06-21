@@ -135,6 +135,7 @@ export function periodStartDate(
   const [y, m, d] = todayInTz(timeZone).split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
   if (period === "week") dt.setUTCDate(dt.getUTCDate() - 7);
+  else if (period === "year") dt.setUTCFullYear(dt.getUTCFullYear() - 1);
   else dt.setUTCMonth(dt.getUTCMonth() - 1);
 
   return dt.toISOString().slice(0, 10);

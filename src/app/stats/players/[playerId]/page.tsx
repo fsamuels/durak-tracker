@@ -1,18 +1,48 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { StatsWindowToggle } from "@/components/stats-window-toggle";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import {
+  headToHeadSchema,
+  parseWindow,
   playerParamSchema,
   playerStatsSchema,
   rate,
+  WINDOW_LABELS,
+  type GameResult,
 } from "@/lib/validation/stats";
+
+const RESULT_BADGE: Record<GameResult, { label: string; className: string }> = {
+  durak: { label: "D", className: "badge-durak" },
+  first_out: {
+    label: "1",
+    className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+  },
+  last_out: {
+    label: "L",
+    className: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  },
+  middle: {
+    label: "–",
+    className: "bg-black/5 text-zinc-500 dark:bg-white/10",
+  },
+};
+
+const RESULT_TITLE: Record<GameResult, string> = {
+  durak: "Durak",
+  first_out: "First out",
+  last_out: "Last out (not durak)",
+  middle: "Middle",
+};
 
 export default async function PlayerStatsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ playerId: string }>;
+  searchParams: Promise<{ window?: string | string[] }>;
 }) {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
@@ -20,6 +50,7 @@ export default async function PlayerStatsPage({
   const parsedParam = playerParamSchema.safeParse(await params);
   if (!parsedParam.success) notFound();
   const { playerId } = parsedParam.data;
+  const window = parseWindow((await searchParams).window);
 
   const supabase = await createClient();
 
@@ -32,12 +63,20 @@ export default async function PlayerStatsPage({
     .maybeSingle();
   if (!player) notFound();
 
-  const { data, error } = await supabase.rpc("player_stats", {
-    p_group_id: group.id,
-    p_player_id: playerId,
-  });
+  const [{ data, error }, { data: h2hRaw }] = await Promise.all([
+    supabase.rpc("player_stats", {
+      p_group_id: group.id,
+      p_player_id: playerId,
+      p_window: window,
+    }),
+    supabase.rpc("head_to_head", {
+      p_group_id: group.id,
+      p_player_id: playerId,
+    }),
+  ]);
   const parsed = error ? null : playerStatsSchema.safeParse(data);
   const stats = parsed?.success ? parsed.data : null;
+  const headToHead = headToHeadSchema.safeParse(h2hRaw).data ?? [];
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -56,13 +95,22 @@ export default async function PlayerStatsPage({
         </p>
       </div>
 
+      <StatsWindowToggle
+        basePath={`/stats/players/${playerId}`}
+        current={window}
+      />
+
       {!stats ? (
         <p role="alert" className="text-sm text-red-600">
           Couldn&apos;t load stats{error ? `: ${error.message}` : "."}
         </p>
       ) : stats.games_played === 0 ? (
         <div className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
-          {player.display_name} hasn&apos;t played any games yet.
+          {window === "all"
+            ? `${player.display_name} hasn't played any games yet.`
+            : `${player.display_name} hasn't played any games ${WINDOW_LABELS[
+                window
+              ].toLowerCase()}.`}
         </div>
       ) : (
         <>
@@ -85,8 +133,32 @@ export default async function PlayerStatsPage({
             />
           </section>
 
+          {stats.recent_form.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-sm font-medium text-zinc-500">
+                Recent form <span className="font-normal">(latest first)</span>
+              </h2>
+              <div className="flex flex-wrap gap-1.5">
+                {stats.recent_form.map((r, i) => {
+                  const badge = RESULT_BADGE[r.result];
+                  return (
+                    <span
+                      key={`${r.started_at}-${i}`}
+                      title={RESULT_TITLE[r.result]}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${badge.className}`}
+                    >
+                      {badge.label}
+                    </span>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           <section className="flex flex-col gap-2">
-            <h2 className="text-sm font-medium text-zinc-500">Streaks</h2>
+            <h2 className="text-sm font-medium text-zinc-500">
+              Streaks <span className="font-normal">(all-time)</span>
+            </h2>
             <div className="grid grid-cols-2 gap-2">
               <Stat
                 label="Current durak streak"
@@ -108,6 +180,38 @@ export default async function PlayerStatsPage({
               />
             </div>
           </section>
+
+          {headToHead.length > 0 && (
+            <section className="flex flex-col gap-2">
+              <h2 className="text-sm font-medium text-zinc-500">
+                Head-to-head <span className="font-normal">(all-time)</span>
+              </h2>
+              <ul className="flex flex-col gap-2">
+                {headToHead.map((o) => (
+                  <li
+                    key={o.opponent_id}
+                    className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
+                  >
+                    <Link
+                      href={`/stats/players/${o.opponent_id}`}
+                      className="truncate text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                    >
+                      {o.display_name}
+                    </Link>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm text-black dark:text-zinc-50">
+                        durak {o.my_durak_count}–{o.opponent_durak_count}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {o.games_together} game
+                        {o.games_together === 1 ? "" : "s"} together
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       )}
     </main>

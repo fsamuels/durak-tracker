@@ -107,16 +107,38 @@ the open-ended "Iterate" bucket shifted to M11+.
 
 13. **Iterate** — additional metrics and refinements from real usage.
 
-## Deferred from M6 (stats follow-ups)
+## Stats v2 (stats-improvements branch) ✅
 
-- **Time-span buckets** — durak counts and "most durak" per week/month/year, bucketed
-  over `started_at` in the group's timezone (the architecture rule is already
-  documented; only the UI + queries remain).
+Shipped on top of M6, extending both stats RPCs (migration
+`20260620120000_stats_improvements.sql`, pushed; types regenerated):
+
+- **Time-span buckets** — `group_stats` / `player_stats` take a `p_window`
+  (`all`/`week`/`month`/`year`); both pages get a segmented toggle (links → `?window=`,
+  so they stay server components). Boundaries are cut over `started_at` in the group's
+  timezone per the architecture rule. On the player page the window scopes the headline
+  counts; streaks stay all-time and recent form is always the last 10.
+- **Head-to-head** — new `head_to_head(group, player)` RPC powers a per-opponent
+  durak-split list on the player page; `group_stats` also returns the group's
+  **biggest rivalry** (the pair sharing the most completed games).
+- **Recent form** — `player_stats.recent_form` returns the player's last 10 results as
+  durak / first-out / last-out / middle, rendered as a chip strip.
+- **Longest / shortest game** — added to `group_stats` alongside avg duration.
+- **Champion + rate sort** — the group leaderboard re-sorts by durak _rate_ (the RPC
+  still orders by raw count for the home page), and highlights the lowest-rate
+  "champion" (min 3 games).
+
+### Still deferred (stats follow-ups)
+
 - **Cross-group / account-level aggregates** — the spec's per-player cross-group
-  stats, for registered players joined via `auth_user_id`.
-- **Head-to-head** — each player's durak % against another; still an open question
-  below (profile-only vs a dedicated comparison screen).
-- **Charts / visualizations** — v1 ships simple numbers only.
+  stats, for registered players joined via `auth_user_id`. Needs a new identity-join
+  RPC; registered-players only.
+- **Durak rate by trump suit** — "which suit you go durak under most" (join
+  `game_players` → `games.trump_suit`). Cheap; not yet surfaced.
+- **Streaks on the group leaderboard** — per-player longest durak streak is computed in
+  `player_stats` but not yet shown inline on the group page.
+- **Table-size / deck-count distribution** — games by player count and 36 vs 52 deck
+  (`deck_count`).
+- **Charts / visualizations** — still simple numbers + chip strips only.
 - **`round_count`** — the per-game metric isn't captured at log time yet.
 
 ## Testing follow-ups
@@ -167,8 +189,6 @@ validation layers. What remains:
 
 ## Open questions / decisions for later
 
-- **Head-to-head** — surface on the player profile only, or also a dedicated
-  comparison screen?
 - **Claim-link revocation** (M10) — M10 ships links as single-use + 7-day expiry but
   **no manual revoke** of an unused link. Could add a member-facing list of pending
   links with a delete/expire action (a `delete` RLS policy or a small RPC). Deferred.
@@ -179,4 +199,6 @@ validation layers. What remains:
 _(Resolved: **group switching** — M7 moves it to a dedicated `/group` page and defaults
 the active group to most-played. **`ended_at` / `started_at` entry** — M8 stamps both
 server-side on start/finish; no time fields in the UI, editing deferred to a future
-edit-game screen.)_
+edit-game screen. **Head-to-head placement** — the stats-improvements branch ships it on
+the player profile (per-opponent list) plus a group-level "biggest rivalry" highlight, not
+a dedicated comparison screen.)_

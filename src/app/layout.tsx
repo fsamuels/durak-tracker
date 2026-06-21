@@ -7,6 +7,7 @@ import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
 import { isAdmin } from "@/lib/admin";
+import { getCurrentPlayerId } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -50,6 +51,7 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const myPlayerId = user ? await getCurrentPlayerId() : null;
 
   return (
     <html
@@ -74,7 +76,7 @@ export default async function RootLayout({
                 >
                   🃏 Durak Tracker
                 </Link>
-                <NavMenu isAdmin={isAdmin(user)} />
+                <NavMenu isAdmin={isAdmin(user)} myPlayerId={myPlayerId} />
               </div>
             </header>
           )}

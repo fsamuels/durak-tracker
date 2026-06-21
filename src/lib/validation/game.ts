@@ -20,6 +20,22 @@ export const TRUMP_SUIT_LABELS: Record<TrumpSuit, string> = {
   spades: "♠ Spades",
 };
 
+/** Just the pip symbol per suit (for colored/standalone rendering). */
+export const TRUMP_SUIT_SYMBOLS: Record<TrumpSuit, string> = {
+  hearts: "♥",
+  diamonds: "♦",
+  clubs: "♣",
+  spades: "♠",
+};
+
+/** Just the suit name (no symbol). */
+export const TRUMP_SUIT_NAMES: Record<TrumpSuit, string> = {
+  hearts: "Hearts",
+  diamonds: "Diamonds",
+  clubs: "Clubs",
+  spades: "Spades",
+};
+
 /** Per-player outcome in a game. A player holds at most one role (DB CHECK). */
 export const OUTCOMES = ["none", "durak", "first_out", "last_out"] as const;
 export type Outcome = (typeof OUTCOMES)[number];

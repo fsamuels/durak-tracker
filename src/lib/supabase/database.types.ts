@@ -433,7 +433,14 @@ export type Database = {
           id: string;
         }[];
       };
-      group_stats: { Args: { p_group_id: string }; Returns: Json };
+      group_stats: {
+        Args: { p_group_id: string; p_window?: string };
+        Returns: Json;
+      };
+      head_to_head: {
+        Args: { p_group_id: string; p_player_id: string };
+        Returns: Json;
+      };
       is_group_member: { Args: { p_group_id: string }; Returns: boolean };
       is_group_owner: { Args: { p_group_id: string }; Returns: boolean };
       is_member_of_game: { Args: { p_game_id: string }; Returns: boolean };
@@ -471,7 +478,7 @@ export type Database = {
       };
       most_played_group: { Args: never; Returns: string };
       player_stats: {
-        Args: { p_group_id: string; p_player_id: string };
+        Args: { p_group_id: string; p_player_id: string; p_window?: string };
         Returns: Json;
       };
       start_game: {

@@ -120,6 +120,20 @@ describe("periodStartDate", () => {
     expect(periodStartDate("month", "UTC")).toBe(utcDate({ m: 1 }));
   });
 
+  it("steps back a full year", () => {
+    const today = new Date();
+    const expected = new Date(
+      Date.UTC(
+        today.getUTCFullYear() - 1,
+        today.getUTCMonth(),
+        today.getUTCDate(),
+      ),
+    )
+      .toISOString()
+      .slice(0, 10);
+    expect(periodStartDate("year", "UTC")).toBe(expected);
+  });
+
   it("returns a YYYY-MM-DD date string", () => {
     expect(periodStartDate("month", "America/New_York")).toMatch(
       /^\d{4}-\d{2}-\d{2}$/,

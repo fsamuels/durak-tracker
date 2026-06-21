@@ -57,6 +57,25 @@ describe("NavMenu", () => {
     ).toBeInTheDocument();
   });
 
+  it("hides the My stats link when there is no player id", () => {
+    render(<NavMenu />);
+    openMenu();
+
+    expect(
+      screen.queryByRole("link", { name: "My stats" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("links My stats to the player's stats page when a player id is given", () => {
+    render(<NavMenu myPlayerId="a0000000-0000-0000-0000-000000000001" />);
+    openMenu();
+
+    expect(screen.getByRole("link", { name: "My stats" })).toHaveAttribute(
+      "href",
+      "/stats/players/a0000000-0000-0000-0000-000000000001",
+    );
+  });
+
   it("hides the Admin link by default", () => {
     render(<NavMenu />);
     openMenu();

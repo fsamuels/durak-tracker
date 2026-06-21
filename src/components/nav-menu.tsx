@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-export function NavMenu({ isAdmin = false }: { isAdmin?: boolean }) {
+export function NavMenu({
+  isAdmin = false,
+  myPlayerId = null,
+}: {
+  isAdmin?: boolean;
+  /** The current user's player id in their active group, for the My stats link. */
+  myPlayerId?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -68,6 +75,15 @@ export function NavMenu({ isAdmin = false }: { isAdmin?: boolean }) {
           >
             Start a game
           </Link>
+          {myPlayerId && (
+            <Link
+              href={`/stats/players/${myPlayerId}`}
+              onClick={() => setOpen(false)}
+              className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            >
+              My stats
+            </Link>
+          )}
           <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <Link
             href="/group"
