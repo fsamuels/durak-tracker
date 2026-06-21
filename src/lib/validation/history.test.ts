@@ -15,7 +15,7 @@ describe("historyFilterSchema", () => {
   });
 
   it("accepts each valid period", () => {
-    for (const period of ["week", "month", "all"] as const) {
+    for (const period of ["week", "month", "year", "all"] as const) {
       expect(historyFilterSchema.safeParse({ period }).data).toEqual({
         period,
       });

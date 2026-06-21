@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /** Selectable look-back windows for the game history list. */
-export const HISTORY_PERIODS = ["week", "month", "all"] as const;
+export const HISTORY_PERIODS = ["all", "week", "month", "year"] as const;
 
 export type HistoryPeriod = (typeof HISTORY_PERIODS)[number];
 

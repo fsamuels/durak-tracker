@@ -6,9 +6,10 @@ import {
 } from "@/lib/validation/history";
 
 const LABELS: Record<HistoryPeriod, string> = {
+  all: "All time",
   week: "Past week",
   month: "Past month",
-  all: "All time",
+  year: "Past year",
 };
 
 /**
