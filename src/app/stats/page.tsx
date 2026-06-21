@@ -3,11 +3,11 @@ import { redirect } from "next/navigation";
 
 import { Avatar } from "@/components/avatar";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
+import { SuitLabel } from "@/components/suit-label";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
-import { TRUMP_SUIT_LABELS } from "@/lib/validation/game";
 import {
   byDurakRateDesc,
   durakChampion,
@@ -116,9 +116,12 @@ export default async function GroupStatsPage({
                 />
                 <div className="min-w-0">
                   <p className="text-xs text-zinc-500">Last durak</p>
-                  <p className="truncate text-sm font-medium text-black dark:text-zinc-50">
+                  <Link
+                    href={`/stats/players/${stats.last_durak.player_id}`}
+                    className="block truncate text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                  >
                     {stats.last_durak.display_name}
-                  </p>
+                  </Link>
                   <p className="text-xs text-zinc-500">
                     {formatInTz(stats.last_durak.started_at, group.timezone)}
                   </p>
@@ -142,7 +145,17 @@ export default async function GroupStatsPage({
                     Most durak ({mostDurak[0].durak_count})
                   </p>
                   <p className="truncate text-sm font-medium text-black dark:text-zinc-50">
-                    {mostDurak.map((p) => p.display_name).join(", ")}
+                    {mostDurak.map((p, i) => (
+                      <span key={p.player_id}>
+                        {i > 0 && ", "}
+                        <Link
+                          href={`/stats/players/${p.player_id}`}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {p.display_name}
+                        </Link>
+                      </span>
+                    ))}
                   </p>
                 </div>
               </div>
@@ -158,9 +171,12 @@ export default async function GroupStatsPage({
                     Champion 🏆 (lowest durak rate ·{" "}
                     {rate(champion.durak_count, champion.games_played)})
                   </p>
-                  <p className="truncate text-sm font-medium text-black dark:text-zinc-50">
+                  <Link
+                    href={`/stats/players/${champion.player_id}`}
+                    className="block truncate text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                  >
                     {champion.display_name}
-                  </p>
+                  </Link>
                 </div>
               </div>
             )}
@@ -172,9 +188,19 @@ export default async function GroupStatsPage({
                     games
                   </p>
                   <p className="mt-0.5 truncate text-sm font-medium text-black dark:text-zinc-50">
-                    {stats.biggest_rivalry.player_a_name}{" "}
+                    <Link
+                      href={`/stats/players/${stats.biggest_rivalry.player_a_id}`}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {stats.biggest_rivalry.player_a_name}
+                    </Link>{" "}
                     <span className="text-zinc-500">vs</span>{" "}
-                    {stats.biggest_rivalry.player_b_name}
+                    <Link
+                      href={`/stats/players/${stats.biggest_rivalry.player_b_id}`}
+                      className="underline-offset-4 hover:underline"
+                    >
+                      {stats.biggest_rivalry.player_b_name}
+                    </Link>
                   </p>
                   <p className="mt-0.5 text-xs text-zinc-500">
                     durak {stats.biggest_rivalry.player_a_durak_count}–
@@ -208,7 +234,7 @@ export default async function GroupStatsPage({
                     key={t.suit}
                     className="card-surface flex items-center justify-between rounded-2xl px-3 py-2 text-sm text-black dark:text-zinc-50"
                   >
-                    <span>{TRUMP_SUIT_LABELS[t.suit]}</span>
+                    <SuitLabel suit={t.suit} />
                     <span className="text-zinc-500">
                       {t.count} · {rate(t.count, trumpTotal)}
                     </span>

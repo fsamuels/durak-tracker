@@ -4,12 +4,12 @@ import { redirect } from "next/navigation";
 import { Avatar } from "@/components/avatar";
 import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
+import { SuitLabel } from "@/components/suit-label";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
-import { TRUMP_SUIT_LABELS } from "@/lib/validation/game";
 import {
   formatDuration,
   groupStatsSchema,
@@ -138,7 +138,11 @@ export default async function Home() {
             </div>
             <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                {topSuit ? TRUMP_SUIT_LABELS[topSuit.suit] : "—"}
+                {topSuit ? (
+                  <SuitLabel suit={topSuit.suit} symbolClassName="text-3xl" />
+                ) : (
+                  "—"
+                )}
               </span>
               <span className="text-xs font-medium text-zinc-500">
                 {topSuit ? `top suit (${topSuit.count})` : "no trump yet"}

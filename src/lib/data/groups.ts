@@ -52,6 +52,33 @@ export async function getCurrentGroup(): Promise<CurrentGroup | null> {
   return data ?? null;
 }
 
+/**
+ * The signed-in user's own `players` row id in their active group, or null if
+ * they aren't signed in, have no active group, or don't have a linked player
+ * there (e.g. a member who's never been added to a game). Used to point the
+ * "My stats" nav link at the user's own player-stats page. RLS scopes the
+ * lookup to the user's groups.
+ */
+export async function getCurrentPlayerId(): Promise<string | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const group = await getCurrentGroup();
+  if (!group) return null;
+
+  const { data } = await supabase
+    .from("players")
+    .select("id")
+    .eq("group_id", group.id)
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+
+  return data?.id ?? null;
+}
+
 /** A group plus the at-a-glance facts shown on the Manage group page. */
 export type GroupDetails = {
   id: string;
