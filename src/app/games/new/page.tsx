@@ -68,6 +68,13 @@ export default async function NewGamePage({
           </Link>
         </div>
       )}
+
+      <Link
+        href="/games/selector-demo"
+        className="text-center text-sm text-zinc-500 underline-offset-4 hover:text-black hover:underline dark:hover:text-zinc-50"
+      >
+        Explore other player selection ideas →
+      </Link>
     </main>
   );
 }
