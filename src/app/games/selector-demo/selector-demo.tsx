@@ -2,8 +2,9 @@
 
 /**
  * Interactive playground for player-selection patterns. Three selection variants
- * share one placeholder roster so you can feel each on a phone-width screen, and
- * a mode toggle flips between the two real flows:
+ * share the group's **real** roster (passed in from the server, ranked by
+ * games-played) so you can feel each on a phone-width screen, and a mode toggle
+ * flips between the two real flows:
  *
  *   • Pick players   — Start / Edit game (just who's in)
  *   • Record result  — Finish game (who's in + per-player outcome)
@@ -13,8 +14,9 @@
  *   2. Filter-in-place    — full tappable list, search narrows it
  *   3. Chip grid          — whole roster as toggle chips, search filters them
  *
- * Demo-only: all state is local React state, nothing is submitted or persisted.
- * Adding a guest appends to the in-memory roster instead of calling the DB.
+ * Demo-only: selection / outcome / guest state is all local React state —
+ * reading the roster is the only real data; nothing here is submitted or
+ * persisted, and adding a guest appends to the in-memory roster (no DB write).
  */
 
 import { useMemo, useState } from "react";
@@ -22,7 +24,7 @@ import { useMemo, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { outcomeCountError, type Outcome } from "@/lib/validation/game";
 
-import { DEMO_PLAYERS, REGULARS_COUNT, type DemoPlayer } from "./players";
+import { REGULARS_COUNT, type DemoPlayer } from "./players";
 
 type Variant = "regulars" | "filter" | "grid";
 type Mode = "pick" | "finish";
@@ -80,7 +82,7 @@ function PlayerChip({
           : "card-surface border-black/10 text-black hover:brightness-95 dark:border-white/10 dark:text-zinc-50"
       }`}
     >
-      <Avatar name={player.display_name} size="sm" />
+      <Avatar src={player.avatar_url} name={player.display_name} size="sm" />
       <span>{player.display_name}</span>
       <span aria-hidden className="text-base leading-none">
         {selected ? "×" : "+"}
@@ -240,7 +242,7 @@ function ResultPanel({
               className="card-surface flex flex-col gap-2 rounded-2xl px-3 py-2.5"
             >
               <div className="flex items-center gap-2">
-                <Avatar name={p.display_name} size="sm" />
+                <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
                 <span className="flex-1 text-black dark:text-zinc-50">
                   {p.display_name}
                 </span>
@@ -289,16 +291,27 @@ function SelectedFooter({ count }: { count: number }) {
 /* ------------------------------------------------------------------ */
 
 type SelectionProps = {
+  /** Full roster including locally-added guests. */
   roster: DemoPlayer[];
+  /** The real ranked roster (no guests) — the regulars slice comes from this. */
+  basePlayers: DemoPlayer[];
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
 };
 
-function SelectionRegulars({ roster, selectedIds, onToggle }: SelectionProps) {
+function SelectionRegulars({
+  roster,
+  basePlayers,
+  selectedIds,
+  onToggle,
+}: SelectionProps) {
   const [search, setSearch] = useState("");
 
   // Regulars are the top slice of the *base* roster (guests aren't regulars).
-  const regulars = DEMO_PLAYERS.slice(0, REGULARS_COUNT);
+  const regulars = useMemo(
+    () => basePlayers.slice(0, REGULARS_COUNT),
+    [basePlayers],
+  );
   const regularIds = useMemo(
     () => new Set(regulars.map((p) => p.id)),
     [regulars],
@@ -355,7 +368,11 @@ function SelectionRegulars({ roster, selectedIds, onToggle }: SelectionProps) {
                     className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95"
                   >
                     <span className="flex items-center gap-2">
-                      <Avatar name={p.display_name} size="sm" />
+                      <Avatar
+                        src={p.avatar_url}
+                        name={p.display_name}
+                        size="sm"
+                      />
                       <span className="text-black dark:text-zinc-50">
                         {p.display_name}
                       </span>
@@ -433,7 +450,7 @@ function SelectionFilter({ roster, selectedIds, onToggle }: SelectionProps) {
                 className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95"
               >
                 <span className="flex items-center gap-2">
-                  <Avatar name={p.display_name} size="sm" />
+                  <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
                   <span className="text-black dark:text-zinc-50">
                     {p.display_name}
                   </span>
@@ -504,14 +521,15 @@ function SelectionGrid({ roster, selectedIds, onToggle }: SelectionProps) {
 
 /* ------------------------------------------------------------------ */
 
-export function SelectorDemo() {
+export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
   const [variant, setVariant] = useState<Variant>("regulars");
   const [mode, setMode] = useState<Mode>("pick");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [outcomes, setOutcomes] = useState<Record<string, Outcome>>({});
   const [guests, setGuests] = useState<DemoPlayer[]>([]);
 
-  const roster = useMemo(() => [...DEMO_PLAYERS, ...guests], [guests]);
+  // players = the group's real ranked roster; guests are local demo additions.
+  const roster = useMemo(() => [...players, ...guests], [players, guests]);
   const active = VARIANTS.find((v) => v.id === variant)!;
 
   const toggle = (id: string) =>
@@ -552,7 +570,7 @@ export function SelectorDemo() {
     const guest: DemoPlayer = {
       id: `guest-${Date.now()}`,
       display_name: name,
-      games_played: 0,
+      avatar_url: null,
     };
     setGuests((g) => [...g, guest]);
     setSelectedIds((prev) => new Set(prev).add(guest.id));
@@ -560,6 +578,7 @@ export function SelectorDemo() {
 
   const selectionProps: SelectionProps = {
     roster,
+    basePlayers: players,
     selectedIds,
     onToggle: toggle,
   };

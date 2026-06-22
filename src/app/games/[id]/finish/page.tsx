@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -69,6 +70,13 @@ export default async function FinishGamePage({
         }
         initialNotes={game.notes ?? ""}
       />
+
+      <Link
+        href="/games/selector-demo"
+        className="text-center text-sm text-zinc-500 underline-offset-4 hover:text-black hover:underline dark:hover:text-zinc-50"
+      >
+        Explore other player selection ideas →
+      </Link>
     </main>
   );
 }
