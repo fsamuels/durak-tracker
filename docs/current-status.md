@@ -614,13 +614,36 @@ the app (branch `claude/user-profile-pictures-om0zg6`).
   (owner):** apply the migration via `supabase db push` (the function reads `auth.users`,
   so it can't run under the anon path) — pending until the branch merges.
 
+### Stats charts — phase 1 ✅ (non-milestone)
+
+Four Recharts v3 visualisations added to the stats pages (branch `stats-charts`).
+No schema or data-model changes — all charts consume existing RPC data.
+
+- **Trump suit donut** (`src/components/charts/trump-donut.tsx`) — replaces the
+  plain text list on `/stats`. Recharts `PieChart` donut with aurora palette
+  (hearts=pink, diamonds=violet, clubs=teal, spades=blue); center label shows
+  total games with a recorded trump; interactive hover tooltip.
+- **Durak rate bar** (`src/components/charts/durak-rate-bar.tsx`) — horizontal
+  `BarChart` (layout="vertical") inserted above the player leaderboard on `/stats`,
+  showing each player's durak rate as a pink bar with a right-aligned % label.
+  Players truncated to 11 chars; full name + game count in the hover tooltip.
+- **Head-to-head stacked bar** (`src/components/charts/head-to-head-chart.tsx`) —
+  100%-normalised stacked `BarChart` on `/stats/players/[id]`, replacing the
+  per-opponent text list. Pink = this player's durak share, blue = opponent's,
+  transparent grey = games where neither was durak. Tooltip shows raw counts.
+- **Recent form sparkline** (`src/components/charts/recent-form-sparkline.tsx`) —
+  72px `AreaChart` above the chip strip on `/stats/players/[id]`. Displays the
+  last 10 games oldest→newest; Y axis 0 (first out) → 1 (durak); dots coloured
+  by result; pink-to-teal gradient fill; dashed 0.5 reference line.
+- **Verified:** `pnpm build` / `test` (120 tests) clean.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
   not installed. (**next-pwa** was evaluated in M11 and rejected —
   Turbopack-incompatible; a hand-written service worker is used instead.)
-- Roadmap features (M13+): edit/delete a **completed** game, offline write queue,
-  time-span stat buckets, cross-group aggregates, head-to-head, charts.
+- Roadmap features (M13+): offline write queue, cross-group aggregates,
+  games-over-time chart, durak-rate trend line (both need a new time-series RPC).
 
 ## Action required (owner)
 

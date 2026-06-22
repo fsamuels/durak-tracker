@@ -138,7 +138,9 @@ Shipped on top of M6, extending both stats RPCs (migration
   `player_stats` but not yet shown inline on the group page.
 - **Table-size / deck-count distribution** — games by player count and 36 vs 52 deck
   (`deck_count`).
-- **Charts / visualizations** — still simple numbers + chip strips only.
+- **Charts / visualizations — phase 1 done** (see current-status.md). Remaining:
+  games-over-time area chart and per-player durak-rate trend line (both require
+  a new time-series RPC; deferred to Stats v3).
 - **`round_count`** — the per-game metric isn't captured at log time yet.
 
 ## Testing follow-ups
