@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { HeadToHeadChart } from "@/components/charts/head-to-head-chart";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
@@ -184,32 +185,15 @@ export default async function PlayerStatsPage({
           {headToHead.length > 0 && (
             <section className="flex flex-col gap-2">
               <h2 className="text-sm font-medium text-zinc-500">
-                Head-to-head <span className="font-normal">(all-time)</span>
+                Head-to-head{" "}
+                <span className="font-normal">
+                  (all-time · pink = me · blue = them)
+                </span>
               </h2>
-              <ul className="flex flex-col gap-2">
-                {headToHead.map((o) => (
-                  <li
-                    key={o.opponent_id}
-                    className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
-                  >
-                    <Link
-                      href={`/stats/players/${o.opponent_id}`}
-                      className="truncate text-sm font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
-                    >
-                      {o.display_name}
-                    </Link>
-                    <div className="shrink-0 text-right">
-                      <p className="text-sm text-black dark:text-zinc-50">
-                        durak {o.my_durak_count}–{o.opponent_durak_count}
-                      </p>
-                      <p className="text-xs text-zinc-500">
-                        {o.games_together} game
-                        {o.games_together === 1 ? "" : "s"} together
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <HeadToHeadChart
+                data={headToHead}
+                playerName={player.display_name}
+              />
             </section>
           )}
         </>
