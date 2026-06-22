@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { HeadToHeadChart } from "@/components/charts/head-to-head-chart";
+import { RecentFormSparkline } from "@/components/charts/recent-form-sparkline";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
@@ -139,6 +140,8 @@ export default async function PlayerStatsPage({
               <h2 className="text-sm font-medium text-zinc-500">
                 Recent form <span className="font-normal">(latest first)</span>
               </h2>
+              {/* Sparkline: oldest→newest left→right; high = durak, low = first out */}
+              <RecentFormSparkline data={stats.recent_form} />
               <div className="flex flex-wrap gap-1.5">
                 {stats.recent_form.map((r, i) => {
                   const badge = RESULT_BADGE[r.result];
