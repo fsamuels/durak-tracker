@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Avatar } from "@/components/avatar";
+import { TrumpDonut } from "@/components/charts/trump-donut";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
-import { SuitLabel } from "@/components/suit-label";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
@@ -37,9 +37,6 @@ export default async function GroupStatsPage({
   const parsed = error ? null : groupStatsSchema.safeParse(data);
   const stats = parsed?.success ? parsed.data : null;
 
-  const trumpTotal = stats
-    ? stats.trump_frequency.reduce((sum, t) => sum + t.count, 0)
-    : 0;
   const mostDurak = stats?.players.filter(
     (p) => p.durak_count > 0 && p.durak_count === stats.players[0]?.durak_count,
   );
@@ -228,19 +225,7 @@ export default async function GroupStatsPage({
               <h2 className="text-sm font-medium text-zinc-500">
                 Trump suit frequency
               </h2>
-              <ul className="flex flex-col gap-1">
-                {stats.trump_frequency.map((t) => (
-                  <li
-                    key={t.suit}
-                    className="card-surface flex items-center justify-between rounded-2xl px-3 py-2 text-sm text-black dark:text-zinc-50"
-                  >
-                    <SuitLabel suit={t.suit} />
-                    <span className="text-zinc-500">
-                      {t.count} · {rate(t.count, trumpTotal)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <TrumpDonut data={stats.trump_frequency} />
             </section>
           )}
 
