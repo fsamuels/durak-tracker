@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Avatar } from "@/components/avatar";
+import { DurakRateBar } from "@/components/charts/durak-rate-bar";
 import { TrumpDonut } from "@/components/charts/trump-donut";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
 import { getGroupAvatars } from "@/lib/data/avatars";
@@ -234,6 +235,7 @@ export default async function GroupStatsPage({
             <h2 className="text-sm font-medium text-zinc-500">
               Players · by durak rate
             </h2>
+            <DurakRateBar players={leaderboard} />
             <ul className="flex flex-col gap-2">
               {leaderboard.map((p) => (
                 <li
