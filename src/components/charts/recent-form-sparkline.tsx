@@ -41,7 +41,10 @@ export function RecentFormSparkline({ data }: { data: FormEntry[] }) {
   }));
 
   return (
-    <div className="card-surface overflow-hidden rounded-2xl px-1 py-2" style={{ height: 72 }}>
+    <div
+      className="card-surface overflow-hidden rounded-2xl px-1 py-2"
+      style={{ height: 72 }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}

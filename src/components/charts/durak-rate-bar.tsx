@@ -10,11 +10,7 @@ import {
   YAxis,
 } from "recharts";
 
-import {
-  durakRate,
-  rate,
-  type GroupPlayerLine,
-} from "@/lib/validation/stats";
+import { durakRate, rate, type GroupPlayerLine } from "@/lib/validation/stats";
 
 function truncate(name: string, max = 11): string {
   return name.length > max ? `${name.slice(0, max - 1)}…` : name;
@@ -63,7 +59,10 @@ export function DurakRateBar({ players }: { players: GroupPlayerLine[] }) {
               return (
                 <div
                   className="rounded-lg px-2.5 py-1.5 text-xs"
-                  style={{ background: "rgba(15,27,42,0.92)", color: "#e6f0f5" }}
+                  style={{
+                    background: "rgba(15,27,42,0.92)",
+                    color: "#e6f0f5",
+                  }}
                 >
                   <span className="font-medium">{d.fullName}</span> —{" "}
                   {d.rateLabel} durak rate ({d.games} game
