@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-20.
+Living snapshot of what's built. Last updated: 2026-06-21.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -15,6 +15,31 @@ Living snapshot of what's built. Last updated: 2026-06-20.
 > `main`, the milestone reads as done. Anything still outstanding other than manual
 > testing must be **explicitly deferred** to a future milestone/feature — no
 > implied-partial TODOs.
+
+## In progress
+
+### Player-selection redesign — exploration 🚧 (non-milestone)
+
+Evaluating a faster player picker for the start / edit / finish flows (branch
+`player-selection-improvements`). Real-usage feedback: the M9 search-to-add picker is
+great for the long tail but slower than the old click-the-whole-list for the dozen
+**regulars** a group actually plays with. We want a hybrid that keeps both.
+
+- **Throwaway demo route** — `/games/selector-demo` (auth-gated like the rest of
+  `/games`; not linked from anywhere) renders three candidate patterns on **placeholder
+  data** (12 regulars + a 23-deep long tail, no DB calls): **Regulars + Search** (top
+  players as one-tap chips, search reaches the tail), **Filter-in-place** (full tappable
+  list the old way, search narrows it), and **Chip grid** (whole roster as toggle chips).
+  A **mode toggle** previews both flows — _Pick players_ (Start / Edit) and _Record
+  result_ (Finish, with a one-tap segmented durak / first-out / last-out control whose
+  live validation reuses the real `outcomeCountError`). A demo-only **Add a guest**
+  control appends to the in-memory roster.
+- **Files:** `src/app/games/selector-demo/{page.tsx,selector-demo.tsx,players.ts}`. All
+  self-contained and **safe to delete** once a direction is chosen.
+- **Status:** deployed for on-device evaluation (Vercel PR preview); **no decision yet**,
+  and the real `StartGameForm` / `EditGameForm` / `FinishGameForm` are **unchanged**.
+  Once a variant is picked, it gets wired into those against the live roster +
+  `addPlayerAction`, and this demo route is removed.
 
 ## Done
 
