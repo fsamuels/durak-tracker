@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { Avatar } from "@/components/avatar";
 import { HeadToHeadChart } from "@/components/charts/head-to-head-chart";
 import { RecentFormSparkline } from "@/components/charts/recent-form-sparkline";
 import { StatsWindowToggle } from "@/components/stats-window-toggle";
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -65,7 +67,7 @@ export default async function PlayerStatsPage({
     .maybeSingle();
   if (!player) notFound();
 
-  const [{ data, error }, { data: h2hRaw }] = await Promise.all([
+  const [{ data, error }, { data: h2hRaw }, avatars] = await Promise.all([
     supabase.rpc("player_stats", {
       p_group_id: group.id,
       p_player_id: playerId,
@@ -75,6 +77,7 @@ export default async function PlayerStatsPage({
       p_group_id: group.id,
       p_player_id: playerId,
     }),
+    getGroupAvatars(group.id),
   ]);
   const parsed = error ? null : playerStatsSchema.safeParse(data);
   const stats = parsed?.success ? parsed.data : null;
@@ -89,9 +92,16 @@ export default async function PlayerStatsPage({
         >
           ← Group stats
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {player.display_name}
-        </h1>
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={avatars.get(player.id)}
+            name={player.display_name}
+            size="lg"
+          />
+          <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
+            {player.display_name}
+          </h1>
+        </div>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Stats in <span className="font-medium">{group.name}</span>.
         </p>
