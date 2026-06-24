@@ -88,20 +88,12 @@ export function GameList({
             )}
 
             <div className="relative z-10 flex items-baseline justify-between gap-3">
-              <div className="flex items-baseline gap-3">
-                <Link
-                  href={`/games/new?from=${game.id}`}
-                  className="text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-                >
-                  ↻ Play again
-                </Link>
-                <Link
-                  href={`/games/${game.id}/edit`}
-                  className="text-xs font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-                >
-                  Edit
-                </Link>
-              </div>
+              <Link
+                href={`/games/new?from=${game.id}`}
+                className="text-sm font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
+              >
+                ↻ Play again
+              </Link>
               {durationSeconds != null && (
                 <span className="shrink-0 text-xs text-zinc-500">
                   ⏱ {formatDuration(durationSeconds)}
