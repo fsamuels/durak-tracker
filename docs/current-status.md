@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-21.
+Living snapshot of what's built. Last updated: 2026-06-24.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -17,6 +17,23 @@ Living snapshot of what's built. Last updated: 2026-06-21.
 > implied-partial TODOs.
 
 ## In progress
+
+### Single game detail page 🚧 (non-milestone)
+
+Added a dedicated detail page at `/games/[id]` for every completed game.
+
+- **Entry points** — every game card on the home page and the game history page is now
+  a tappable link to the detail page (absolute-cover link pattern; "Play again" and "Edit"
+  remain functional via `relative z-10`).
+- **Detail page** — shows start time, end time, duration, trump suit, deck count, notes,
+  and "logged by". Each player is listed with their outcome badge (Durak, First out, Last
+  out) and links directly to their stats page (`/stats/players/[id]`). Edit and Play again
+  actions appear at the bottom.
+- **Data layer** — new `getGameDetail` / `GameDetail` export in `src/lib/data/games.ts`
+  queries the full game row including `notes` and `player_id` (needed for the stats links),
+  with a secondary query to resolve the logger's display name.
+- **Files:** `src/app/games/[id]/page.tsx` (new), `src/components/game-list.tsx` (cover
+  link + `z-10` on action row), `src/lib/data/games.ts` (`getGameDetail`).
 
 ### Player-selection redesign — exploration 🚧 (non-milestone)
 
