@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -11,7 +12,7 @@ import {
 
 import type { HeadToHead } from "@/lib/validation/stats";
 
-function truncate(name: string, max = 11): string {
+function truncate(name: string, max: number): string {
   return name.length > max ? `${name.slice(0, max - 1)}…` : name;
 }
 
@@ -22,10 +23,29 @@ export function HeadToHeadChart({
   data: HeadToHead;
   playerName: string;
 }) {
+  // Reserve at least a third of the chart's width for the player names so they
+  // aren't truncated to a few characters. ResponsiveContainer sizes the chart
+  // to the container, so we measure the container and derive the label width.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [labelWidth, setLabelWidth] = useState(96);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setLabelWidth(Math.round(el.clientWidth / 3));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   if (data.length === 0) return null;
 
+  // Roughly 7px per character at the 12px tick font; keep a small left inset.
+  const maxNameChars = Math.max(11, Math.floor((labelWidth - 8) / 7));
+
   const chartData = data.map((o) => ({
-    name: truncate(o.display_name),
+    name: truncate(o.display_name, maxNameChars),
     fullName: o.display_name,
     mine: o.my_durak_count,
     theirs: o.opponent_durak_count,
@@ -42,6 +62,7 @@ export function HeadToHeadChart({
 
   return (
     <div
+      ref={containerRef}
       className="card-surface overflow-hidden rounded-2xl px-2 pt-2 pb-1"
       style={{ height: chartHeight }}
     >
@@ -66,7 +87,7 @@ export function HeadToHeadChart({
             dataKey="name"
             axisLine={false}
             tickLine={false}
-            width={76}
+            width={labelWidth}
             tick={{ fontSize: 12, fill: "#71717a" }}
           />
           <Tooltip
