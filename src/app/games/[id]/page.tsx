@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
+import { Avatar } from "@/components/avatar";
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameDetail } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { formatInTz } from "@/lib/time";
@@ -27,11 +29,13 @@ export default async function GameDetailPage({
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const game = await getGameDetail(group.id, parsedId.data);
+  const [game, avatars] = await Promise.all([
+    getGameDetail(group.id, parsedId.data),
+    getGroupAvatars(group.id),
+  ]);
   if (!game) notFound();
 
   const participants = game.game_players ?? [];
-  const durak = participants.find((p) => p.is_durak);
   const trump = game.trump_suit
     ? TRUMP_SUIT_LABELS[game.trump_suit as TrumpSuit]
     : null;
@@ -57,6 +61,13 @@ export default async function GameDetailPage({
           Game in <span className="font-medium">{group.name}</span>
         </p>
       </div>
+
+      <Link
+        href={`/games/new?from=${game.id}`}
+        className="btn-brand flex h-12 items-center justify-center rounded-full px-5 text-base font-semibold"
+      >
+        ↻ Play again
+      </Link>
 
       {/* Details */}
       <section className="card-surface flex flex-col gap-3 rounded-2xl px-4 py-4">
@@ -104,12 +115,15 @@ export default async function GameDetailPage({
                 key={gp.player_id}
                 className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
               >
-                <Link
-                  href={`/stats/players/${gp.player_id}`}
-                  className="font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
-                >
-                  {name}
-                </Link>
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar src={avatars.get(gp.player_id)} name={name} />
+                  <Link
+                    href={`/stats/players/${gp.player_id}`}
+                    className="truncate font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                  >
+                    {name}
+                  </Link>
+                </div>
                 <OutcomeBadge outcome={outcome} />
               </li>
             );
@@ -128,26 +142,12 @@ export default async function GameDetailPage({
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-4">
-        <Link
-          href={`/games/${game.id}/edit`}
-          className="text-sm font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-        >
-          Edit game
-        </Link>
-        <Link
-          href={`/games/new?from=${game.id}`}
-          className="text-sm font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-        >
-          ↻ Play again
-        </Link>
-      </div>
-
-      {durak && (
-        <div className="badge-durak flex items-center gap-2 self-start rounded-full px-3 py-1.5 text-sm font-medium">
-          <span aria-hidden>🃏</span> Durak: {durak.players?.display_name}
-        </div>
-      )}
+      <Link
+        href={`/games/${game.id}/edit`}
+        className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 text-base font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
+      >
+        Edit game
+      </Link>
     </main>
   );
 }
