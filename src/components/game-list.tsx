@@ -42,8 +42,15 @@ export function GameList({
         return (
           <li
             key={game.id}
-            className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5"
+            className="card-surface relative flex flex-col gap-2 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5"
           >
+            {/* Cover link: tapping anywhere on the card opens the detail page. */}
+            <Link
+              href={`/games/${game.id}`}
+              className="absolute inset-0 rounded-2xl"
+              aria-label={`View game from ${formatInTz(game.started_at, timezone)}`}
+            />
+
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm font-medium text-black dark:text-zinc-50">
                 {formatInTz(game.started_at, timezone)}
@@ -80,7 +87,7 @@ export function GameList({
               </p>
             )}
 
-            <div className="flex items-baseline justify-between gap-3">
+            <div className="relative z-10 flex items-baseline justify-between gap-3">
               <div className="flex items-baseline gap-3">
                 <Link
                   href={`/games/new?from=${game.id}`}

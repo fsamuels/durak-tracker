@@ -123,6 +123,45 @@ export async function getGameParticipantIds(
 }
 
 /**
+ * One completed game with its full roster + outcomes, for the detail page.
+ * Includes player_ids so the UI can link to each player's stats page. Returns
+ * null when the game doesn't exist, isn't in this group, or is deleted.
+ */
+export async function getGameDetail(groupId: string, gameId: string) {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("games")
+    .select(
+      `id, started_at, ended_at, trump_suit, deck_count, notes, logged_by,
+       game_players ( player_id, is_durak, is_first_out, is_last_out, players ( display_name ) )`,
+    )
+    .eq("id", gameId)
+    .eq("group_id", groupId)
+    .eq("status", "completed")
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  // Resolve logger display name.
+  let loggedByName: string | null = null;
+  if (data.logged_by) {
+    const { data: logger } = await supabase
+      .from("players")
+      .select("display_name")
+      .eq("group_id", groupId)
+      .eq("auth_user_id", data.logged_by)
+      .maybeSingle();
+    loggedByName = logger?.display_name ?? null;
+  }
+
+  return { ...data, logged_by_name: loggedByName };
+}
+
+export type GameDetail = NonNullable<Awaited<ReturnType<typeof getGameDetail>>>;
+
+/**
  * One completed game with its full roster + outcomes, for the edit page. Returns
  * null when the game doesn't exist, isn't in this group, is already deleted, or
  * the caller isn't the original logger (only logged_by may edit).
