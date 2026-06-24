@@ -35,12 +35,11 @@ export default async function GameDetailPage({
   const trump = game.trump_suit
     ? TRUMP_SUIT_LABELS[game.trump_suit as TrumpSuit]
     : null;
-  const durationSeconds =
-    game.ended_at
-      ? (new Date(game.ended_at).getTime() -
-          new Date(game.started_at).getTime()) /
-        1000
-      : null;
+  const durationSeconds = game.ended_at
+    ? (new Date(game.ended_at).getTime() -
+        new Date(game.started_at).getTime()) /
+      1000
+    : null;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -61,9 +60,15 @@ export default async function GameDetailPage({
 
       {/* Details */}
       <section className="card-surface flex flex-col gap-3 rounded-2xl px-4 py-4">
-        <Row label="Started" value={formatInTz(game.started_at, group.timezone)} />
+        <Row
+          label="Started"
+          value={formatInTz(game.started_at, group.timezone)}
+        />
         {game.ended_at && (
-          <Row label="Ended" value={formatInTz(game.ended_at, group.timezone)} />
+          <Row
+            label="Ended"
+            value={formatInTz(game.ended_at, group.timezone)}
+          />
         )}
         {durationSeconds != null && (
           <Row label="Duration" value={formatDuration(durationSeconds)} />
