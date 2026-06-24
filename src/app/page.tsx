@@ -11,8 +11,10 @@ import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
 import {
+  durakChampion,
   formatDuration,
   groupStatsSchema,
+  rate,
   topTrumpSuit,
 } from "@/lib/validation/stats";
 
@@ -46,6 +48,7 @@ export default async function Home() {
   const gamesPlayed = stats?.games_played ?? 0;
   // `players` comes back sorted by durak_count desc, so the leader is first.
   const topDurak = stats?.players.find((p) => p.durak_count > 0) ?? null;
+  const champion = stats ? durakChampion(stats.players) : null;
   const topSuit = topTrumpSuit(stats);
 
   return (
@@ -110,9 +113,18 @@ export default async function Home() {
                 />
               )}
               <div className="flex min-w-0 flex-col gap-1">
-                <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                  {topDurak ? topDurak.display_name : "—"}
-                </span>
+                {topDurak ? (
+                  <Link
+                    href={`/stats/players/${topDurak.player_id}`}
+                    className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                  >
+                    {topDurak.display_name}
+                  </Link>
+                ) : (
+                  <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
+                    —
+                  </span>
+                )}
                 <span className="text-xs font-medium text-zinc-500">
                   {topDurak
                     ? `most durak (${topDurak.durak_count})`
@@ -120,6 +132,27 @@ export default async function Home() {
                 </span>
               </div>
             </div>
+            {champion && (
+              <div className="card-surface col-span-2 flex items-center gap-3 rounded-2xl px-4 py-3">
+                <Avatar
+                  src={avatars.get(champion.player_id)}
+                  name={champion.display_name}
+                  size="lg"
+                />
+                <div className="flex min-w-0 flex-col gap-1">
+                  <Link
+                    href={`/stats/players/${champion.player_id}`}
+                    className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                  >
+                    {champion.display_name}
+                  </Link>
+                  <span className="text-xs font-medium text-zinc-500">
+                    champion 🏆 · lowest durak rate (
+                    {rate(champion.durak_count, champion.games_played)})
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
               <span className="text-brand-gradient text-3xl font-bold tracking-tight">
                 {gamesPlayed}
