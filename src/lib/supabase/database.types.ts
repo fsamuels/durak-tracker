@@ -289,6 +289,22 @@ export type Database = {
           user_id: string;
         }[];
       };
+      admin_list_player_claims: {
+        Args: never;
+        Returns: {
+          claim_id: string;
+          group_id: string;
+          group_name: string;
+          player_id: string;
+          player_name: string;
+          player_linked: boolean;
+          created_by_email: string;
+          created_at: string;
+          expires_at: string;
+          claimed_by_email: string;
+          claimed_at: string;
+        }[];
+      };
       check_game_player_integrity: {
         Args: { p_game_id: string };
         Returns: undefined;

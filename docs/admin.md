@@ -66,6 +66,29 @@ system**, newest sign-in first.
   **profile picture** (from the provider's `identity_data`, via the shared
   `pickAvatarUrl` extractor; falls back to initials when none is present).
 
+## Feature: claim links
+
+Below the accounts list, the admin page shows **every account claim link in the
+system**, newest first, so an operator can see onboarding state across all groups
+(who has an outstanding link, what's expired, what's been redeemed).
+
+- Data comes from a **`SECURITY DEFINER` database function**
+  `public.admin_list_player_claims()` (migration
+  `20260629000001_admin_list_player_claims.sql`), called via `supabase.rpc()` from
+  [`listAllPlayerClaims`](../src/lib/data/claims.ts). The `player_claims` RLS only
+  lets a group member see their own group's links, so — like the accounts list — it
+  must cross RLS via the service role. The function joins `players`, `groups`, and
+  `auth.users` (twice: minter + claimer) and is granted to `service_role` only.
+- **Status** is derived in the data helper with the same precedence as the
+  `claim_details` RPC: a redeemed (or otherwise already-linked) player reads as
+  **Claimed** even past expiry, otherwise **Expired** if past `expires_at`, else
+  **Outstanding**. The section header shows per-status counts.
+- Each row shows the player name, group, who minted it + when, and either the
+  expiry (relative, e.g. "Expires in 3 days") or — for claimed links — who redeemed
+  it and when.
+- **The token is never returned by the RPC or rendered.** An outstanding link is a
+  live single-use credential; the admin view only needs status, not the secret.
+
 ### Extending the admin area
 
 Future account-authority features (e.g. promoting a user to admin, deactivating an
