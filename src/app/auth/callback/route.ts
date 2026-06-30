@@ -13,7 +13,9 @@ import { createClient } from "@/lib/supabase/server";
  * other than a leading single "/" is rejected.
  */
 function isSafeNextPath(next: string): boolean {
-  return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\");
+  return (
+    next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\")
+  );
 }
 
 export async function GET(request: Request) {

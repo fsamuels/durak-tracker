@@ -203,9 +203,16 @@ is left in the DB but unused):
   rows, inserts latecomers, and deletes anyone no longer present — then the deferred
   trigger validates the completed-game invariants at COMMIT.
 
-Both are **`SECURITY INVOKER`** with `logged_by = auth.uid()`, mirroring `log_game`,
-and each does its multi-row work in a single transaction so the deferred checks see
-every row. There is **no time field in the UI** — `started_at` and `ended_at` are
+Both are **`SECURITY INVOKER`**, mirroring `log_game`, and `logged_by` is set from
+`auth.uid()` inside `start_game` (never trusted from the client). `finish_game` does
+**not** require the caller to be the original `logged_by` — the `games_update` RLS
+policy only checks group membership, so any group member can finish a game someone
+else started, matching the `InProgressGames` UI which offers the **Finish →** CTA to
+the whole group. (`edit_completed_game` and the soft-delete path are different: they
+keep an explicit `logged_by`-only restriction, since editing/deleting a _completed_
+game's history is still restricted to whoever logged it.) Each RPC does its multi-row
+work in a single transaction so the deferred checks see every row. There is **no time
+field in the UI** — `started_at` and `ended_at` are
 stamped server-side; editing them is deferred to a future edit-game screen. A
 standalone "add players to an in-progress game" RPC was folded into `finish_game`'s
 reconciliation and deferred as a separate entry point.
