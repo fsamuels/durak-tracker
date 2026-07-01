@@ -54,6 +54,18 @@ Seed/ad-hoc SQL has no CLI command — use `psql` over the **IPv4 session pooler
 `database.types.ts` after a migration — it's committed and is what keeps `supabase.from(...)`/`.rpc(...)`
 type-safe.
 
+## Git workflow
+
+- **Branch naming**: prefix every branch with what kind of change it is —
+  `feature/…` (new functionality), `bugfix/…` (fixing broken behavior), `test/…`
+  (test-only changes), or `docs/…` (documentation only). Pick the prefix that
+  matches the task, not the tool that generated the branch.
+- **Always branch from the latest `main`.** Before creating a new branch, fetch
+  and branch off current `origin/main` (`git fetch origin main && git checkout -b
+<prefix>/<name> origin/main`) rather than off a stale local `main` or another
+  feature branch — this avoids dragging in unrelated/merged commits and keeps
+  diffs reviewable.
+
 ## Architecture
 
 **Client → Supabase directly, RLS is the authorization layer.** The browser (and server components) talk
@@ -84,7 +96,7 @@ is a live data leak**, so any new table or write path needs an explicit policy, 
   different `display_name`) per group, linked back via `auth_user_id`; a null `auth_user_id` means a guest.
   Renaming yourself can be scoped to one group (`src/app/group/actions.ts`) or account-wide across every
   group you're in (`src/app/account/actions.ts`) — these are two deliberately different actions, not a bug.
-- **`groups.timezone` drives all time-bucketed stats** (week/month/year cutoffs use the *group's* timezone,
+- **`groups.timezone` drives all time-bucketed stats** (week/month/year cutoffs use the _group's_ timezone,
   not the viewer's, so results are deterministic) — see `docs/architecture.md#metrics`.
 - **Metrics are computed on read, never cached/materialized**, via `STABLE` SQL functions
   (`group_stats`, `player_stats`, `head_to_head`, `group_roster`, …) — don't introduce a cache without
