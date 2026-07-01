@@ -66,6 +66,27 @@ type-safe.
   feature branch — this avoids dragging in unrelated/merged commits and keeps
   diffs reviewable.
 
+## Before opening or updating a PR
+
+- **Tests**: new/changed pure logic (`src/lib/**`) and component behavior get a
+  co-located `*.test.ts`/`*.test.tsx`, matching the existing suite's style — see
+  `### Testing` below for what's in vs. out of Vitest's reach. A behavior change
+  with no corresponding test change is a signal you either missed a test or the
+  change belongs in the psql-verified DB-invariant category instead.
+- **Docs**: update whichever doc the change actually affects, in the same PR —
+  don't leave it for a follow-up:
+  - `docs/architecture.md` for anything touching RLS policies, RPCs, the data
+    model, or a design decision.
+  - `docs/current-status.md` for what shipped (this repo's own convention: docs
+    land already reflecting the change, not as a TODO — see its "Milestone
+    convention" note).
+  - `docs/oauth-setup.md` for auth-flow/redirect changes.
+  - `README.md` if a command, script, or setup step changed.
+- **Format + full check**: run `pnpm format` (or at least `format:check`) along
+  with `pnpm lint`, `pnpm test`, and `pnpm build` locally before pushing —
+  matches CI exactly (see `Commands` above), so nothing you push fails a check
+  you could've caught first.
+
 ## Architecture
 
 **Client → Supabase directly, RLS is the authorization layer.** The browser (and server components) talk
