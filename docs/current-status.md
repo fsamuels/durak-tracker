@@ -705,8 +705,18 @@ No schema or data-model changes — all charts consume existing RPC data.
     URL whose host is `evil.com` (the userinfo-prefix trick), an open redirect
     off a public route. `next` is now required to be a same-origin relative
     path (`src/app/auth/callback/route.ts`).
-
-## Credentials & secrets
+  - The same review noted `updateDisplayNameAction` (account-wide rename) only
+    called `revalidatePath("/account")`, so a stale name could linger on
+    `/`, `/games`, `/stats`, `/players` until those routes revalidated on their
+    own. Both display-name actions now call `revalidatePath("/", "layout")`.
+- **Added: per-group display name.** The **Manage group** page
+  (`src/app/group/page.tsx`) now has a "Your name in this group" section
+  (`GroupDisplayNameForm` / `updateGroupDisplayNameAction`,
+  `src/app/group/actions.ts`) that renames the viewer's `players` row in the
+  **active group only**, with copy clarifying that other groups keep their own
+  name for them. `/account`'s display-name section (account-wide rename) now
+  says explicitly that it updates the name in every group, and links to
+  **Manage group** for a single-group rename.
 
 - All secrets live in **gitignored `.env.local`**; `.env.example` is the committed
   template. Supabase auth token lives in the CLI keychain, not in any file.
