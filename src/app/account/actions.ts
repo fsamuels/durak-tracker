@@ -33,6 +33,8 @@ export async function updateDisplayNameAction(
 
   if (error) return { error: "Failed to update name" };
 
-  revalidatePath("/account");
+  // The name appears across every group (home, games, stats, players, …), not
+  // just /account, so revalidate the whole tree rather than just this page.
+  revalidatePath("/", "layout");
   return { success: true };
 }

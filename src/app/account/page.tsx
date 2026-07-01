@@ -41,7 +41,9 @@ export default async function AccountPage() {
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-medium text-zinc-500">Display name</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Shown across all your groups.
+            Updates your name everywhere — every group you&apos;re in. To rename
+            yourself in just one group, use that group&apos;s Manage group page
+            instead.
           </p>
           <DisplayNameForm currentName={playerRecord.display_name} />
         </section>

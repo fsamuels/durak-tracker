@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-24.
+Living snapshot of what's built. Last updated: 2026-06-30.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -305,9 +305,9 @@ Logging is split into **start** (game created in-progress with a roster) and
   (`check_game_player_integrity`) is now **status-aware**: an in-progress game
   needs only **≥1 player**; the **≥3 players / exactly-one-durak** invariants apply
   only once a game is **completed** (re-checked when finish flips the status).
-- **RPCs** `start_game` and `finish_game` (`SECURITY INVOKER`, `logged_by =
-auth.uid()`, mirroring `log_game`). `start_game` inserts the game + starting
-  roster, stamping `started_at`. `finish_game` is **authoritative**: it stamps
+- **RPCs** `start_game` and `finish_game` (`SECURITY INVOKER`, mirroring `log_game`).
+  `start_game` inserts the game + starting roster, stamping `started_at` and setting
+  `logged_by = auth.uid()`. `finish_game` is **authoritative**: it stamps
   `ended_at`, flips status to completed, and reconciles the roster (upserts
   outcomes onto starters, inserts latecomers, drops no-shows) — all in one
   transaction so the deferred trigger validates at COMMIT. `log_game` (M4) is left
@@ -689,8 +689,39 @@ No schema or data-model changes — all charts consume existing RPC data.
 ## Housekeeping
 
 - Unused default `public/*.svg` assets from create-next-app can be removed.
-
-## Credentials & secrets
+- **Added: Husky pre-commit hook.** `pnpm install` now also sets up a
+  `pre-commit` hook (`prepare` script → Husky → `lint-staged` → `prettier
+--write` on staged files), so format drift gets fixed before it's committed
+  instead of being caught later by CI's `format:check`. CI's check remains the
+  hard backstop for a bypassed hook (`git commit --no-verify`).
+- **Fixed: `finish_game` RLS bug + auth callback open redirect.** A code review
+  surfaced two issues, both fixed in the same change:
+  - `games_update`'s RLS policy required `logged_by = auth.uid()` on the row
+    _after_ update, but `finish_game` never writes `logged_by` — so the check
+    actually re-asserted the row's pre-existing logger, meaning only the player
+    who started a game could finish it, even though `InProgressGames` offers the
+    **Finish →** CTA to every group member. The policy now only checks group
+    membership for `finish_game`'s path; `edit_completed_game` and the
+    soft-delete policy keep their own explicit `logged_by`-only checks, so
+    editing/deleting a completed game is still logger-restricted
+    (`20260630000000_fix_games_update_finish_check.sql`).
+  - `/auth/callback`'s `next` redirect target was taken from the query string
+    unvalidated; a value like `next=@evil.com` turns `${origin}${next}` into a
+    URL whose host is `evil.com` (the userinfo-prefix trick), an open redirect
+    off a public route. `next` is now required to be a same-origin relative
+    path (`src/app/auth/callback/route.ts`).
+  - The same review noted `updateDisplayNameAction` (account-wide rename) only
+    called `revalidatePath("/account")`, so a stale name could linger on
+    `/`, `/games`, `/stats`, `/players` until those routes revalidated on their
+    own. Both display-name actions now call `revalidatePath("/", "layout")`.
+- **Added: per-group display name.** The **Manage group** page
+  (`src/app/group/page.tsx`) now has a "Your name in this group" section
+  (`GroupDisplayNameForm` / `updateGroupDisplayNameAction`,
+  `src/app/group/actions.ts`) that renames the viewer's `players` row in the
+  **active group only**, with copy clarifying that other groups keep their own
+  name for them. `/account`'s display-name section (account-wide rename) now
+  says explicitly that it updates the name in every group, and links to
+  **Manage group** for a single-group rename.
 
 - All secrets live in **gitignored `.env.local`**; `.env.example` is the committed
   template. Supabase auth token lives in the CLI keychain, not in any file.

@@ -7,6 +7,8 @@ import { GroupSwitcher } from "@/components/group-switcher";
 import { getCurrentGroup, getGroupDetails } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 
+import { GroupDisplayNameForm } from "./group-display-name-form";
+
 export default async function ManageGroupPage() {
   const supabase = await createClient();
 
@@ -18,13 +20,21 @@ export default async function ManageGroupPage() {
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");
 
-  const [{ data: groups }, details] = await Promise.all([
-    supabase
-      .from("groups")
-      .select("id, name")
-      .order("created_at", { ascending: true }),
-    getGroupDetails(group.id),
-  ]);
+  const [{ data: groups }, details, { data: viewerPlayer }] = await Promise.all(
+    [
+      supabase
+        .from("groups")
+        .select("id, name")
+        .order("created_at", { ascending: true }),
+      getGroupDetails(group.id),
+      supabase
+        .from("players")
+        .select("display_name")
+        .eq("group_id", group.id)
+        .eq("auth_user_id", user.id)
+        .maybeSingle(),
+    ],
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
@@ -39,6 +49,25 @@ export default async function ManageGroupPage() {
       </div>
 
       {details && <GroupDetails details={details} />}
+
+      {viewerPlayer && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-medium text-zinc-500">
+            Your name in this group
+          </h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Only updates your name in{" "}
+            <span className="font-medium">{group.name}</span> — other groups
+            you&apos;re in keep their own name for you. To change your name
+            everywhere at once, use the{" "}
+            <Link href="/account" className="underline underline-offset-4">
+              Account
+            </Link>{" "}
+            page instead.
+          </p>
+          <GroupDisplayNameForm currentName={viewerPlayer.display_name} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium text-zinc-500">Switch group</h2>

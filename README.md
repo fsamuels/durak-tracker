@@ -46,6 +46,10 @@ cp .env.example .env.local   # then fill in the Supabase values
 pnpm dev                     # http://localhost:3000
 ```
 
+`pnpm install` also wires up a **Husky pre-commit hook** (via the `prepare` script) that runs
+Prettier on staged files, so formatting issues get fixed before they're ever committed — CI's
+`format:check` is still the hard backstop if the hook is bypassed.
+
 ### Environment
 
 Copy `.env.example` to `.env.local` (gitignored) and fill in:
@@ -69,7 +73,6 @@ Get the keys from Supabase → Project Settings → API Keys.
 | `pnpm lint`                         | ESLint                           |
 | `pnpm test` / `pnpm test:watch`     | Vitest unit tests (run / watch)  |
 | `pnpm format` / `pnpm format:check` | Prettier write / check           |
-| `pnpm test` / `pnpm test:watch`     | Vitest run / watch               |
 | `pnpm test:coverage`                | Vitest with v8 coverage report   |
 
 ## Testing

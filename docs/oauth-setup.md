@@ -100,6 +100,13 @@ Lightweight to set up — no app review, and works for any Discord user immediat
 This authorizes hop 3 (where Supabase may send users after auth). Our code redirects
 to `${origin}/auth/callback`, covered by the wildcards.
 
+`/auth/callback` accepts an optional `?next=` to return the user to a specific page
+(e.g. `/account`, `/claim/<token>`) after the exchange. Since the callback route is
+public and the Supabase redirect allow-list only matches the path (not the query
+string), `next` is treated as untrusted input and validated as a same-origin relative
+path before use — see `isSafeNextPath` in
+[`src/app/auth/callback/route.ts`](../src/app/auth/callback/route.ts).
+
 ## Testing the flow
 
 With the publishable key already in `.env.local`, Google enabled, and URL config set:
