@@ -305,6 +305,23 @@ export type Database = {
           claimed_at: string;
         }[];
       };
+      admin_system_stats: {
+        Args: never;
+        Returns: {
+          total_groups: number;
+          total_users: number;
+          total_players: number;
+          guest_players: number;
+          total_games: number;
+          completed_games: number;
+          games_7d: number;
+          games_30d: number;
+          new_users_7d: number;
+          active_groups_7d: number;
+          top_group_name: string;
+          top_group_games: number;
+        }[];
+      };
       check_game_player_integrity: {
         Args: { p_game_id: string };
         Returns: undefined;

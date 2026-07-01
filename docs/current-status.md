@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-06-30.
+Living snapshot of what's built. Last updated: 2026-07-01.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -520,6 +520,18 @@ renders only for admins). Groundwork for a future "account authority" role.
 - **First feature: external authenticated accounts** — lists every external (OAuth)
   identity in the system (Google / Facebook / Discord), newest sign-in first, with
   provider, name/email, and linked / last-sign-in timestamps.
+- **System overview** — a summary section at the top of the page: number tiles
+  (groups, registered users, players + guests, games + in-progress) plus an insights
+  card (games this week/month, active groups this week, most active group). Backed by
+  the `admin_system_stats()` `SECURITY DEFINER` function
+  (`20260701000000_admin_system_stats.sql`, one row of service-role-only aggregates)
+  via [`getSystemStats`](../src/lib/data/system.ts).
+- **Collapsible, filterable lists** — the external-accounts and claim-links lists now
+  start collapsed (headers/descriptions stay visible) via
+  [`CollapsibleSection`](../src/app/admin/collapsible-section.tsx); a failed section
+  starts expanded so its error shows. Claim links can be filtered by status
+  (Outstanding / Expired / Claimed) with client-side chips that double as the
+  per-status count summary.
 - **Service-role path** — the first server-side use of `SUPABASE_SERVICE_ROLE_KEY`.
   [`createAdminClient`](../src/lib/supabase/admin.ts) (RLS-bypassing, server only) backs
   [`listExternalAccounts`](../src/lib/data/accounts.ts). Full model in [admin.md](./admin.md).
@@ -528,9 +540,10 @@ renders only for admins). Groundwork for a future "account authority" role.
   function `admin_list_external_accounts()` (`20260620000001_admin_list_users.sql`) that
   queries `auth.users ⋈ auth.identities` directly, granted to `service_role` only.
   `listExternalAccounts` calls it via `supabase.rpc()`.
-- **Verified:** `pnpm lint` / `format:check` / `test` (101 tests passing) / `build`
+- **Verified:** `pnpm lint` / `format:check` / `test` (126 tests passing) / `build`
   clean. Note: `SUPABASE_SERVICE_ROLE_KEY` must be set in Vercel (already required) for
-  the accounts list to load.
+  the accounts list to load. The `admin_system_stats` migration must be applied
+  (`supabase db push`) and `database.types.ts` regenerated for the overview to load.
 
 ### Automated test suite ✅ (non-milestone)
 
