@@ -82,10 +82,13 @@ type-safe.
     convention" note).
   - `docs/oauth-setup.md` for auth-flow/redirect changes.
   - `README.md` if a command, script, or setup step changed.
-- **Format + full check**: run `pnpm format` (or at least `format:check`) along
-  with `pnpm lint`, `pnpm test`, and `pnpm build` locally before pushing —
-  matches CI exactly (see `Commands` above), so nothing you push fails a check
-  you could've caught first.
+- **Format + full check**: a Husky `pre-commit` hook runs `lint-staged` →
+  `prettier --write` on every staged file automatically (set up by the
+  `prepare` script on `pnpm install`), so format drift shouldn't reach a commit
+  in the first place. Still run `pnpm lint`, `pnpm test`, and `pnpm build`
+  locally before pushing — matches CI exactly (see `Commands` above) and CI's
+  `format:check` step is a hard failure (not a warning), so a bypassed hook
+  (`git commit --no-verify`) still gets caught before merge.
 
 ## Architecture
 

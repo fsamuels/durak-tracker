@@ -689,6 +689,11 @@ No schema or data-model changes — all charts consume existing RPC data.
 ## Housekeeping
 
 - Unused default `public/*.svg` assets from create-next-app can be removed.
+- **Added: Husky pre-commit hook.** `pnpm install` now also sets up a
+  `pre-commit` hook (`prepare` script → Husky → `lint-staged` → `prettier
+--write` on staged files), so format drift gets fixed before it's committed
+  instead of being caught later by CI's `format:check`. CI's check remains the
+  hard backstop for a bypassed hook (`git commit --no-verify`).
 - **Fixed: `finish_game` RLS bug + auth callback open redirect.** A code review
   surfaced two issues, both fixed in the same change:
   - `games_update`'s RLS policy required `logged_by = auth.uid()` on the row
