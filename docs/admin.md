@@ -42,6 +42,39 @@ anon key + user JWT path the rest of the app relies on. Instead:
   `isAdmin` gate in the page. If the env var is missing the client throws on
   construction rather than silently degrading.
 
+## Feature: system overview
+
+The top of the admin page shows a **system-wide overview** — at-a-glance totals
+plus a few derived insights that sit above any single group's RLS scope.
+
+- Data comes from a **`SECURITY DEFINER` database function**
+  `public.admin_system_stats()` (migration `20260701000000_admin_system_stats.sql`),
+  called via `supabase.rpc()` from [`getSystemStats`](../src/lib/data/system.ts). Like
+  the accounts/claims lists, the counts span every group + `auth.users`, so they must
+  cross RLS via the service role; the function is granted to `service_role` only.
+- It returns **exactly one row** of scalar counts — the outer `SELECT` has no `FROM`,
+  so it yields one row even on an empty system (the top-group scalar subqueries read
+  `NULL`/`0` then). Counts include: groups, registered users, players (+ guests),
+  games (completed + in-progress), games in the last 7/30 days (by `started_at`), new
+  users in the last 7 days, active groups in the last 7 days, and the most active
+  group (most completed games) with its game count.
+- Rendered by the presentational [`SystemStats`](../src/app/admin/system-stats.tsx)
+  component: a grid of number tiles plus an insights card. It's always expanded — it's
+  the page's summary.
+
+## UI: collapsible, filterable sections
+
+The accounts and claim-link lists can grow long, so each is a **collapsible section**
+([`CollapsibleSection`](../src/app/admin/collapsible-section.tsx)): the header (title +
+count + chevron) is the toggle and stays visible, as does the section description; only
+the list body collapses. Both start **collapsed** so the page opens as an at-a-glance
+overview. A section that failed to load starts **expanded** so its error is visible.
+
+The claim-links section ([`ClaimsSection`](../src/app/admin/claims-section.tsx)) also
+offers **status filter chips** (All / Outstanding / Expired / Claimed, each with its
+count) that filter the rendered list client-side; the chips double as the per-status
+summary.
+
 ## Feature: external authenticated accounts
 
 The first admin feature lists **every external (OAuth) authenticated account in the
