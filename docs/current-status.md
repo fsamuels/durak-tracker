@@ -667,6 +667,37 @@ No schema or data-model changes — all charts consume existing RPC data.
   by result; pink-to-teal gradient fill; dashed 0.5 reference line.
 - **Verified:** `pnpm build` / `test` (120 tests) clean.
 
+### Admin: add account to group + grant fix ✅ (non-milestone)
+
+Operator-side "add this existing user to another group" (branch
+`feature/add-players-to-multiple-groups`) — deliberately admin-only, since a
+member-facing user search would let any group enumerate system-wide accounts.
+
+- **`admin_add_user_to_group` RPC** (`20260709000000_admin_add_user_to_group.sql`,
+  `SECURITY DEFINER`, `service_role` only) — writes the same atomic pair as
+  `claim_player` (`group_members` + linked `players` row), either linking one of the
+  group's guest players or creating a fresh named player, with readable errors for
+  the duplicate/non-guest/blank-name cases. See
+  [architecture.md](./architecture.md) and [admin.md](./admin.md).
+- **UI** — each row in the `/admin` accounts list gets an inline "Add to group…"
+  form ([`AddToGroupForm`](../src/app/admin/add-to-group-form.tsx)): group picker
+  (already-joined groups disabled), guest-link vs. new-player choice, name
+  prefilled from the provider. Backed by
+  [`addUserToGroupAction`](../src/app/admin/actions.ts) (re-checks `isAdmin`) and
+  [`listAdminGroupOptions`](../src/lib/data/admin-groups.ts).
+- **🔐 Security fix found along the way** — Supabase's default privileges grant
+  `EXECUTE` on new public functions to `anon`/`authenticated` directly, so the
+  existing admin functions' `REVOKE … FROM PUBLIC` never actually restricted them:
+  any client could call `admin_list_external_accounts()` / `admin_system_stats()` /
+  `admin_list_player_claims()` over PostgREST RPC.
+  `20260709000001_admin_fn_service_role_only.sql` revokes `anon`/`authenticated`
+  on all four admin functions.
+- **Verified:** psql (rolled-back transaction, live DB): new-player add creates
+  both rows, guest linking works, duplicate add / non-guest link / blank name all
+  rejected; `has_function_privilege` confirms all four admin functions are now
+  `service_role`-only (and were anon-callable before the fix). `pnpm lint` /
+  `format:check` / `test` (137 tests) / `build` clean.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
