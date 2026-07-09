@@ -727,6 +727,10 @@ No schema or data-model changes — all charts consume existing RPC data.
     called `revalidatePath("/account")`, so a stale name could linger on
     `/`, `/games`, `/stats`, `/players` until those routes revalidated on their
     own. Both display-name actions now call `revalidatePath("/", "layout")`.
+- **Added: games-played count on the Players page.** Each row on `/players` now
+  shows the player's completed-games count under their name, fetched via the
+  existing `group_roster` RPC (same completed-games definition the picker
+  ranking uses) and merged with the alphabetical player list.
 - **Added: per-group display name.** The **Manage group** page
   (`src/app/group/page.tsx`) now has a "Your name in this group" section
   (`GroupDisplayNameForm` / `updateGroupDisplayNameAction`,
