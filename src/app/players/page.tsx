@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Avatar } from "@/components/avatar";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
+import { getGroupRoster } from "@/lib/data/players";
 import { createClient } from "@/lib/supabase/server";
 
 import { AddPlayerForm } from "./add-player-form";
@@ -14,14 +15,16 @@ export default async function PlayersPage() {
   if (!group) redirect("/onboarding");
 
   const supabase = await createClient();
-  const [{ data: players }, avatars] = await Promise.all([
+  const [{ data: players }, avatars, { roster }] = await Promise.all([
     supabase
       .from("players")
       .select("id, display_name, auth_user_id")
       .eq("group_id", group.id)
       .order("display_name", { ascending: true }),
     getGroupAvatars(group.id),
+    getGroupRoster(group.id),
   ]);
+  const gamesPlayed = new Map(roster.map((r) => [r.id, r.games_played]));
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
@@ -46,12 +49,18 @@ export default async function PlayersPage() {
           >
             <div className="flex min-w-0 items-center gap-3">
               <Avatar src={avatars.get(p.id)} name={p.display_name} />
-              <Link
-                href={`/stats/players/${p.id}`}
-                className="truncate underline-offset-4 hover:underline"
-              >
-                {p.display_name}
-              </Link>
+              <div className="flex min-w-0 flex-col">
+                <Link
+                  href={`/stats/players/${p.id}`}
+                  className="truncate underline-offset-4 hover:underline"
+                >
+                  {p.display_name}
+                </Link>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {gamesPlayed.get(p.id) ?? 0} game
+                  {(gamesPlayed.get(p.id) ?? 0) === 1 ? "" : "s"}
+                </span>
+              </div>
             </div>
             {!p.auth_user_id && (
               <div className="flex flex-col items-end gap-1">
