@@ -90,8 +90,12 @@ system**, newest sign-in first.
     `unexpected_failure` ("Database error finding users") on this Supabase project
     configuration — GoTrue fails its own internal SQL query. The `SECURITY DEFINER`
     function bypasses GoTrue entirely while keeping the same auth.users data.
-  - The function is granted to `service_role` only (`REVOKE ALL … FROM PUBLIC`), so
-    it can't be reached through the anon key + RLS path.
+  - The function is granted to `service_role` only, so it can't be reached through
+    the anon key + RLS path. **Note:** this takes two revokes — Supabase's default
+    privileges grant `EXECUTE` on new functions to `anon`/`authenticated` directly,
+    so `REVOKE … FROM PUBLIC` alone is not enough
+    (`20260709000001_admin_fn_service_role_only.sql` fixed this across all admin
+    functions).
 - "External" means the OAuth providers the app supports — **Google, Facebook, and
   Discord**. The implicit `email` identity is excluded.
 - Each row shows the provider, the name/email reported by that provider, the auth
@@ -121,6 +125,32 @@ system**, newest first, so an operator can see onboarding state across all group
   it and when.
 - **The token is never returned by the RPC or rendered.** An outstanding link is a
   live single-use credential; the admin view only needs status, not the secret.
+
+## Feature: add account to group
+
+Each row in the accounts list has an **"Add to group…"** action: an inline form that
+puts that account into any group in the system — the operator-side answer to "add
+this existing user to another group" without exposing a member-facing user search
+(which would let any group enumerate system-wide accounts).
+
+- The form picks a **group** (groups the account already has a player in are
+  disabled), then either **links one of that group's guest players** to the account
+  or **creates a new player** with a chosen display name (prefilled from the
+  provider name). Options come from
+  [`listAdminGroupOptions`](../src/lib/data/admin-groups.ts) (service role — it spans
+  all groups).
+- Submission goes through the [`addUserToGroupAction`](../src/app/admin/actions.ts)
+  server action, which **re-checks `isAdmin`** (server actions are public HTTP
+  endpoints — the page-level gate alone is not enough), validates with
+  [`addUserToGroupSchema`](../src/lib/validation/admin.ts), and calls the
+  **`admin_add_user_to_group`** RPC via `createAdminClient`.
+- The RPC (`20260709000000_admin_add_user_to_group.sql`, `SECURITY DEFINER`, granted
+  to `service_role` only) writes the same atomic pair the claim flow does —
+  `group_members` + a linked `players` row — with `claim_player`'s guest/duplicate
+  checks. See [architecture.md](./architecture.md) for the full contract.
+- Unlike claim links this is **not consent-based**: the account is added without the
+  user acting. That's the point of it being operator-only; user-initiated joining
+  remains the claim-link flow.
 
 ### Extending the admin area
 

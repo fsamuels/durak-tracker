@@ -5,6 +5,10 @@ import {
   type ExternalAccount,
   listExternalAccounts,
 } from "@/lib/data/accounts";
+import {
+  type AdminGroupOption,
+  listAdminGroupOptions,
+} from "@/lib/data/admin-groups";
 import { type AdminPlayerClaim, listAllPlayerClaims } from "@/lib/data/claims";
 import { type SystemStats, getSystemStats } from "@/lib/data/system";
 import { createClient } from "@/lib/supabase/server";
@@ -55,10 +59,14 @@ export default async function AdminPage() {
     [stats, statsError],
     [accounts, accountsError],
     [claims, claimsError],
+    // Group options feed the add-to-group form inside the accounts section; a
+    // load failure just means empty pickers there, not a broken section.
+    [groups],
   ] = await Promise.all([
     loadOr<SystemStats | null>(getSystemStats, null),
     loadOr<ExternalAccount[]>(listExternalAccounts, []),
     loadOr<AdminPlayerClaim[]>(listAllPlayerClaims, []),
+    loadOr<AdminGroupOption[]>(listAdminGroupOptions, []),
   ]);
 
   return (
@@ -73,7 +81,11 @@ export default async function AdminPage() {
       </div>
 
       <SystemStatsSection stats={stats} error={statsError} />
-      <AccountsSection accounts={accounts} error={accountsError} />
+      <AccountsSection
+        accounts={accounts}
+        groups={groups}
+        error={accountsError}
+      />
       <ClaimsSection claims={claims} error={claimsError} />
     </main>
   );

@@ -278,6 +278,28 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_add_user_to_group: {
+        Args: {
+          p_display_name?: string;
+          p_group_id: string;
+          p_player_id?: string;
+          p_user_id: string;
+        };
+        Returns: {
+          auth_user_id: string | null;
+          created_at: string;
+          display_name: string;
+          group_id: string;
+          id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "players";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       admin_list_external_accounts: {
         Args: never;
         Returns: {
@@ -293,33 +315,33 @@ export type Database = {
         Args: never;
         Returns: {
           claim_id: string;
+          claimed_at: string;
+          claimed_by_email: string;
+          created_at: string;
+          created_by_email: string;
+          expires_at: string;
           group_id: string;
           group_name: string;
           player_id: string;
-          player_name: string;
           player_linked: boolean;
-          created_by_email: string;
-          created_at: string;
-          expires_at: string;
-          claimed_by_email: string;
-          claimed_at: string;
+          player_name: string;
         }[];
       };
       admin_system_stats: {
         Args: never;
         Returns: {
-          total_groups: number;
-          total_users: number;
-          total_players: number;
-          guest_players: number;
-          total_games: number;
-          completed_games: number;
-          games_7d: number;
-          games_30d: number;
-          new_users_7d: number;
           active_groups_7d: number;
-          top_group_name: string;
+          completed_games: number;
+          games_30d: number;
+          games_7d: number;
+          guest_players: number;
+          new_users_7d: number;
           top_group_games: number;
+          top_group_name: string;
+          total_games: number;
+          total_groups: number;
+          total_players: number;
+          total_users: number;
         }[];
       };
       check_game_player_integrity: {

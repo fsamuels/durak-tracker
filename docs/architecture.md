@@ -265,13 +265,41 @@ configuration — GoTrue fails its own internal SQL query — so the function qu
 `auth.users ⋈ auth.identities` directly.
 
 Like `group_player_avatars`, it is **`SECURITY DEFINER`** (the `authenticated` role
-can't read `auth.users`), but with a stricter grant: `REVOKE ALL … FROM PUBLIC` +
-`GRANT EXECUTE … TO service_role` — so **only the service-role client can call it**,
-unlike `group_player_avatars` which is also reachable by the `authenticated` role for
-regular members. The function itself applies no `WHERE` filter (it returns all
-identities for the three supported providers); access control is the service-role key
-gate plus the `isAdmin` check in the page. It is `STABLE` and returns rows already
-ordered by `last_sign_in_at DESC NULLS LAST`, so no post-query sort is needed.
+can't read `auth.users`), but with a stricter grant: **only the service-role client
+can call it**, unlike `group_player_avatars` which is also reachable by the
+`authenticated` role for regular members. The function itself applies no `WHERE`
+filter (it returns all identities for the three supported providers); access control
+is the service-role key gate plus the `isAdmin` check in the page. It is `STABLE` and
+returns rows already ordered by `last_sign_in_at DESC NULLS LAST`, so no post-query
+sort is needed.
+
+> **Grant pitfall (fixed in `20260709000001_admin_fn_service_role_only.sql`):**
+> Supabase's default privileges grant `EXECUTE` on every new `public` function to
+> `anon`, `authenticated`, and `service_role` **directly**, so a
+> `REVOKE ALL … FROM PUBLIC` (which the original admin-function migrations relied on)
+> removes only the redundant `PUBLIC` grant and leaves the function callable by any
+> client over PostgREST RPC. All admin functions now also carry
+> `REVOKE EXECUTE … FROM anon, authenticated`; any future service-role-only function
+> needs the same pair of revokes.
+
+### Admin: add account to group — `admin_add_user_to_group(user_id, group_id, display_name, player_id)`
+
+Defined in [`supabase/migrations/20260709000000_admin_add_user_to_group.sql`](../supabase/migrations/20260709000000_admin_add_user_to_group.sql).
+Operator-only counterpart to `claim_player`: puts an existing auth account into a
+group directly, without the consent/link-redemption step. It writes the same
+atomic pair the claim flow does — a `group_members` row (idempotent) plus a
+`players` row with `auth_user_id` set — either **linking one of the group's guest
+players** (`player_id` given; same still-a-guest checks as `claim_player`) or
+**creating a fresh player** with the given display name. The
+`players_one_account_per_group` rule is enforced with a readable error.
+
+It is **`SECURITY DEFINER`** (writes past RLS on behalf of no group member) and
+granted to **`service_role` only** (including the anon/authenticated revokes above).
+It is deliberately **not** exposed to `authenticated`: a member-facing "add any
+user" would let any group probe the system-wide account list. The sole caller is
+the `/admin` server action ([`addUserToGroupAction`](../src/app/admin/actions.ts)),
+which re-checks `isAdmin` — server actions are public HTTP endpoints, so the page
+gate alone isn't enough.
 
 ### Discard a game — `discard_game(game_id)` (M11)
 
