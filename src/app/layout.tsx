@@ -24,6 +24,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Durak Tracker",
   description: "Track results of Durak card games among groups of friends.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
