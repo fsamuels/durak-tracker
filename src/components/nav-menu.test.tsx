@@ -94,4 +94,36 @@ describe("NavMenu", () => {
       "/admin",
     );
   });
+
+  it("hides Install app until the browser offers a beforeinstallprompt event", () => {
+    render(<NavMenu />);
+    openMenu();
+
+    expect(
+      screen.queryByRole("button", { name: "Install app" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows Install app and triggers the native prompt once captured", async () => {
+    render(<NavMenu />);
+    openMenu();
+
+    const prompt = vi.fn().mockResolvedValue(undefined);
+    const event = Object.assign(new Event("beforeinstallprompt"), {
+      prompt,
+      userChoice: Promise.resolve({ outcome: "accepted" as const }),
+    });
+    fireEvent(window, event);
+
+    const installButton = await screen.findByRole("button", {
+      name: "Install app",
+    });
+    fireEvent.click(installButton);
+
+    expect(prompt).toHaveBeenCalledOnce();
+    // Clicking a menu item also closes the menu.
+    expect(
+      screen.queryByRole("link", { name: "Manage group" }),
+    ).not.toBeInTheDocument();
+  });
 });

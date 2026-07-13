@@ -2,7 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 
-interface BeforeInstallPromptEvent extends Event {
+export interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
@@ -59,6 +59,34 @@ function getInstallPromptServerSnapshot(): null {
   return null;
 }
 
+/**
+ * The captured `beforeinstallprompt` event, if the browser has fired one this
+ * page load (shared with the pre-hydration capture in layout.tsx). Other UI —
+ * e.g. an explicit "Install app" menu item — can use this to offer install
+ * even after the banner below has been dismissed for the session, since
+ * dismissing the banner doesn't clear the underlying captured event.
+ */
+export function useInstallPromptEvent(): BeforeInstallPromptEvent | null {
+  return useSyncExternalStore(
+    subscribeInstallPrompt,
+    getInstallPromptSnapshot,
+    getInstallPromptServerSnapshot,
+  );
+}
+
+/** Shows the native install dialog and clears the captured event once used. */
+export async function triggerInstall(
+  prompt: BeforeInstallPromptEvent | null,
+): Promise<void> {
+  if (!prompt) return;
+  await prompt.prompt();
+  const { outcome } = await prompt.userChoice;
+  if (outcome === "accepted" || outcome === "dismissed") {
+    _installPrompt = null;
+    notifyPromptSubscribers();
+  }
+}
+
 // --- iOS install hint store ---
 // Checked once at subscribe time; iOS detection is stable so no re-subscription
 // is needed. useSyncExternalStore gives us a SSR-compatible server snapshot.
@@ -89,11 +117,7 @@ export function InstallPrompt({
 }: {
   hasBottomNav?: boolean;
 }) {
-  const prompt = useSyncExternalStore(
-    subscribeInstallPrompt,
-    getInstallPromptSnapshot,
-    getInstallPromptServerSnapshot,
-  );
+  const prompt = useInstallPromptEvent();
   const showIOSBase = useSyncExternalStore(
     subscribeIOS,
     getIOSSnapshot,
@@ -108,16 +132,6 @@ export function InstallPrompt({
   const bannerClass = `fixed left-1/2 z-40 flex w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 items-center justify-between gap-3 rounded-2xl border border-black/10 bg-white px-4 py-3 shadow-lg dark:border-white/15 dark:bg-zinc-900 ${bottomClass}`;
 
   if (prompt && !dismissed) {
-    async function install() {
-      if (!prompt) return;
-      await prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-      if (outcome === "accepted" || outcome === "dismissed") {
-        _installPrompt = null;
-        notifyPromptSubscribers();
-      }
-    }
-
     return (
       <div className={bannerClass}>
         <div className="flex flex-col gap-0.5">
@@ -134,7 +148,7 @@ export function InstallPrompt({
             Not now
           </button>
           <button
-            onClick={install}
+            onClick={() => triggerInstall(prompt)}
             className="btn-brand rounded-full px-3 py-1.5 text-xs font-semibold"
           >
             Install
