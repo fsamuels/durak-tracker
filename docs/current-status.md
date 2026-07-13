@@ -724,10 +724,20 @@ The M11 install prompt never actually fired in production (branch
 - **Manifest polish** — `id`/`scope` (stable app identity), `categories`, a
   maskable 192 icon, colors matched to the icon background; SW cache bumped to
   `durak-static-v2` to evict the old generated icons.
+- **Manual "Install app" fallback in the hamburger menu.** Android's automatic
+  banner "Not now" is intentionally session-only (not persisted, unlike iOS's
+  `localStorage` dismissal), and Chrome's own engagement heuristics separately
+  decide whether/when to fire `beforeinstallprompt` at all — so a user can end up
+  with no automatic banner on a given load. `install-prompt.tsx` now exports the
+  captured event/trigger (`useInstallPromptEvent`, `triggerInstall`) so
+  `NavMenu` can render an "Install app" item near the bottom of the menu whenever
+  an install prompt has been captured this page load, regardless of the banner's
+  own dismissed state.
 - **Verified:** local prod-mode run: `/manifest.webmanifest`, `/sw.js`,
   `/icon.svg`, `/icons/*.png` all 200 without a session (previously 307 →
   `/login`) while `/` still redirects to `/login`; manifest JSON parses with all
-  four icons resolving. `pnpm lint` / `format:check` / `test` / `build` clean.
+  four icons resolving. `pnpm lint` / `format:check` / `test` (161 tests) /
+  `build` clean.
 
 ## Not yet implemented
 

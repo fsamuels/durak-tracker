@@ -371,7 +371,18 @@ The app is installable and loads its static shell offline:
   script in `layout.tsx` captures the event before React hydrates to avoid a race
   condition. On iOS Safari (where `beforeinstallprompt` never fires), a fallback banner
   shows manual Share → Add to Home Screen instructions; dismissal is persisted in
-  `localStorage`.
+  `localStorage` (Android's "Not now" is intentionally session-only — see below).
+- **Manual "Install app" fallback** (`src/components/nav-menu.tsx`) — Chrome's own
+  engagement heuristics decide whether/when the automatic `beforeinstallprompt` banner
+  shows, and dismissing that banner (`InstallPrompt`'s "Not now") only sets local
+  React state, not `localStorage`, so it reappears on the next load rather than being
+  suppressed forever. To give a way to install on demand regardless of those
+  heuristics, `install-prompt.tsx` exports the captured event (`useInstallPromptEvent`)
+  and the install trigger (`triggerInstall`) so `NavMenu` can render an "Install app"
+  item near the bottom of the hamburger menu whenever a `beforeinstallprompt` event
+  has been captured this page load — including after the banner's own dismissal,
+  since that doesn't clear the underlying captured event, only the banner's
+  visibility.
 - **Layout shell:** a sticky header (`NavMenu`) + fixed bottom tab bar (`BottomNav`)
   render for signed-in users in the root layout. `viewport-fit=cover` plus
   `env(safe-area-inset-*)` padding keep content clear of the notch in the installed

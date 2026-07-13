@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import {
+  triggerInstall,
+  useInstallPromptEvent,
+} from "@/components/install-prompt";
+
 export function NavMenu({
   isAdmin = false,
   myPlayerId = null,
@@ -13,6 +18,10 @@ export function NavMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  // Dismissing the install-prompt banner doesn't clear the captured
+  // beforeinstallprompt event, so this stays available as a manual fallback
+  // for whenever the browser's own heuristics decide not to show the banner.
+  const installPrompt = useInstallPromptEvent();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -107,6 +116,17 @@ export function NavMenu({
             >
               Admin
             </Link>
+          )}
+          {installPrompt && (
+            <button
+              onClick={() => {
+                setOpen(false);
+                void triggerInstall(installPrompt);
+              }}
+              className="flex w-full items-center px-4 py-2.5 text-left text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            >
+              Install app
+            </button>
           )}
           <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <form action="/auth/signout" method="post">
