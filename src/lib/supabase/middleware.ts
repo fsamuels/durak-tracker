@@ -7,8 +7,13 @@ import type { Database } from "./database.types";
 // /claim is public so an invitee can open a claim link and see who they'd be
 // claiming before signing in (the redemption itself is gated by claim_player).
 // /privacy and /data-deletion must be public so Facebook's app-review crawler
-// (and any logged-out visitor) can read them. /icons backs the PWA manifest,
-// which the browser fetches before sign-in.
+// (and any logged-out visitor) can read them. The PWA assets (/icons, the
+// manifest, the service worker) must be public because the browser fetches
+// the manifest WITHOUT cookies — even for a signed-in user — so an auth
+// redirect makes Chrome consider the app uninstallable and the install
+// prompt never fires. These are also excluded via the matcher in
+// src/proxy.ts; this list is defense-in-depth in case the two drift (which
+// is exactly the bug that shipped the first time).
 const PUBLIC_PATHS = [
   "/login",
   "/auth",
@@ -16,9 +21,11 @@ const PUBLIC_PATHS = [
   "/privacy",
   "/data-deletion",
   "/icons",
+  "/manifest.webmanifest",
+  "/sw.js",
 ];
 
-function isPublicPath(pathname: string) {
+export function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );

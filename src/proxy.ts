@@ -13,8 +13,11 @@ export const config = {
      * Match all request paths except:
      * - _next/static, _next/image (build assets)
      * - favicon and common static files
-     * - manifest / icons (added with the PWA later)
+     * - the PWA manifest, service worker, and icons. The browser fetches the
+     *   manifest WITHOUT cookies (credential-less per spec), so an auth
+     *   redirect here breaks installability even for signed-in users; a
+     *   redirect on sw.js makes service-worker registration fail outright.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

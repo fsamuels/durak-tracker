@@ -345,11 +345,22 @@ derives the lowest-rate "champion" (`durakChampion`, min 3 games) in
 
 The app is installable and loads its static shell offline:
 
-- **Manifest** via `app/manifest.ts` (standalone, dark theme, portrait). **Icons**
-  are generated at build with `next/og` `ImageResponse` — `app/icon.tsx`,
-  `app/apple-icon.tsx`, and `app/icons/[size]/route.tsx` (192 / 512 / maskable) — all
-  rendering the **🃏 joker** brand mark through **Twemoji** (the default OG font has no
-  color emoji). This adds a build-time fetch from the Twemoji CDN.
+- **Manifest** via `app/manifest.ts` (standalone, dark theme, portrait, plus
+  `id`/`scope` to pin app identity for Chrome). **Icons** are static files: a designed
+  card-fan/spade brand mark (`public/icon.svg`, source of truth) pre-rendered to PNGs in
+  `public/icons/` (192 / 512 / 1024, `any` + `maskable` purposes, apple-touch-icon) and
+  `src/app/favicon.ico`. Static files keep installability independent of runtime image
+  generation. (The original M11 icons were `next/og` `ImageResponse` routes rendering
+  the 🃏 Twemoji joker; replaced along with the middleware fix below.)
+- **PWA assets must stay outside the auth middleware.** The browser fetches
+  `manifest.webmanifest` **without cookies** (credential-less per spec), so if the
+  middleware's auth redirect catches it, Chrome receives the login page instead of
+  JSON, deems the app uninstallable, and `beforeinstallprompt` never fires — even for
+  signed-in users (a redirect on `sw.js` likewise kills service-worker registration).
+  These paths are excluded twice on purpose: in the `src/proxy.ts` matcher (so the
+  middleware never runs for them) and in `PUBLIC_PATHS`
+  (`src/lib/supabase/middleware.ts`) as defense-in-depth, with both guarded by
+  `src/lib/supabase/middleware.test.ts`.
 - **Service worker** is **hand-written** (`public/sw.js`, registered by
   `src/components/service-worker.tsx`): cache-first for Next static assets / icons so
   the shell loads offline; old cache versions are pruned on `activate`. `next-pwa` was

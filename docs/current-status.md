@@ -698,6 +698,37 @@ member-facing user search would let any group enumerate system-wide accounts.
   `service_role`-only (and were anon-callable before the fix). `pnpm lint` /
   `format:check` / `test` (137 tests) / `build` clean.
 
+### PWA install fix + designed icon ✅ (non-milestone)
+
+The M11 install prompt never actually fired in production (branch
+`claude/pwa-install-dialog-mls85c`).
+
+- **🐛 Root cause: the auth middleware was swallowing the manifest.** The
+  `src/proxy.ts` matcher's comment claimed manifest/icons were excluded, but the
+  regex only excluded image-extension paths — and `PUBLIC_PATHS` listed only
+  `/icons`. The browser fetches `manifest.webmanifest` **without cookies** (spec:
+  credential-less), so Chrome always got a 307 → `/login` HTML page instead of the
+  manifest, deemed the app uninstallable, and never fired `beforeinstallprompt`,
+  signed-in or not. `/sw.js` and the `/icon`//`apple-icon` favicon routes were
+  redirected the same way for logged-out visitors. Fix: manifest, `sw.js`, and
+  icons are excluded in the matcher (middleware never runs for them) **and**
+  listed in `PUBLIC_PATHS` (defense-in-depth), both guarded by a new
+  `src/lib/supabase/middleware.test.ts`.
+- **Designed icon replaces the 🃏 emoji.** New brand mark — a two-card fan with a
+  gold-rimmed spade (trump suit) on the app's dark navy (`#060c14`) — lives as
+  `public/icon.svg`, pre-rendered to static PNGs in `public/icons/` (192/512/1024
+  `any`, 192/512 `maskable`, apple-touch 180) plus a real multi-size
+  `src/app/favicon.ico`. The `next/og` `ImageResponse` routes (`icon.tsx`,
+  `apple-icon.tsx`, `icons/[size]/route.tsx`) are deleted, so installability no
+  longer depends on runtime image generation or the Twemoji CDN.
+- **Manifest polish** — `id`/`scope` (stable app identity), `categories`, a
+  maskable 192 icon, colors matched to the icon background; SW cache bumped to
+  `durak-static-v2` to evict the old generated icons.
+- **Verified:** local prod-mode run: `/manifest.webmanifest`, `/sw.js`,
+  `/icon.svg`, `/icons/*.png` all 200 without a session (previously 307 →
+  `/login`) while `/` still redirects to `/login`; manifest JSON parses with all
+  four icons resolving. `pnpm lint` / `format:check` / `test` / `build` clean.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still
