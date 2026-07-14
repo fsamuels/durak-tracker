@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option H — "The Card Wears the Cap": C's fan and face, with E's jester cap perched on the card's top edge -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1a2b"/>
+      <stop offset="1" stop-color="#060c14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.43" r="0.6">
+      <stop offset="0" stop-color="#274169" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#274169" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="white" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6eef6"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2f4f"/>
+      <stop offset="1" stop-color="#0b1626"/>
+    </linearGradient>
+    <linearGradient id="faceH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8ee"/>
+      <stop offset="1" stop-color="#f2ddc4"/>
+    </linearGradient>
+    <linearGradient id="hatRedH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e0473d"/>
+      <stop offset="1" stop-color="#b02c26"/>
+    </linearGradient>
+    <linearGradient id="hatNavyH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#33568c"/>
+      <stop offset="1" stop-color="#1a3057"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7e29b"/>
+      <stop offset="0.5" stop-color="#e6b64b"/>
+      <stop offset="1" stop-color="#c1882c"/>
+    </linearGradient>
+    <radialGradient id="noseH" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#ff867b"/>
+      <stop offset="1" stop-color="#c9302a"/>
+    </radialGradient>
+    <path id="spadeSm" d="M0 -100 C 40 -60 100 -30 100 22 C 100 58 70 78 40 66 C 46 88 56 98 72 104 L -72 104 C -56 98 -46 88 -40 66 C -70 78 -100 58 -100 22 C -100 -30 -40 -60 0 -100 Z"/>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <g transform="translate(512 545) scale(1.1) translate(-512 -545)">
+    <ellipse cx="512" cy="792" rx="255" ry="44" fill="#000000" opacity="0.35"/>
+
+    <!-- back card (navy, gold-framed) -->
+    <g transform="rotate(-16 512 560)">
+      <rect x="342" y="302" width="340" height="486" rx="30" fill="url(#navy)" stroke="#e6b64b" stroke-width="7"/>
+      <rect x="368" y="328" width="288" height="434" rx="18" fill="none" stroke="#e6b64b" stroke-width="4" opacity="0.7"/>
+      <path d="M512 476 l64 69 -64 69 -64 -69 z" fill="#e6b64b" opacity="0.85"/>
+    </g>
+
+    <!-- front card (white, fool face) -->
+    <g transform="rotate(10 512 560)">
+      <rect x="342" y="302" width="340" height="486" rx="30" fill="url(#white)" stroke="#ccd7e2" stroke-width="3"/>
+      <use href="#spadeSm" transform="translate(640 730) scale(0.24) rotate(180)" fill="#16233a"/>
+
+      <!-- fool face (no hat of his own — the card is wearing it) -->
+      <g transform="translate(0 30)">
+        <circle cx="452" cy="500" r="34" fill="#d4453b"/>
+        <circle cx="572" cy="500" r="34" fill="#d4453b"/>
+        <circle cx="512" cy="545" r="122" fill="url(#faceH)"/>
+        <circle cx="470" cy="522" r="15" fill="#1b2b45"/>
+        <circle cx="554" cy="522" r="15" fill="#1b2b45"/>
+        <circle cx="475" cy="517" r="5" fill="#ffffff"/>
+        <circle cx="559" cy="517" r="5" fill="#ffffff"/>
+        <ellipse cx="438" cy="572" rx="20" ry="14" fill="#ffab9e" opacity="0.6"/>
+        <ellipse cx="586" cy="572" rx="20" ry="14" fill="#ffab9e" opacity="0.6"/>
+        <path d="M 458 588 Q 512 646 566 588" fill="none" stroke="#c9362f" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="512" cy="558" r="28" fill="url(#noseH)"/>
+        <ellipse cx="503" cy="549" rx="8" ry="6" fill="#ffffff" opacity="0.65"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- the jester cap, straddling the front card's top edge -->
+  <g transform="translate(561 282) rotate(10)">
+    <path d="M -140 0 C -160 -40, -168 -84, -160 -122 C -106 -90, -46 -70, 0 -46 L 0 4 Z" fill="url(#hatRedH)"/>
+    <path d="M 140 0 C 160 -40, 168 -84, 160 -122 C 106 -90, 46 -70, 0 -46 L 0 4 Z" fill="url(#hatNavyH)"/>
+    <circle cx="-162" cy="-126" r="19" fill="url(#gold)"/>
+    <circle cx="162" cy="-126" r="19" fill="url(#gold)"/>
+    <rect x="-158" y="-6" width="316" height="44" rx="22" fill="url(#gold)"/>
+  </g>
+</svg>
