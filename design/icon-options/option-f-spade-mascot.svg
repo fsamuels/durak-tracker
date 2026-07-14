@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option F — "Trump Fool": the existing spade mark as a mascot — red nose, grin, tiny jester cap -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1a2b"/>
+      <stop offset="1" stop-color="#060c14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.43" r="0.6">
+      <stop offset="0" stop-color="#274169" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#274169" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="spadeF" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2c4569"/>
+      <stop offset="1" stop-color="#0b1424"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7e29b"/>
+      <stop offset="0.5" stop-color="#e6b64b"/>
+      <stop offset="1" stop-color="#c1882c"/>
+    </linearGradient>
+    <linearGradient id="capRedF" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e0473d"/>
+      <stop offset="1" stop-color="#a92a24"/>
+    </linearGradient>
+    <radialGradient id="noseF" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#ff867b"/>
+      <stop offset="1" stop-color="#c9302a"/>
+    </radialGradient>
+    <path id="spadeShape" d="M0 -100 C 40 -60 100 -30 100 22 C 100 58 70 78 40 66 C 46 88 56 98 72 104 L -72 104 C -56 98 -46 88 -40 66 C -70 78 -100 58 -100 22 C -100 -30 -40 -60 0 -100 Z"/>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <ellipse cx="512" cy="810" rx="240" ry="40" fill="#000000" opacity="0.35"/>
+
+  <!-- the spade -->
+  <use href="#spadeShape" transform="translate(512 570) scale(2.25)" fill="url(#spadeF)" stroke="#e6b64b" stroke-width="4"/>
+
+  <!-- face on the spade -->
+  <circle cx="448" cy="520" r="34" fill="#ffffff"/>
+  <circle cx="576" cy="520" r="34" fill="#ffffff"/>
+  <circle cx="456" cy="526" r="17" fill="#101c30"/>
+  <circle cx="584" cy="526" r="17" fill="#101c30"/>
+  <circle cx="462" cy="519" r="6" fill="#ffffff"/>
+  <circle cx="590" cy="519" r="6" fill="#ffffff"/>
+
+  <path d="M 446 636 Q 512 700 578 636" fill="none" stroke="#e6b64b" stroke-width="16" stroke-linecap="round"/>
+
+  <circle cx="512" cy="586" r="44" fill="url(#noseF)"/>
+  <ellipse cx="498" cy="572" rx="13" ry="9" fill="#ffffff" opacity="0.65"/>
+
+  <!-- tiny jester cap perched on the tip -->
+  <g transform="rotate(-16 512 320)">
+    <path d="M 428 338
+             C 404 310, 378 280, 378 238
+             C 416 264, 456 272, 478 292
+             C 483 248, 494 208, 516 184
+             C 538 208, 549 248, 554 292
+             C 576 272, 616 264, 654 238
+             C 654 280, 628 310, 604 338
+             Z"
+          fill="url(#capRedF)"/>
+    <circle cx="376" cy="232" r="19" fill="url(#gold)"/>
+    <circle cx="516" cy="179" r="19" fill="url(#gold)"/>
+    <circle cx="656" cy="232" r="19" fill="url(#gold)"/>
+    <rect x="416" y="330" width="200" height="38" rx="19" fill="url(#gold)"/>
+  </g>
+</svg>

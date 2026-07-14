@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option C — "Joker in the Deck": current two-card fan, but the front card shows the fool instead of a spade -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1a2b"/>
+      <stop offset="1" stop-color="#060c14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.43" r="0.6">
+      <stop offset="0" stop-color="#274169" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#274169" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="white" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e6eef6"/>
+    </linearGradient>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1c2f4f"/>
+      <stop offset="1" stop-color="#0b1626"/>
+    </linearGradient>
+    <linearGradient id="faceC" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff8ee"/>
+      <stop offset="1" stop-color="#f2ddc4"/>
+    </linearGradient>
+    <radialGradient id="noseC" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#ff867b"/>
+      <stop offset="1" stop-color="#c9302a"/>
+    </radialGradient>
+    <path id="spadeSm" d="M0 -100 C 40 -60 100 -30 100 22 C 100 58 70 78 40 66 C 46 88 56 98 72 104 L -72 104 C -56 98 -46 88 -40 66 C -70 78 -100 58 -100 22 C -100 -30 -40 -60 0 -100 Z"/>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <g transform="translate(512 545) scale(1.1) translate(-512 -545)">
+    <ellipse cx="512" cy="792" rx="255" ry="44" fill="#000000" opacity="0.35"/>
+
+    <!-- back card (navy, gold-framed) -->
+    <g transform="rotate(-16 512 560)">
+      <rect x="342" y="302" width="340" height="486" rx="30" fill="url(#navy)" stroke="#e6b64b" stroke-width="7"/>
+      <rect x="368" y="328" width="288" height="434" rx="18" fill="none" stroke="#e6b64b" stroke-width="4" opacity="0.7"/>
+      <path d="M512 476 l64 69 -64 69 -64 -69 z" fill="#e6b64b" opacity="0.85"/>
+    </g>
+
+    <!-- front card (white, fool face) -->
+    <g transform="rotate(10 512 560)">
+      <rect x="342" y="302" width="340" height="486" rx="30" fill="url(#white)" stroke="#ccd7e2" stroke-width="3"/>
+
+      <!-- corner pips -->
+      <use href="#spadeSm" transform="translate(384 360) scale(0.24)" fill="#16233a"/>
+      <use href="#spadeSm" transform="translate(640 730) scale(0.24) rotate(180)" fill="#16233a"/>
+
+      <!-- fool face -->
+      <g>
+        <circle cx="452" cy="500" r="34" fill="#d4453b"/>
+        <circle cx="572" cy="500" r="34" fill="#d4453b"/>
+        <circle cx="512" cy="545" r="122" fill="url(#faceC)"/>
+        <circle cx="470" cy="522" r="15" fill="#1b2b45"/>
+        <circle cx="554" cy="522" r="15" fill="#1b2b45"/>
+        <circle cx="475" cy="517" r="5" fill="#ffffff"/>
+        <circle cx="559" cy="517" r="5" fill="#ffffff"/>
+        <ellipse cx="438" cy="572" rx="20" ry="14" fill="#ffab9e" opacity="0.6"/>
+        <ellipse cx="586" cy="572" rx="20" ry="14" fill="#ffab9e" opacity="0.6"/>
+        <path d="M 458 588 Q 512 646 566 588" fill="none" stroke="#c9362f" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="512" cy="558" r="28" fill="url(#noseC)"/>
+        <ellipse cx="503" cy="549" rx="8" ry="6" fill="#ffffff" opacity="0.65"/>
+      </g>
+    </g>
+  </g>
+</svg>

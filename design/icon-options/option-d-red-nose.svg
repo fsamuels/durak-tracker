@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option D — "The Red Nose": ultra-minimal — one glossy clown nose wearing a tiny jester cap, gold bowtie -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1a2b"/>
+      <stop offset="1" stop-color="#060c14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.43" r="0.6">
+      <stop offset="0" stop-color="#274169" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#274169" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="noseD" cx="0.35" cy="0.28" r="1">
+      <stop offset="0" stop-color="#ff9187"/>
+      <stop offset="0.55" stop-color="#e0463c"/>
+      <stop offset="1" stop-color="#a92722"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7e29b"/>
+      <stop offset="0.5" stop-color="#e6b64b"/>
+      <stop offset="1" stop-color="#c1882c"/>
+    </linearGradient>
+    <linearGradient id="capNavy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f4f82"/>
+      <stop offset="1" stop-color="#16294a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <!-- soft shadow -->
+  <ellipse cx="512" cy="812" rx="230" ry="38" fill="#000000" opacity="0.35"/>
+
+  <!-- the nose -->
+  <circle cx="512" cy="540" r="235" fill="url(#noseD)"/>
+  <ellipse cx="428" cy="446" rx="64" ry="44" fill="#ffffff" opacity="0.55" transform="rotate(-24 428 446)"/>
+
+  <!-- tiny jester cap, tilted -->
+  <g transform="rotate(-14 512 330)">
+    <path d="M 412 330
+             C 386 300, 356 268, 356 222
+             C 398 252, 444 260, 468 282
+             C 474 232, 486 186, 512 158
+             C 538 186, 550 232, 556 282
+             C 580 260, 626 252, 668 222
+             C 668 268, 638 300, 612 330
+             Z"
+          fill="url(#capNavy)"/>
+    <circle cx="354" cy="216" r="22" fill="url(#gold)"/>
+    <circle cx="512" cy="152" r="22" fill="url(#gold)"/>
+    <circle cx="670" cy="216" r="22" fill="url(#gold)"/>
+    <rect x="400" y="322" width="224" height="42" rx="21" fill="url(#gold)"/>
+  </g>
+
+  <!-- gold bowtie -->
+  <g>
+    <path d="M 500 802 L 408 762 L 408 846 Z" fill="url(#gold)"/>
+    <path d="M 524 802 L 616 762 L 616 846 Z" fill="url(#gold)"/>
+    <circle cx="512" cy="803" r="20" fill="#c1882c"/>
+  </g>
+</svg>
