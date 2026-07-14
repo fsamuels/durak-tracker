@@ -79,9 +79,17 @@ export default async function RootLayout({
               <div className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-3">
                 <Link
                   href="/"
-                  className="text-base font-bold tracking-tight text-black dark:text-zinc-50"
+                  className="flex items-center gap-2 text-base font-bold tracking-tight text-black dark:text-zinc-50"
                 >
-                  🃏 Durak Tracker
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/icon.svg"
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="size-6 rounded-md"
+                  />
+                  Durak Tracker
                 </Link>
                 <NavMenu isAdmin={isAdmin(user)} myPlayerId={myPlayerId} />
               </div>

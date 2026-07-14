@@ -1,4 +1,4 @@
-const CACHE = "durak-static-v2";
+const CACHE = "durak-static-v3";
 
 // Cache Next.js static chunks and images on fetch.
 const STATIC_PATTERNS = [
