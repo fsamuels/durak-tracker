@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { CreateGroupForm } from "@/components/create-group-form";
+import { Logo } from "@/components/logo";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function OnboardingPage() {
@@ -25,9 +26,7 @@ export default async function OnboardingPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12">
       <div className="flex flex-col items-center gap-2 text-center">
-        <span className="text-5xl" aria-hidden>
-          🃏
-        </span>
+        <Logo size={56} />
         <h1 className="text-brand-gradient text-3xl font-bold tracking-tight">
           Create your group
         </h1>

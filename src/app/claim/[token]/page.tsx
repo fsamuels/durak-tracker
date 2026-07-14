@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Logo } from "@/components/logo";
 import { getClaimDetails } from "@/lib/data/claims";
 import { createClient } from "@/lib/supabase/server";
 import { claimTokenSchema } from "@/lib/validation/claim";
@@ -118,9 +119,7 @@ function ClaimShell({
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
       <div className="card-surface flex w-full max-w-sm flex-col gap-5 rounded-2xl p-7">
         <div className="flex flex-col items-center gap-2 text-center">
-          <span className="text-4xl" aria-hidden>
-            🃏
-          </span>
+          <Logo size={44} />
           <h1 className="text-brand-gradient text-2xl font-bold tracking-tight">
             {title}
           </h1>

@@ -1,12 +1,11 @@
+import { Logo } from "@/components/logo";
 import { OAuthButtons } from "@/components/oauth-buttons";
 
 export default function LoginPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6 py-12">
       <div className="flex flex-col items-center gap-3 text-center">
-        <span className="text-5xl" aria-hidden>
-          🃏
-        </span>
+        <Logo size={56} />
         <h1 className="text-brand-gradient text-4xl font-bold tracking-tight">
           Durak Tracker
         </h1>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { BottomNav } from "@/components/bottom-nav";
 import { InstallPrompt } from "@/components/install-prompt";
+import { Logo } from "@/components/logo";
 import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -81,14 +82,7 @@ export default async function RootLayout({
                   href="/"
                   className="flex items-center gap-2 text-base font-bold tracking-tight text-black dark:text-zinc-50"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/icon.svg"
-                    alt=""
-                    width={24}
-                    height={24}
-                    className="size-6 rounded-md"
-                  />
+                  <Logo size={24} />
                   Durak Tracker
                 </Link>
                 <NavMenu isAdmin={isAdmin(user)} myPlayerId={myPlayerId} />
