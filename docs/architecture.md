@@ -347,11 +347,15 @@ The app is installable and loads its static shell offline:
 
 - **Manifest** via `app/manifest.ts` (standalone, dark theme, portrait, plus
   `id`/`scope` to pin app identity for Chrome). **Icons** are static files: a designed
-  card-fan/spade brand mark (`public/icon.svg`, source of truth) pre-rendered to PNGs in
-  `public/icons/` (192 / 512 / 1024, `any` + `maskable` purposes, apple-touch-icon) and
-  `src/app/favicon.ico`. Static files keep installability independent of runtime image
+  "Fool & Fan" brand mark — a friendly jester (durak = fool) in front of a two-card fan
+  (`public/icon.svg`, source of truth; the exploration that led to it lives in
+  `design/icon-options/`) — pre-rendered to PNGs in `public/icons/` (192 / 512 / 1024
+  `any`, 192 / 512 `maskable` with the art pulled in to 0.92× for the safe zone,
+  apple-touch-icon) and `src/app/favicon.ico`. The same SVG is the header logo in
+  `app/layout.tsx`. Static files keep installability independent of runtime image
   generation. (The original M11 icons were `next/og` `ImageResponse` routes rendering
-  the 🃏 Twemoji joker; replaced along with the middleware fix below.)
+  the 🃏 Twemoji joker, replaced in M12 by a card-fan/spade mark, replaced in turn by
+  the jester.)
 - **PWA assets must stay outside the auth middleware.** The browser fetches
   `manifest.webmanifest` **without cookies** (credential-less per spec), so if the
   middleware's auth redirect catches it, Chrome receives the login page instead of

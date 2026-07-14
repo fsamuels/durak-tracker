@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option B — "The Fool's Cap": minimal jester hat with bells, nose + smile peeking below the brim -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e1a2b"/>
+      <stop offset="1" stop-color="#060c14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.43" r="0.6">
+      <stop offset="0" stop-color="#274169" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#274169" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hatRed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e0473d"/>
+      <stop offset="1" stop-color="#a92a24"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7e29b"/>
+      <stop offset="0.5" stop-color="#e6b64b"/>
+      <stop offset="1" stop-color="#c1882c"/>
+    </linearGradient>
+    <radialGradient id="noseB" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0" stop-color="#ff867b"/>
+      <stop offset="1" stop-color="#c9302a"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+
+  <!-- hat body: three points -->
+  <path d="M 350 612
+           C 298 562, 240 498, 240 418
+           C 312 468, 392 482, 432 522
+           C 440 432, 460 350, 512 300
+           C 564 350, 584 432, 592 522
+           C 632 482, 712 468, 784 418
+           C 784 498, 726 562, 674 612
+           Z"
+        fill="url(#hatRed)"/>
+
+  <!-- bells -->
+  <circle cx="236" cy="410" r="38" fill="url(#gold)"/>
+  <circle cx="512" cy="292" r="38" fill="url(#gold)"/>
+  <circle cx="788" cy="410" r="38" fill="url(#gold)"/>
+
+  <!-- brim band -->
+  <rect x="330" y="600" width="364" height="66" rx="33" fill="url(#gold)"/>
+
+  <!-- the fool underneath: hat pulled over the eyes, just nose + grin -->
+  <circle cx="512" cy="736" r="56" fill="url(#noseB)"/>
+  <ellipse cx="494" cy="718" rx="17" ry="12" fill="#ffffff" opacity="0.65"/>
+  <path d="M 424 806 Q 512 878 600 806" fill="none" stroke="#f3e2c4" stroke-width="22" stroke-linecap="round"/>
+</svg>

@@ -739,6 +739,30 @@ The M11 install prompt never actually fired in production (branch
   four icons resolving. `pnpm lint` / `format:check` / `test` (161 tests) /
   `build` clean.
 
+### "Fool & Fan" jester brand mark ✅ (non-milestone)
+
+Icon rework on the clown/fool theme — durak means "fool" in Russian (branch
+`claude/pwa-clown-icon-design-mfjb6k`).
+
+- **New brand mark: a friendly jester in front of the two-card fan.** Ten
+  candidate designs were explored (clown faces, jester caps, card/court-card
+  variants, a spade mascot) and kept for future reference in
+  `design/icon-options/` (see its README); "Fool & Fan" (option I) won on
+  phone-home-screen legibility — the face carries small sizes, the cards
+  provide the card-game context.
+- **Full asset set re-rendered from the new `public/icon.svg`:**
+  `public/icons/` 192/512/1024 `any`, 192/512 `maskable` (art pulled in to
+  0.92× so nothing touches the safe-zone edge), apple-touch 180, and a
+  multi-size (16/32/48) `src/app/favicon.ico`.
+- **The header's 🃏 emoji is replaced by the logo** — `app/layout.tsx` now
+  renders `/icon.svg` (24px, rounded) next to the "Durak Tracker" wordmark.
+  Decorative 🃏 on the login/onboarding/claim pages is unchanged.
+- **SW cache bumped to `durak-static-v3`** to evict the cached spade icons on
+  installed clients.
+- **Verified:** icons rendered from the SVG via headless Chromium and visually
+  checked at 192px (`any` + `maskable`); `pnpm lint` / `format:check` / `test` /
+  `build` clean.
+
 ## Not yet implemented
 
 - **Vitest is now in use** (see the test-suite entry above); **Playwright** e2e is still

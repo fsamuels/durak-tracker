@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { BottomNav } from "@/components/bottom-nav";
 import { InstallPrompt } from "@/components/install-prompt";
+import { Logo } from "@/components/logo";
 import { NavMenu } from "@/components/nav-menu";
 import { ServiceWorkerRegistration } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -79,9 +80,10 @@ export default async function RootLayout({
               <div className="mx-auto flex w-full max-w-md items-center justify-between px-6 py-3">
                 <Link
                   href="/"
-                  className="text-base font-bold tracking-tight text-black dark:text-zinc-50"
+                  className="flex items-center gap-2 text-base font-bold tracking-tight text-black dark:text-zinc-50"
                 >
-                  🃏 Durak Tracker
+                  <Logo size={24} />
+                  Durak Tracker
                 </Link>
                 <NavMenu isAdmin={isAdmin(user)} myPlayerId={myPlayerId} />
               </div>
