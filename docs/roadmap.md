@@ -185,7 +185,9 @@ validation layers. What remains:
 - **Separate Dev/test database** — a dedicated Supabase project (or branch) for
   testing, so the seeded **Run Club** test group lives apart from real data. Until
   then the home-page group switcher (M6) lets the owner flip between the seeded group
-  and their real group on the production DB.
+  and their real group on the production DB. Full design proposal (not yet
+  implemented): [dev-environment-proposal.md](./dev-environment-proposal.md). Now a
+  prerequisite for the offline-mode work above, given the app has real usage.
 
 - **Automated DB migrations in CI** — add a `migrate` job to `.github/workflows/ci.yml`
   using `supabase/setup-cli@v1` that runs `supabase db push` on pushes to `main` only

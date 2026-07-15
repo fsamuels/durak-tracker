@@ -135,5 +135,6 @@ The project owner has flagged that the app is now in real use, and wants a separ
 dev/test Supabase project (already tracked as a backlog item — see
 `docs/roadmap.md`'s "Separate Dev/test database" entry) set up **before** starting on the
 offline-mode work above, given its size (new tables, RPC signature changes, a rewritten
-logging flow). That environment's own design (hosting, secrets, CI wiring) is being
-scoped separately and is a prerequisite for starting implementation step 1.
+logging flow). That environment's own design is written up in
+[dev-environment-proposal.md](./dev-environment-proposal.md) and is a prerequisite for
+starting implementation step 1.
