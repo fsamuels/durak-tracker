@@ -173,7 +173,11 @@ validation layers. What remains:
 - **Edit/delete game** — scoped to `logged_by` or group owner; soft-delete preferred;
   audit trail. Also the future home for editing `started_at` / `ended_at` (M8 sets them
   server-side, no UI).
-- **Offline support** — service worker queues writes locally, syncs on reconnect.
+- **Offline support** — service worker queues writes locally, syncs on reconnect. Full
+  design proposal (not yet implemented): [offline-mode-proposal.md](./offline-mode-proposal.md).
+  Blocked on the **separate dev/test database** item below — this is a large change
+  (new columns, RPC signature changes, a rewritten logging flow) the owner wants staged
+  through a non-production environment first, now that the app has real usage.
 - **Multi-player game confirmation** — multiple players confirm/enter one game;
   conflict resolution TBD.
 - **Push notifications** — streak alerts, durak taunts, etc.
