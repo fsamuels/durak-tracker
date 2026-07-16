@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameToEdit } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { getGroupRoster } from "@/lib/data/players";
@@ -26,10 +27,14 @@ export default async function EditGamePage({
   const game = await getGameToEdit(group.id, parsedId.data);
   if (!game) notFound();
 
-  const { roster } = await getGroupRoster(group.id);
+  const [{ roster }, avatars] = await Promise.all([
+    getGroupRoster(group.id),
+    getGroupAvatars(group.id),
+  ]);
   const players = roster.map((p) => ({
     id: p.id,
     display_name: p.display_name,
+    avatar_url: avatars.get(p.id) ?? null,
   }));
 
   const gamePlayers = game.game_players ?? [];

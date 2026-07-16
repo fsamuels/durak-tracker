@@ -35,11 +35,11 @@ export default async function SelectorDemoPage() {
           Player selection — mockups
         </h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Three ways to pick who&apos;s playing, on{" "}
-          <strong>{group.name}</strong>&apos;s real roster. Toggle{" "}
-          <strong>Pick players</strong> vs <strong>Record result</strong> to
-          preview both the Start/Edit and Finish flows, add a guest, and try
-          assigning durak / first / last out. Nothing here is saved.
+          Four ways to pick who&apos;s playing, on <strong>{group.name}</strong>
+          &apos;s real roster. Toggle <strong>Pick players</strong> vs{" "}
+          <strong>Record result</strong> to preview both the Start/Edit and
+          Finish flows, add a guest, and try assigning durak / first / last out.
+          Nothing here is saved.
         </p>
       </div>
 

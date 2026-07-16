@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { AddGuestInline } from "@/components/add-guest-inline";
+import { PlayerChipGrid } from "@/components/player-chip-grid";
 import {
   startGameFormSchema,
   startRowsToParticipants,
@@ -16,7 +16,7 @@ import {
 
 import { startGameAction } from "./actions";
 
-type Player = { id: string; display_name: string };
+type Player = { id: string; display_name: string; avatar_url?: string | null };
 
 export function StartGameForm({
   players,
@@ -28,7 +28,6 @@ export function StartGameForm({
   preselectedIds?: string[];
 }) {
   const preselected = new Set(preselectedIds);
-  const [search, setSearch] = useState("");
 
   const {
     register,
@@ -55,22 +54,23 @@ export function StartGameForm({
   const rows = useWatch({ control, name: "rows" }) ?? [];
   const selectedCount = rows.filter((r) => r.selected).length;
 
-  const q = search.trim().toLowerCase();
-  // The main list shows only who's in the game. The search surfaces players from
-  // the roster who aren't in yet, so you add rather than wade through everyone.
-  const selectedIndices = fields
-    .map((_, i) => i)
-    .filter((i) => rows[i]?.selected);
-  const searchMatches =
-    q === ""
-      ? []
-      : fields
-          .map((_, i) => i)
-          .filter(
-            (i) =>
-              !rows[i]?.selected &&
-              fields[i].displayName.toLowerCase().includes(q),
-          );
+  // Derive the chip grid's roster + selection from the RHF field array. Avatars
+  // come from the incoming roster; appended guests fall back to initials.
+  const avatarById = new Map(players.map((p) => [p.id, p.avatar_url ?? null]));
+  const chipPlayers = fields.map((f) => ({
+    id: f.playerId,
+    display_name: f.displayName,
+    avatar_url: avatarById.get(f.playerId) ?? null,
+  }));
+  const indexById = new Map(fields.map((f, i) => [f.playerId, i]));
+  const selectedIds = new Set(
+    fields.filter((_, i) => rows[i]?.selected).map((f) => f.playerId),
+  );
+  const toggle = (id: string) => {
+    const i = indexById.get(id);
+    if (i === undefined) return;
+    setValue(`rows.${i}.selected`, !rows[i]?.selected, { shouldDirty: true });
+  };
 
   const onSubmit = handleSubmit(async (values) => {
     const payload: StartGamePayload = {
@@ -109,77 +109,14 @@ export function StartGameForm({
           ))}
         </div>
 
-        {/* In the game */}
-        {selectedIndices.length > 0 ? (
-          <ul className="flex flex-col gap-2">
-            {selectedIndices.map((i) => (
-              <li
-                key={fields[i].id}
-                className="card-surface flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
-              >
-                <span className="text-black dark:text-zinc-50">
-                  {fields[i].displayName}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setValue(`rows.${i}.selected`, false, { shouldDirty: true })
-                  }
-                  aria-label={`Remove ${fields[i].displayName}`}
-                  className="shrink-0 text-sm font-medium text-zinc-500 underline-offset-4 hover:text-red-600 hover:underline"
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-zinc-500">
-            No players yet — search to add them.
-          </p>
-        )}
-
-        {/* Search the roster to add more players */}
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search players to add…"
-          aria-label="Search players to add"
-          autoComplete="off"
-          className={inputClass}
+        {/* Tap a chip to add/remove a player; search filters the grid. */}
+        <PlayerChipGrid
+          players={chipPlayers}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+          searchLabel="Search players"
+          searchPlaceholder="Search players…"
         />
-
-        {q !== "" &&
-          (searchMatches.length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {searchMatches.map((i) => (
-                <li key={fields[i].id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValue(`rows.${i}.selected`, true, {
-                        shouldDirty: true,
-                      });
-                      setSearch("");
-                    }}
-                    className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
-                  >
-                    <span className="text-black dark:text-zinc-50">
-                      {fields[i].displayName}
-                    </span>
-                    <span className="shrink-0 text-sm font-medium text-emerald-600">
-                      + Add
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-zinc-500">
-              No players match “{search}”.
-            </p>
-          ))}
 
         <AddGuestInline
           onAdded={(player) => {
@@ -188,7 +125,6 @@ export function StartGameForm({
               displayName: player.display_name,
               selected: true,
             });
-            setSearch("");
           }}
         />
 
