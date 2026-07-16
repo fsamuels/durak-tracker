@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Interactive playground for player-selection patterns. Three selection variants
+ * Interactive playground for player-selection patterns. Four selection variants
  * share the group's **real** roster (passed in from the server, ranked by
  * games-played) so you can feel each on a phone-width screen, and a mode toggle
  * flips between the two real flows:
@@ -13,6 +13,9 @@
  *   1. Regulars + Search  — top players as one-tap chips, search reveals the tail
  *   2. Filter-in-place    — full tappable list, search narrows it
  *   3. Chip grid          — whole roster as toggle chips, search filters them
+ *                           (the pattern now shipped in the live forms)
+ *   4. Search-to-add      — selected list + search that reveals roster matches
+ *                           (the pattern the live forms used before the chip grid)
  *
  * Demo-only: selection / outcome / guest state is all local React state —
  * reading the roster is the only real data; nothing here is submitted or
@@ -26,7 +29,7 @@ import { outcomeCountError, type Outcome } from "@/lib/validation/game";
 
 import { REGULARS_COUNT, type DemoPlayer } from "./players";
 
-type Variant = "regulars" | "filter" | "grid";
+type Variant = "regulars" | "filter" | "grid" | "search";
 type Mode = "pick" | "finish";
 
 const VARIANTS: { id: Variant; label: string; blurb: string }[] = [
@@ -46,7 +49,13 @@ const VARIANTS: { id: Variant; label: string; blurb: string }[] = [
     id: "grid",
     label: "Chip grid",
     blurb:
-      "Everyone is a toggle chip in one grid — selection is just fill state. Search filters the visible chips. Selected sort first.",
+      "Everyone is a toggle chip in one grid — selection is just fill state. Search filters the visible chips. Selected sort first. This is the pattern now live in the start / finish / edit forms.",
+  },
+  {
+    id: "search",
+    label: "Search-to-add",
+    blurb:
+      "Selected players show as a list; a search box reveals not-yet-added roster matches with a “+ Add” tap. This is the selector the live forms used before the chip grid.",
   },
 ];
 
@@ -519,10 +528,104 @@ function SelectionGrid({ roster, selectedIds, onToggle }: SelectionProps) {
   );
 }
 
+/**
+ * Search-to-add: the pattern the live Start / Finish / Edit forms used before
+ * the chip grid. Selected players show as a list; a search box below reveals
+ * roster matches that aren't in yet, each with a "+ Add" affordance.
+ */
+function SelectionSearch({ roster, selectedIds, onToggle }: SelectionProps) {
+  const [search, setSearch] = useState("");
+
+  const q = search.trim().toLowerCase();
+  const inGame = roster.filter((p) => selectedIds.has(p.id));
+  const results =
+    q === ""
+      ? []
+      : roster.filter((p) => !selectedIds.has(p.id) && matches(p, q));
+
+  return (
+    <div className="flex flex-col gap-3">
+      {inGame.length > 0 ? (
+        <ul className="flex flex-col gap-2">
+          {inGame.map((p) => (
+            <li
+              key={p.id}
+              className="card-surface flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
+            >
+              <span className="flex items-center gap-2">
+                <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
+                <span className="text-black dark:text-zinc-50">
+                  {p.display_name}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => onToggle(p.id)}
+                aria-label={`Remove ${p.display_name}`}
+                className="shrink-0 text-sm font-medium text-zinc-500 underline-offset-4 hover:text-red-600 hover:underline"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-zinc-500">
+          No players yet — search to add them.
+        </p>
+      )}
+
+      <input
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search players to add…"
+        aria-label="Search players to add"
+        autoComplete="off"
+        className={inputClass}
+      />
+
+      {q !== "" &&
+        (results.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {results.map((p) => (
+              <li key={p.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onToggle(p.id);
+                    setSearch("");
+                  }}
+                  className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
+                >
+                  <span className="flex items-center gap-2">
+                    <Avatar
+                      src={p.avatar_url}
+                      name={p.display_name}
+                      size="sm"
+                    />
+                    <span className="text-black dark:text-zinc-50">
+                      {p.display_name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm font-medium text-emerald-600">
+                    + Add
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-zinc-500">No players match “{search}”.</p>
+        ))}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 
 export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
-  const [variant, setVariant] = useState<Variant>("regulars");
+  const [variant, setVariant] = useState<Variant>("grid");
   const [mode, setMode] = useState<Mode>("pick");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [outcomes, setOutcomes] = useState<Record<string, Outcome>>({});
@@ -644,6 +747,7 @@ export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
         {variant === "regulars" && <SelectionRegulars {...selectionProps} />}
         {variant === "filter" && <SelectionFilter {...selectionProps} />}
         {variant === "grid" && <SelectionGrid {...selectionProps} />}
+        {variant === "search" && <SelectionSearch {...selectionProps} />}
 
         <DemoAddGuest onAdd={addGuest} />
 

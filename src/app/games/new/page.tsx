@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameParticipantIds } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { getCurrentUserPlayerId, getGroupRoster } from "@/lib/data/players";
@@ -35,10 +36,14 @@ export default async function NewGamePage({
     ...new Set([...fromIds, ...(selfId ? [selfId] : [])]),
   ];
 
-  const { roster } = await getGroupRoster(group.id);
+  const [{ roster }, avatars] = await Promise.all([
+    getGroupRoster(group.id),
+    getGroupAvatars(group.id),
+  ]);
   const players = roster.map((p) => ({
     id: p.id,
     display_name: p.display_name,
+    avatar_url: avatars.get(p.id) ?? null,
   }));
 
   const hasPlayers = players.length >= 1;

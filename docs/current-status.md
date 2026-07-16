@@ -18,6 +18,36 @@ Living snapshot of what's built. Last updated: 2026-07-01.
 
 ## In progress
 
+### Chip-grid player selector + prominent "Play again" 🚧 (non-milestone)
+
+Picked a direction from the selector exploration and wired it into the live flows.
+
+- **Chip grid is now the live selector** in the Start (`/games/new`), Finish
+  (`/games/[id]/finish`), and Edit (`/games/[id]/edit`) forms. The whole roster
+  renders as toggle chips (avatar + name + ×/+) in one flex-wrap grid; a search
+  box filters the visible chips and selected chips sort first. Extracted as a
+  shared, controlled client component `src/components/player-chip-grid.tsx`
+  (`PlayerChipGrid`), reused by all three forms — its look mirrors the demo's
+  "Chip grid" variant. Finish/Edit keep a "result" list below the grid where each
+  selected player gets their outcome `<select>`. The three server pages now fetch
+  avatars via `getGroupAvatars` and pass `avatar_url` per player (guests fall back
+  to initials).
+- **Old search-to-add selector preserved as a demo variant** — the previous
+  "selected list + search reveals roster matches with + Add" pattern moved into
+  the `/games/selector-demo` playground as a fourth variant ("Search-to-add"), so
+  the mockup route now compares four patterns and defaults to "Chip grid".
+- **"Play again" is now a prominent button on game cards** — in
+  `src/components/game-list.tsx` (home recent-games grid **and** `/games` history)
+  the small grey text link became a full-width `btn-brand` pill, matching "Start a
+  game" and the detail page's Play again CTA. The game duration moved into the
+  trump/deck meta line so it stays visible.
+- **Files:** `src/components/player-chip-grid.tsx` (new, + test),
+  `src/app/games/new/{page.tsx,start-game-form.tsx}`,
+  `src/app/games/[id]/finish/{page.tsx,finish-game-form.tsx}`,
+  `src/app/games/[id]/edit/{page.tsx,edit-game-form.tsx}`,
+  `src/components/game-list.tsx` (+ test),
+  `src/app/games/selector-demo/{page.tsx,selector-demo.tsx}`.
+
 ### Single game detail page 🚧 (non-milestone)
 
 Added a dedicated detail page at `/games/[id]` for every completed game.
@@ -58,10 +88,12 @@ great for the long tail but slower than the old click-the-whole-list for the doz
 - **Files:** `src/app/games/selector-demo/{page.tsx,selector-demo.tsx,players.ts}` plus
   the two links above. The demo route is self-contained and **safe to delete** once a
   direction is chosen.
-- **Status:** deployed for on-device evaluation (Vercel PR preview); **no decision yet**,
-  and the real `StartGameForm` / `EditGameForm` / `FinishGameForm` are **unchanged**.
-  Once a variant is picked, it gets wired into those against the live roster +
-  `addPlayerAction`, and this demo route + the temporary links are removed.
+- **Status:** decided — the **Chip grid** variant was chosen and is now the live
+  selector in `StartGameForm` / `EditGameForm` / `FinishGameForm` (see the
+  "Chip-grid player selector" entry above). The demo route stays for now as a
+  reference/comparison playground (it now keeps the old **Search-to-add** pattern
+  as a fourth variant) and remains **safe to delete**; the temporary "Explore
+  other player selection ideas" links still point at it.
 
 ## Done
 

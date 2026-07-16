@@ -68,12 +68,15 @@ export function GameList({
               </p>
             )}
 
-            {(trump || game.deck_count != null) && (
+            {(trump || game.deck_count != null || durationSeconds != null) && (
               <p className="text-xs text-zinc-500">
                 {[
                   trump,
                   game.deck_count != null
                     ? `${game.deck_count} deck${game.deck_count === 1 ? "" : "s"}`
+                    : null,
+                  durationSeconds != null
+                    ? `⏱ ${formatDuration(durationSeconds)}`
                     : null,
                 ]
                   .filter(Boolean)
@@ -87,18 +90,13 @@ export function GameList({
               </p>
             )}
 
-            <div className="relative z-10 flex items-baseline justify-between gap-3">
+            <div className="relative z-10">
               <Link
                 href={`/games/new?from=${game.id}`}
-                className="text-sm font-medium text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
+                className="btn-brand flex h-12 items-center justify-center rounded-full px-5 text-base font-semibold"
               >
                 ↻ Play again
               </Link>
-              {durationSeconds != null && (
-                <span className="shrink-0 text-xs text-zinc-500">
-                  ⏱ {formatDuration(durationSeconds)}
-                </span>
-              )}
             </div>
           </li>
         );
