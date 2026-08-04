@@ -17,6 +17,10 @@ const PWA_ASSET_PATHS = [
   "/icons/maskable-512.png",
 ];
 
+// robots.txt/sitemap.xml are fetched by crawlers without cookies too, and
+// the site is unindexable if they get bounced to /login instead.
+const SEO_ASSET_PATHS = ["/robots.txt", "/sitemap.xml"];
+
 /**
  * Approximates Next's matcher semantics: each matcher entry is compiled as a
  * full-path match (path-to-regexp), so `^...$`-anchoring the pattern is close
@@ -29,9 +33,12 @@ function matcherRuns(pathname: string): boolean {
 }
 
 describe("proxy matcher", () => {
-  it.each(PWA_ASSET_PATHS)("skips the middleware entirely for %s", (path) => {
-    expect(matcherRuns(path)).toBe(false);
-  });
+  it.each([...PWA_ASSET_PATHS, ...SEO_ASSET_PATHS])(
+    "skips the middleware entirely for %s",
+    (path) => {
+      expect(matcherRuns(path)).toBe(false);
+    },
+  );
 
   it.each(["/", "/games", "/stats", "/group/abc", "/login"])(
     "still runs the middleware for app route %s",
@@ -42,14 +49,18 @@ describe("proxy matcher", () => {
 });
 
 describe("isPublicPath (defense-in-depth if the matcher drifts)", () => {
-  it.each([...PWA_ASSET_PATHS, "/login", "/auth/callback", "/privacy"])(
-    "treats %s as public",
-    (path) => {
-      expect(isPublicPath(path)).toBe(true);
-    },
-  );
+  it.each([
+    ...PWA_ASSET_PATHS,
+    ...SEO_ASSET_PATHS,
+    "/",
+    "/login",
+    "/auth/callback",
+    "/privacy",
+  ])("treats %s as public", (path) => {
+    expect(isPublicPath(path)).toBe(true);
+  });
 
-  it.each(["/", "/games", "/stats", "/group/abc"])(
+  it.each(["/games", "/stats", "/group/abc"])(
     "keeps %s behind auth",
     (path) => {
       expect(isPublicPath(path)).toBe(false);

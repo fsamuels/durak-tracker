@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Avatar } from "@/components/avatar";
 import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
+import { LandingPage } from "@/components/landing-page";
 import { SuitLabel } from "@/components/suit-label";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
@@ -21,13 +23,40 @@ import {
 // How many recent games to surface on the home page.
 const RECENT_GAMES_LIMIT = 6;
 
+const TITLE = "Durak Tracker — Free Durak Card Game Score & Stats Tracker";
+const DESCRIPTION =
+  "Log who was the durak (loser), the trump suit, and the players after every Durak card game, then see group and player stats — durak rate, win streaks, head-to-head. Free, mobile-friendly, installable.";
+
+// Crawlers never carry a session, so this metadata always describes the
+// signed-out LandingPage below — it's what search engines and link previews
+// see, even though signed-in visitors get the dashboard instead.
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/",
+    siteName: "Durak Tracker",
+    images: ["/icons/icon-512.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/icons/icon-512.png"],
+  },
+};
+
 export default async function Home() {
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return <LandingPage />;
 
   const group = await getCurrentGroup();
   if (!group) redirect("/onboarding");

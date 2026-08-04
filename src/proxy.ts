@@ -17,7 +17,9 @@ export const config = {
      *   manifest WITHOUT cookies (credential-less per spec), so an auth
      *   redirect here breaks installability even for signed-in users; a
      *   redirect on sw.js makes service-worker registration fail outright.
+     * - robots.txt and sitemap.xml, which crawlers fetch without cookies too
+     *   and which must stay reachable for the site to be indexable at all.
      */
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|robots.txt|sitemap.xml|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

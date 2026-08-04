@@ -4,7 +4,10 @@ Mobile-first PWA for tracking results of [Durak](https://en.wikipedia.org/wiki/D
 card games among groups of friends — who was "the durak" (loser) each game, the
 trump suit, players involved, and computed stats per group and per player.
 
-- **Live:** https://durak-tracker.vercel.app
+### 🃏 [Try Durak Tracker →](https://durak-tracker.vercel.app)
+
+Free, no ads, installable on your phone.
+
 - **Status:** Milestones 1–11 complete (scaffold, schema, auth, core flow, history,
   stats, home/nav revamp, two-part logging, start-from-existing, account claiming,
   PWA + mobile design pass); M12 (Iterate) is next — see
