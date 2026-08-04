@@ -22,7 +22,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Base for resolving relative canonical/OG URLs (e.g. the root page's
+// alternates.canonical and openGraph.images) into absolute ones.
+const SITE_URL = "https://durak-tracker.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Durak Tracker",
   description: "Track results of Durak card games among groups of friends.",
   icons: {

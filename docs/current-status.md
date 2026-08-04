@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-07-01.
+Living snapshot of what's built. Last updated: 2026-08-04.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -794,6 +794,45 @@ Icon rework on the clown/fool theme — durak means "fool" in Russian (branch
 - **Verified:** icons rendered from the SVG via headless Chromium and visually
   checked at 192px (`any` + `maskable`); `pnpm lint` / `format:check` / `test` /
   `build` clean.
+
+### SEO landing page ✅ (non-milestone)
+
+The app was only reachable behind a sign-in wall, so there was nothing for
+search engines, link previews, or a first-time GitHub visitor to see —
+closing off organic/social growth for what's otherwise a public, free tool.
+
+- **`/` is now a public marketing landing page for signed-out visitors.**
+  `src/app/page.tsx` renders the new `LandingPage` component
+  (`src/components/landing-page.tsx`, + test) instead of redirecting straight
+  to `/login`; signed-in users still get the existing dashboard, unchanged.
+  `/` was added to `PUBLIC_PATHS` in `src/lib/supabase/middleware.ts` so the
+  auth middleware stops bouncing logged-out requests to `/login` before they
+  ever see it (`middleware.test.ts` updated to match).
+- **Landing page content:** hero + `OAuthButtons` (sign in in one tap, no
+  extra page hop), a 3-step "how it works," a feature grid, and a short "What
+  is Durak?" explainer linking to Wikipedia for topical/long-tail search
+  relevance — plus `WebApplication` JSON-LD structured data.
+- **Crawlability:** new `src/app/robots.ts` (allows `/`, `/privacy`,
+  `/data-deletion`; disallows everything behind auth, including `/claim`
+  since those URLs carry single-use tokens that must never get indexed) and
+  `src/app/sitemap.ts`. Both are served from `/robots.txt`/`/sitemap.xml`,
+  which needed the same "no-cookie fetch" exclusion in `src/proxy.ts`'s
+  matcher and `PUBLIC_PATHS` that the PWA manifest already had — a crawler
+  has no session either, so without the exclusion both routes 307'd to
+  `/login` (caught locally with a `curl` smoke test before landing).
+- **Metadata:** `src/app/layout.tsx` gained `metadataBase` so relative
+  canonical/OG URLs resolve absolutely; `src/app/page.tsx` sets a marketing
+  title/description, `alternates.canonical`, and full Open Graph/Twitter
+  card metadata (reusing the existing `/icons/icon-512.png` as the share
+  image — no new runtime-generated image, consistent with the PWA-icon fix
+  above that deliberately moved away from `next/og` `ImageResponse`).
+- **README** now leads with a `🃏 Try Durak Tracker →` link right under the
+  description, ahead of the status bullet, since that's the first thing a
+  GitHub visitor sees.
+- **Verified:** `pnpm lint` / `format:check` / `test` (178 tests) / `build`
+  clean; local prod-style run confirmed `/`, `/robots.txt`, and
+  `/sitemap.xml` all 200 without a session, and the rendered `<head>`
+  includes the canonical link + `og:*`/`twitter:*` tags.
 
 ## Not yet implemented
 

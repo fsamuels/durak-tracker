@@ -4,17 +4,21 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
 /** Routes reachable without an authenticated session. */
-// /claim is public so an invitee can open a claim link and see who they'd be
-// claiming before signing in (the redemption itself is gated by claim_player).
-// /privacy and /data-deletion must be public so Facebook's app-review crawler
-// (and any logged-out visitor) can read them. The PWA assets (/icons, the
-// manifest, the service worker) must be public because the browser fetches
-// the manifest WITHOUT cookies — even for a signed-in user — so an auth
-// redirect makes Chrome consider the app uninstallable and the install
-// prompt never fires. These are also excluded via the matcher in
+// / is the public SEO landing page for signed-out visitors (src/app/page.tsx
+// renders LandingPage instead of the dashboard when there's no user) — it
+// must stay crawlable and must not bounce visitors to /login before they see
+// it. /claim is public so an invitee can open a claim link and see who
+// they'd be claiming before signing in (the redemption itself is gated by
+// claim_player). /privacy and /data-deletion must be public so Facebook's
+// app-review crawler (and any logged-out visitor) can read them. The PWA
+// assets (/icons, the manifest, the service worker) must be public because
+// the browser fetches the manifest WITHOUT cookies — even for a signed-in
+// user — so an auth redirect makes Chrome consider the app uninstallable and
+// the install prompt never fires. These are also excluded via the matcher in
 // src/proxy.ts; this list is defense-in-depth in case the two drift (which
 // is exactly the bug that shipped the first time).
 const PUBLIC_PATHS = [
+  "/",
   "/login",
   "/auth",
   "/claim",
@@ -23,6 +27,8 @@ const PUBLIC_PATHS = [
   "/icons",
   "/manifest.webmanifest",
   "/sw.js",
+  "/robots.txt",
+  "/sitemap.xml",
 ];
 
 export function isPublicPath(pathname: string) {
