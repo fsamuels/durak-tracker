@@ -56,10 +56,12 @@ type-safe.
 
 ## Git workflow
 
-- **Branch naming**: prefix every branch with what kind of change it is —
-  `feature/…` (new functionality), `bugfix/…` (fixing broken behavior), `test/…`
-  (test-only changes), or `docs/…` (documentation only). Pick the prefix that
-  matches the task, not the tool that generated the branch.
+- **Branch naming**: follows the shared
+  [SDLC standard](https://github.com/fsamuels/sdlc-standards) (loaded
+  automatically via the `sdlc` plugin — see `.claude/settings.json`), which
+  defines the full prefix set and the rule for platform-assigned `claude/*`
+  branches. Pick the prefix that matches the task, not the tool that generated
+  the branch.
 - **Always branch from the latest `main`.** Before creating a new branch, fetch
   and branch off current `origin/main` (`git fetch origin main && git checkout -b
 <prefix>/<name> origin/main`) rather than off a stale local `main` or another
