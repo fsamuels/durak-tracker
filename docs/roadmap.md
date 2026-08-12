@@ -198,6 +198,14 @@ validation layers. What remains:
   groups, suggest them across groups? (Out of scope for M9 — search is current-group
   only.)
 
+- **Unreliable game durations** — real usage shows games started in the app near the
+  _end_ of the actual game, so durations (and the group average) are understated;
+  observed examples include a physically impossible 1-minute game. Options analysed —
+  median over mean, a per-game "timing unreliable" flag, a prompt at finish time, and
+  in-app copy — in [game-timing-accuracy.md](./game-timing-accuracy.md). **Discussion
+  only, nothing decided or implemented**; the open questions there (real duration
+  distribution, how many games are affected) need answering first.
+
 _(Resolved: **group switching** — M7 moves it to a dedicated `/group` page and defaults
 the active group to most-played. **`ended_at` / `started_at` entry** — M8 stamps both
 server-side on start/finish; no time fields in the UI, editing deferred to a future
