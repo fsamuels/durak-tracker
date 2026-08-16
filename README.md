@@ -15,13 +15,14 @@ Free, no ads, installable on your phone.
 
 ## Documentation
 
-| Doc                                              | Contents                                                     |
-| ------------------------------------------------ | ------------------------------------------------------------ |
-| [durak-tracker-spec.md](durak-tracker-spec.md)   | Product spec — goals, non-goals, screens, metric definitions |
-| [docs/architecture.md](docs/architecture.md)     | System design, data model, RLS, integrity, dev workflow      |
-| [docs/current-status.md](docs/current-status.md) | What's built, in progress, and pending                       |
-| [docs/roadmap.md](docs/roadmap.md)               | Remaining milestones, backlog, open questions                |
-| [docs/oauth-setup.md](docs/oauth-setup.md)       | Google/Facebook social-login setup steps                     |
+| Doc                                              | Contents                                                       | Changes                 |
+| ------------------------------------------------ | -------------------------------------------------------------- | ----------------------- |
+| [durak-tracker-spec.md](durak-tracker-spec.md)   | Product spec — goals, non-goals, screens, metric definitions   | Rarely                  |
+| [docs/architecture.md](docs/architecture.md)     | System design, data model, RLS, integrity, dev workflow        | With schema/RLS changes |
+| [docs/current-status.md](docs/current-status.md) | What's built, in progress, and pending                         | Every merged PR         |
+| [docs/roadmap.md](docs/roadmap.md)               | Remaining milestones, backlog, open questions                  | Occasionally            |
+| [docs/oauth-setup.md](docs/oauth-setup.md)       | Google/Facebook social-login setup steps                       | Rarely                  |
+| [docs/decisions.md](docs/decisions.md)           | Log of non-obvious decisions, with rationale and reversibility | As decisions are made   |
 
 ## Tech stack
 
@@ -136,7 +137,7 @@ supabase/
   migrations/        # schema + RPCs (init, log_game, stats, two-part logging, roster, claims, discard, avatars)
   seed.sql           # demo data (Walla Walla Run Club, 36 games)
 public/sw.js         # hand-written service worker
-docs/                # architecture, current-status, roadmap, oauth-setup
+docs/                # architecture, current-status, roadmap, oauth-setup, decisions
 ```
 
 ## Deployment
