@@ -13,6 +13,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:coverage": "vitest run --coverage",
+    "check:links": "node scripts/check-links.mjs",
     "prepare": "husky"
   },
   "lint-staged": {

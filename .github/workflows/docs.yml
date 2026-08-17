@@ -1,0 +1,23 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Pushes made with an app/GITHUB_TOKEN credential don't fire the events above
+  # (GitHub's recursion guard), so allow running this by hand against any ref.
+  workflow_dispatch:
+
+jobs:
+  link-check:
+    name: Check markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The checker has no dependencies, so there is nothing to install.
+      - run: node scripts/check-links.mjs
