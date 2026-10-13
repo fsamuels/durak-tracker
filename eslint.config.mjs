@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vitest's coverage report — `pnpm build` now generates it every time.
+    "coverage/**",
   ]),
 ]);
 

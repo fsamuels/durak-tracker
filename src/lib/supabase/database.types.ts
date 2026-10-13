@@ -473,6 +473,24 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_app_stats: {
+        Args: never;
+        Returns: {
+          accounts: number;
+          clubs_games: number;
+          diamonds_games: number;
+          first_game_at: string;
+          games: number;
+          groups: number;
+          guest_players: number;
+          hearts_games: number;
+          largest_table: number;
+          played_seconds: number;
+          players: number;
+          seats: number;
+          spades_games: number;
+        }[];
+      };
       group_player_avatars: {
         Args: { p_group_id: string };
         Returns: {

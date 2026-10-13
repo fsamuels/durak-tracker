@@ -5,7 +5,7 @@
   "packageManager": "pnpm@11.7.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm test:coverage --silent; next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

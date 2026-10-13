@@ -108,6 +108,13 @@ export function NavMenu({
           >
             Account
           </Link>
+          <Link
+            href="/about"
+            onClick={() => setOpen(false)}
+            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+          >
+            About
+          </Link>
           {isAdmin && (
             <Link
               href="/admin"

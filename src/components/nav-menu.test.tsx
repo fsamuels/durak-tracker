@@ -57,6 +57,16 @@ describe("NavMenu", () => {
     ).toBeInTheDocument();
   });
 
+  it("links to the About page", () => {
+    render(<NavMenu />);
+    openMenu();
+
+    expect(screen.getByRole("link", { name: "About" })).toHaveAttribute(
+      "href",
+      "/about",
+    );
+  });
+
   it("hides the My stats link when there is no player id", () => {
     render(<NavMenu />);
     openMenu();
