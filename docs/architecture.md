@@ -282,6 +282,29 @@ sort is needed.
 > `REVOKE EXECUTE … FROM anon, authenticated`; any future service-role-only function
 > needs the same pair of revokes.
 
+### About page totals — `get_app_stats()`
+
+Defined in [`supabase/migrations/20261013120000_app_stats.sql`](../supabase/migrations/20261013120000_app_stats.sql).
+Returns one row of app-wide aggregates for the `/about` page: groups, accounts
+(`auth.users`), players and guests, completed non-deleted games, seats (player
+appearances), total play time, per-trump-suit game counts, the largest table, and
+the first game's start time.
+
+It is **`SECURITY DEFINER`** because the totals span every group, which RLS hides.
+Unlike `admin_system_stats`, it is granted to **`authenticated`** (not just
+`service_role`), so it returns **counts only** — no group or player names and no
+user identity (`admin_system_stats`' `top_group_name` is deliberately left out). It
+carries the explicit `REVOKE … FROM public, anon, authenticated` before the
+`authenticated` grant, per the grant pitfall above. The page loads it through
+[`getAppStats`](../src/lib/data/app-stats.ts), which returns `null` on any error,
+so the page still renders before the migration is applied.
+
+The rest of the About page — commit, build time, codebase stats, test coverage —
+is computed at build time by [`collectBuildInfo`](../src/lib/collect-build-info.ts),
+called from `next.config.ts` and inlined as `process.env.BUILD_INFO`; the page
+never reads git or the filesystem at runtime. See [D-1](decisions.md) for how
+coverage is measured.
+
 ### Admin: add account to group — `admin_add_user_to_group(user_id, group_id, display_name, player_id)`
 
 Defined in [`supabase/migrations/20260709000000_admin_add_user_to_group.sql`](../supabase/migrations/20260709000000_admin_add_user_to_group.sql).

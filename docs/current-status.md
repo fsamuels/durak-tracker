@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-08-04.
+Living snapshot of what's built. Last updated: 2026-10-13.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -795,6 +795,32 @@ Icon rework on the clown/fool theme — durak means "fool" in Russian (branch
   checked at 192px (`any` + `maskable`); `pnpm lint` / `format:check` / `test` /
   `build` clean.
 
+### About page ✅ (non-milestone)
+
+Ported from Chore Corral's About page.
+
+- **`/about`** (signed-in only, linked from the header menu) shows credits, **this
+  build** (commit SHA linked to GitHub, commit message, branch, build/commit dates,
+  commit count and first commit when the clone has full history, stack versions),
+  **by the numbers** (app-wide totals plus a trump-suit bar chart), **under the hood**
+  (lines of code by language, routes, components, server actions, migrations, SQL
+  functions, tests, dependencies, test coverage by area) and **fun facts**.
+- **App-wide totals** come from the new `get_app_stats()` `SECURITY DEFINER` RPC
+  (`20261013120000_app_stats.sql`) — aggregate counts only, `authenticated`-only grant.
+  See [architecture.md](architecture.md#about-page-totals--get_app_stats). Until it's
+  applied the section reads "App-wide totals are on the way."
+- **Build info** is collected at config-load time
+  ([`src/lib/collect-build-info.ts`](../src/lib/collect-build-info.ts)) and inlined as
+  `process.env.BUILD_INFO`; pure summarizers + fun facts are unit tested
+  (`build-info.test.ts`, `about-facts.test.ts`).
+- **Coverage:** `pnpm build` now runs `pnpm test:coverage` first; CI's test step runs
+  `test:coverage` too. Reported, never enforced — see [D-1](decisions.md).
+- **Verified:** `pnpm lint` / `format:check` / `test` / `build` clean; a local
+  production run rendered `/about` with no console errors (stats section on its
+  fallback, since the RPC isn't applied yet).
+- **Owner action:** `supabase db push` to apply `get_app_stats`, then regenerate
+  `database.types.ts` (its entry was hand-added to match the generator's output).
+
 ### SEO landing page ✅ (non-milestone)
 
 The app was only reachable behind a sign-in wall, so there was nothing for
@@ -844,6 +870,8 @@ closing off organic/social growth for what's otherwise a public, free tool.
 
 ## Action required (owner)
 
+- [ ] Apply the About page's `get_app_stats` migration (`supabase db push`) and
+      regenerate `database.types.ts`.
 - [ ] 🔐 **SECURITY — rotate the credentials pasted in chat:**
   - [ ] Reset the **database password** (Supabase → Settings → Database → Reset
         database password), then update `SUPABASE_DB_PASSWORD` in `.env.local`.

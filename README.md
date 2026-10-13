@@ -69,15 +69,15 @@ Get the keys from Supabase → Project Settings → API Keys.
 
 ## Scripts
 
-| Script                              | Does                             |
-| ----------------------------------- | -------------------------------- |
-| `pnpm dev`                          | Start the dev server (Turbopack) |
-| `pnpm build`                        | Production build                 |
-| `pnpm start`                        | Serve the production build       |
-| `pnpm lint`                         | ESLint                           |
-| `pnpm test` / `pnpm test:watch`     | Vitest unit tests (run / watch)  |
-| `pnpm format` / `pnpm format:check` | Prettier write / check           |
-| `pnpm test:coverage`                | Vitest with v8 coverage report   |
+| Script                              | Does                                |
+| ----------------------------------- | ----------------------------------- |
+| `pnpm dev`                          | Start the dev server (Turbopack)    |
+| `pnpm build`                        | Coverage run, then production build |
+| `pnpm start`                        | Serve the production build          |
+| `pnpm lint`                         | ESLint                              |
+| `pnpm test` / `pnpm test:watch`     | Vitest unit tests (run / watch)     |
+| `pnpm format` / `pnpm format:check` | Prettier write / check              |
+| `pnpm test:coverage`                | Vitest with v8 coverage report      |
 
 ## Testing
 
