@@ -109,6 +109,35 @@ body {
   color: transparent;
 }
 
+/* Active bottom-nav tab: tinted with the tab's own stop on the aurora gradient
+ * (set via --tab-color), with a soft glow on the icon/label and a glowing bar
+ * along the top edge. Mixed toward the foreground in light mode for contrast. */
+.nav-tab-active {
+  color: color-mix(in oklab, var(--tab-color) 82%, var(--foreground));
+  text-shadow: 0 0 12px color-mix(in oklab, var(--tab-color) 55%, transparent);
+  position: relative;
+}
+.nav-tab-active svg {
+  filter: drop-shadow(
+    0 0 6px color-mix(in oklab, var(--tab-color) 70%, transparent)
+  );
+}
+.nav-tab-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 28%;
+  right: 28%;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--tab-color);
+  box-shadow: 0 0 10px 1px
+    color-mix(in oklab, var(--tab-color) 75%, transparent);
+}
+.dark .nav-tab-active {
+  color: color-mix(in oklab, var(--tab-color) 90%, white);
+}
+
 /* Durak (loser) badge — the warm pink end of the aurora palette, replacing the
  * old flat red. Mixes with the theme background/foreground so it reads in both
  * light and dark. */
