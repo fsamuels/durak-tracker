@@ -16,7 +16,10 @@ Living snapshot of what's built. Last updated: 2026-10-21.
 > testing must be **explicitly deferred** to a future milestone/feature — no
 > implied-partial TODOs.
 
-## In progress
+## Recently shipped (non-milestone)
+
+Nothing is currently in flight; these are the latest non-milestone changes. Older
+milestone and non-milestone entries follow under [Done](#done).
 
 ### Prominent active bottom-nav tab ✅ (non-milestone)
 
@@ -26,7 +29,7 @@ Players pink) passed as `--tab-color`; the `.nav-tab-active` class in
 [globals.css](../src/app/globals.css) adds a tinted label, a soft icon/label glow, and
 a glowing bar on the tab's top edge. Inactive tabs are unchanged.
 
-### Chip-grid player selector + prominent "Play again" 🚧 (non-milestone)
+### Chip-grid player selector + prominent "Play again" ✅ (non-milestone)
 
 Picked a direction from the selector exploration and wired it into the live flows.
 
@@ -56,7 +59,7 @@ Picked a direction from the selector exploration and wired it into the live flow
   `src/components/game-list.tsx` (+ test),
   `src/app/games/selector-demo/{page.tsx,selector-demo.tsx}`.
 
-### Single game detail page 🚧 (non-milestone)
+### Single game detail page ✅ (non-milestone)
 
 Added a dedicated detail page at `/games/[id]` for every completed game.
 
@@ -73,7 +76,7 @@ Added a dedicated detail page at `/games/[id]` for every completed game.
 - **Files:** `src/app/games/[id]/page.tsx` (new), `src/components/game-list.tsx` (cover
   link + `z-10` on action row), `src/lib/data/games.ts` (`getGameDetail`).
 
-### Player-selection redesign — exploration 🚧 (non-milestone)
+### Player-selection redesign — exploration ✅ (non-milestone)
 
 Evaluating a faster player picker for the start / edit / finish flows (branch
 `player-selection-improvements`). Real-usage feedback: the M9 search-to-add picker is
@@ -145,8 +148,8 @@ home):
   Vercel redirect allow-list). Publishable key in `.env.local`.
 
 Deferred out of M3 to the [roadmap](./roadmap.md) post-v1 backlog: **Facebook
-login** (re-enable provider + restore the button in `src/app/login/page.tsx`; see
-[oauth-setup.md](./oauth-setup.md)) and **auth UX polish** (custom auth domain +
+login** (_shipped in M12, along with Discord_; see [oauth-setup.md](./oauth-setup.md))
+and **auth UX polish** (custom auth domain +
 consent-screen branding — see "Polish / UX backlog" below).
 
 ### Milestone 4 — Core flow ✅
@@ -189,9 +192,10 @@ List a group's games so the crew can see who's been the durak:
 - **Verified:** `pnpm lint` / `build` / `format:check` clean; changes reviewed
   and merged via PR.
 
-Deferred out of M5 (see [roadmap](./roadmap.md)): **edit/delete game** and
-**pagination** beyond the simple 100-row cap. `ended_at` is queried but not yet
-surfaced in the row UI. (Per-player stats landed in M6.)
+Deferred out of M5 (see [roadmap](./roadmap.md)): **pagination** beyond the simple
+100-row cap. (**Edit/delete game** was deferred here too and shipped later — see
+[Edit and delete completed games](#edit-and-delete-completed-games--non-milestone).) (Duration was surfaced in the row UI
+later, and per-player stats landed in M6.)
 
 ### Milestone 6 — Stats v1 ✅
 
@@ -286,7 +290,8 @@ auth.uid()`) grouped by group, tie-break earliest-created, over a `LEFT JOIN` of
   moved to `src/app/actions.ts` and now sets the active-group cookie so a just-created
   group becomes active.
 - **Dedicated `/group/switch` page** — a simple tap-to-switch list of the user's
-  groups (the switcher was pulled out of Manage group).
+  groups (the switcher was pulled out of Manage group). _(Later removed: switching
+  moved back onto `/group` — see **Group management rework** below.)_
 - **Group switching root-cause fix (`z.uuid()` → `z.guid()`).** The switcher "did
   nothing" because `switchGroup` validated the posted `groupId` with `z.uuid()`, and
   Zod 4's `z.uuid()` enforces RFC-9562 version/variant bits — which the DB's ids
@@ -357,15 +362,16 @@ Logging is split into **start** (game created in-progress with a roster) and
   `game_players` **deletable**) by group members — a deliberate departure from the
   v1 insert-only stance, needed to finish a game. Scope mirrors the existing select
   policies (`is_group_member` / `is_member_of_game`). General-purpose edit/delete of
-  a game remains a deferred roadmap item; the app only mutates via the RPCs.
+  a completed game was deferred here and shipped later (see the edit/delete entry
+  below); the app only mutates via the RPCs.
 - **Stats scoped to completed games** (`20260616150000_stats_completed_only.sql`):
   `group_stats` / `player_stats` re-defined with a `status = 'completed'` filter so
   an in-flight game doesn't skew counts, "last durak", or durations.
 - **UI:** `/games/new` is now **"Start a game"** (pick ≥1 player + optional
   trump/deck/notes; no time/outcome fields). New **`/games/[id]/finish`** pre-fills
   the started roster, lets you add/remove players and set each outcome, then saves.
-  **No time fields** anywhere — `started_at` / `ended_at` are stamped server-side
-  (editing deferred to a future edit-game screen). In-progress games are surfaced on
+  **No time fields** in the start/finish flows — `started_at` / `ended_at` are stamped
+  server-side (they can be corrected afterwards from the edit-game screen). In-progress games are surfaced on
   **home** and **`/games`** via a shared `InProgressGames` component with a
   **Finish →** CTA; the completed history list (and home "recent") excludes them.
 - **Verified:** `pnpm lint` / `build` / `tsc --noEmit` clean (Prettier clean on
@@ -471,7 +477,7 @@ No data-model changes beyond the discard RPC below.
   dark theme, portrait); generated icons via `next/og` `ImageResponse` — `app/icon.tsx`
   (favicon), `app/apple-icon.tsx` (Apple touch), and `app/icons/[size]/route.tsx`
   (192 / 512 / maskable-512), all rendering the **🃏 joker brand mark** through
-  **Twemoji** (the default OG font lacks color emoji). A dismissible **install prompt**
+  **Twemoji** (_since replaced — see the PWA install fix and jester-mark entries below_) (the default OG font lacks color emoji). A dismissible **install prompt**
   and a **hand-written service worker** (`public/sw.js`, registered by `service-worker.tsx`)
   that cache-firsts Next static assets / icons for offline shell loading. **`next-pwa`
   was evaluated and dropped** — it's webpack-only and Next 16 defaults to Turbopack (the
@@ -504,8 +510,8 @@ No data-model changes beyond the discard RPC below.
   regenerated). A started-but-unfinished game can be **discarded (deleted)** from the
   finish page — `discard_game(game_id)` (`SECURITY INVOKER`) deletes the game and
   cascades to `game_players`, gated by a new **`games_delete`** RLS policy scoped to
-  group members and **`status = 'in_progress'`** only (completed games stay an edit/
-  delete roadmap item).
+  group members and **`status = 'in_progress'`** only (a completed game is instead
+  soft-deleted by its logger — see the edit/delete entry below).
 - **Start-form player picker** now lists **only selected** players (each with Remove),
   with search-to-add surfacing the rest of the roster — instead of showing the whole
   roster as checkboxes.
@@ -546,6 +552,25 @@ Full `/account` page replacing the stub:
     button to work.
 - **Verified:** `pnpm lint` / `format:check` / `test` (64 tests passing) / `build` clean.
   TypeScript clean. Owner does manual UI pass before merge.
+
+### Edit and delete completed games ✅ (non-milestone)
+
+Resolves the long-deferred "edit/delete game" item (migration
+`20260617140000_edit_delete_games.sql`; RPC details in
+[architecture.md](./architecture.md#edit-and-delete-completed-games)).
+
+- **Edit** — `/games/[id]/edit` (linked from the game card and the detail page) edits
+  start and end time (in the group's timezone), trump, deck, notes, and the roster /
+  outcomes via `edit_completed_game`. Restricted to the game's original logger.
+- **Delete** — a "Delete game" button on the edit form soft-deletes the game
+  (`deleted_at`, logger only). Deleted games drop out of history, the detail page, and
+  the stats RPCs; the row is kept.
+- **Mid-game edits** — `update_game` lets the finish page save roster/detail changes
+  while the game stays in progress.
+- **Related fix** — `games_update` RLS was loosened to membership-only so any member can
+  finish a game (see Housekeeping).
+- **Known gap:** `group_roster` doesn't yet exclude soft-deleted games, so the Players
+  page count and picker ranking can include them (tracked in the roadmap).
 
 ### Admin area — account authority v0 ✅ (non-milestone)
 
@@ -594,17 +619,23 @@ renders only for admins). Groundwork for a future "account authority" role.
 > below are the rest.
 
 - **Vitest** (two projects: a Node env for `src/lib`, jsdom + React Testing Library
-  for components); `pnpm test` / `test:watch` / `test:coverage`. **64 tests** cover the
-  timezone helpers ([src/lib/time.ts](../src/lib/time.ts)) and every Zod schema
-  ([src/lib/validation/\*](../src/lib/validation/)), plus the `BottomNav` active-tab
-  logic.
+  for components); `pnpm test` / `test:watch` / `test:coverage`. **195 tests in 22 files** now cover the
+  timezone helpers ([src/lib/time.ts](../src/lib/time.ts)), every Zod schema
+  ([src/lib/validation/\*](../src/lib/validation/)), the auth-middleware public-path
+  guard, the About-page summarizers, the admin gate, the avatar extractor, and a set
+  of components (`BottomNav`, `NavMenu`, `GameList`, `GroupDetails`, `Avatar`, `Logo`,
+  `LandingPage`, `PlayerChipGrid`, and the admin claims / add-to-group sections). (It
+  started at 64 tests.)
 - **CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs lint →
-  format:check → test → build on every push/PR. Free on GitHub-hosted standard runners
+  format:check → test:coverage → build on every push/PR, and a separate
+  [Docs workflow](../.github/workflows/docs.yml) runs `pnpm check:links` (markdown link
+  checker). Free on GitHub-hosted standard runners
   (public repo).
-- **Coverage today:** the pure-logic / validation layer and `BottomNav` are covered;
-  **everything that renders React, runs a server action, or touches the database is
-  still at 0%** — pages/routes, `actions.ts` server actions, `src/lib/data/*`,
-  `src/lib/supabase/*`, and the remaining components. See the two testing follow-ups in
+- **Coverage today:** the pure-logic / validation layer and the components listed above
+  are covered. **Pages/routes, `actions.ts` server actions, most of `src/lib/data/*`,
+  the Supabase clients, and the remaining components are still untested**, and the
+  database layer (RPCs, RLS) has no automated tests. The measured percentage is shown on
+  the About page and explained in [D-1](decisions.md). See the two testing follow-ups in
   [roadmap.md](./roadmap.md#testing-follow-ups).
 
 ### Tweaks — flow & stats polish ✅ (non-milestone)
@@ -904,7 +935,11 @@ closing off organic/social growth for what's otherwise a public, free tool.
 
 ## Housekeeping
 
-- Unused default `public/*.svg` assets from create-next-app can be removed.
+- Unused default `public/*.svg` assets from create-next-app (`file`, `globe`, `next`,
+  `vercel`, `window`) are still present and can be removed.
+- Public `/privacy` and `/data-deletion` pages exist (needed for Facebook's Live-mode
+  review, see [oauth-setup.md](./oauth-setup.md)) and are on the middleware's
+  `PUBLIC_PATHS` list.
 - **Added: Husky pre-commit hook.** `pnpm install` now also sets up a
   `pre-commit` hook (`prepare` script → Husky → `lint-staged` → `prettier
 --write` on staged files), so format drift gets fixed before it's committed

@@ -1,4 +1,4 @@
-# Durak Tracker — Product Spec (v0.4)
+# Durak Tracker — Product Spec (v0.5)
 
 > This is the **product** spec: what the app does and why. Implementation details
 > have moved to [`docs/architecture.md`](docs/architecture.md). Progress lives in
@@ -13,11 +13,12 @@ and various computed statistics at the group and player level.
 
 ## Goals (v1)
 
-- Log games: start time, optional end time, group, trump suit, deck count, players,
-  durak, first out, last out
+- Log games in two steps — start (roster, trump, deck) then finish (durak, first out,
+  last out) — with start/end times recorded automatically and correctable afterwards
 - Support multiple groups (isolated data per group)
-- Support guest players (no account required), claimable later
-- Computed stats per group, per player within a group, and per player across all groups
+- Support guest players (no account required), claimable later via a shared link
+- Computed stats per group and per player within a group (per-player stats across all
+  groups are specified below but not built yet)
 - Single-user entry per game (no multi-confirmation in v1)
 - Installable as PWA on mobile, no app store distribution yet
 
@@ -27,9 +28,7 @@ and various computed statistics at the group and player level.
 - Offline play/sync — online only
 - Multi-player confirmation/entry for a single game
 - Push notifications
-- Edit or delete game (see [roadmap](docs/roadmap.md))
-- Group invitations (see [roadmap](docs/roadmap.md))
-- Guest player claiming (see [roadmap](docs/roadmap.md))
+- Group invitations beyond the guest-claim link (see [roadmap](docs/roadmap.md))
 
 ## Core rules
 
@@ -40,7 +39,10 @@ and various computed statistics at the group and player level.
 - **First out** = finished first (best outcome); **last out** = finished
   second-to-last, i.e. one before the durak. A player holds at most one of
   durak / first-out / last-out.
-- **Start time** defaults to now and is editable (backdatable).
+- **Start and end time** are stamped when the game is started and finished (there are no
+  time fields in those flows). The game's logger can correct either afterwards by
+  editing the game, and can also delete it (soft delete; deleted games are excluded from
+  history and stats).
 - **Guests** are players without an account, added inline by typing a name; they
   belong to one group until they later claim an account.
 
@@ -49,17 +51,24 @@ and various computed statistics at the group and player level.
 
 ## Pages / Screens (v1)
 
-1. **Login** — Google/Facebook OAuth buttons.
-2. **Onboarding** — shown after first login if the user has no group; create a group
-   (v1) or accept an invitation (future).
-3. **Log a game** — start time (default now, backdatable), optional end time, trump
-   suit, deck count, player list (type-ahead from group players + inline "add guest";
-   **min 3 players**), select durak (**required**), optionally mark first/last out,
-   optional notes. Submit is blocked until ≥3 players and exactly one durak.
-4. **Game history** — list of past games for the active group, filterable by date range.
-5. **Group stats** — most/last durak, trump suit frequency, player game counts, avg
-   duration, streaks.
-6. **Player stats** — individual rates, streaks, head-to-head, cross-group aggregates.
+1. **Login** — Google/Facebook/Discord OAuth buttons (signed-out visitors first see a
+   public landing page at `/`).
+2. **Onboarding** — shown after first login if the user has no group; create a group,
+   or redeem a guest-claim link to join one.
+3. **Start a game** — pick the players (chip grid with search and inline "add guest"),
+   optional trump suit, deck count and notes. Needs ≥1 player; "Play again" pre-selects
+   a previous game's roster.
+4. **Finish a game** — adjust the roster, set each player's outcome, select the durak
+   (**required**) and optionally first/last out. Submit is blocked until ≥3 players and
+   exactly one durak. An unfinished game can be discarded.
+5. **Game history and detail** — completed games for the active group, filterable by
+   date range, each with a detail page and (for the logger) edit / delete.
+6. **Group stats** — most/last durak, trump suit frequency, player game counts, avg
+   duration, streaks, charts, week/month/year/all-time windows.
+7. **Player stats** — individual rates, streaks, recent form, head-to-head.
+8. **Manage group / players / account** — switch groups, rename yourself, share claim
+   links for guests, theme and sign-in methods. (An operator-only `/admin` area exists
+   outside the product scope.)
 
 ## Metrics
 
@@ -96,11 +105,18 @@ for **registered** players (joined across groups via their account).
 ## Guest Players & Claiming
 
 - A guest is a `players` row with no linked account, added inline during game logging.
-- v1 ships no claiming UI, but the schema supports it from day one.
-- Future claiming: an authenticated user identifies their guest record within a group
-  → links their account → all historical results carry forward automatically.
+- Claiming (shipped in M10): any group member generates a single-use link (valid 7 days)
+  for a guest; the real person opens it, signs in, and their account is linked to that
+  player and added to the group, so all historical results carry forward automatically.
 
 ## Changelog
+
+### v0.5
+
+- Brought the spec in line with what shipped: two-part start/finish logging, server-stamped
+  times with later correction, edit/soft-delete of completed games, guest claiming,
+  Facebook/Discord login, and the current screen list. Cross-group stats remain specified
+  but unbuilt.
 
 ### v0.4
 

@@ -1,7 +1,7 @@
 # OAuth Provider Setup (Google + Facebook + Discord)
 
 How to configure social login for Durak Tracker. This is the **social login** flow:
-Durak Tracker _consumes_ Google/Facebook as identity providers via Supabase Auth.
+Durak Tracker _consumes_ Google, Facebook and Discord as identity providers via Supabase Auth.
 
 > ⚠️ **Do not confuse this with Supabase's "OAuth Server" / "OAuth Apps" feature**
 > (Authorization Path, `/oauth/consent`, "Dynamic OAuth apps"). That turns your
@@ -70,8 +70,8 @@ Facebook gates submission on four fields. The first three are served by the app
 - The privacy/data-deletion pages and the `/icons` route are whitelisted in
   `src/lib/supabase/middleware.ts` (`PUBLIC_PATHS`) so the review crawler reaches
   them. Verify they return 200 logged-out before submitting.
-- Regenerate the icon any time with `pnpm dev` then
-  `curl -o fb-app-icon-1024.png http://localhost:3000/icons/1024`.
+- The app icon is the static `public/icons/icon-1024.png` (rendered from
+  `public/icon.svg`); use it for the Facebook app icon.
 
 ## Part C — Discord
 
@@ -86,8 +86,9 @@ Lightweight to set up — no app review, and works for any Discord user immediat
    `https://wjdubpkmzhsfocvgsjuv.supabase.co/auth/v1/callback` → Save.
 4. **Supabase → Authentication → Sign In / Providers → Discord:** enable, paste Client
    ID + Secret, Save. (Supabase requests the `identify` + `email` scopes by default.)
-5. Add a **Continue with Discord** button in `src/app/login/page.tsx` (same
-   `signInWithOAuth({ provider: 'discord' })` pattern as Google).
+5. The **Continue with Discord** button already exists in the shared
+   [`OAuthButtons`](../src/components/oauth-buttons.tsx) component (login page and
+   landing page); nothing to add in code.
 
 ## Part D — Supabase URL configuration (once)
 
