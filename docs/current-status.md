@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-10-13.
+Living snapshot of what's built. Last updated: 2026-10-21.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -17,6 +17,14 @@ Living snapshot of what's built. Last updated: 2026-10-13.
 > implied-partial TODOs.
 
 ## In progress
+
+### Prominent active bottom-nav tab ✅ (non-milestone)
+
+The active `BottomNav` tab was black vs. grey; it now uses color and a glow drawn
+from the aurora gradient. Each tab owns a stop (Home teal, Games blue, Stats violet,
+Players pink) passed as `--tab-color`; the `.nav-tab-active` class in
+[globals.css](../src/app/globals.css) adds a tinted label, a soft icon/label glow, and
+a glowing bar on the tab's top edge. Inactive tabs are unchanged.
 
 ### Chip-grid player selector + prominent "Play again" 🚧 (non-milestone)
 
