@@ -30,9 +30,10 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 | Hosting / CI    | Vercel + GitHub auto-deploy                                                                      | In use       |
 | Package manager | pnpm                                                                                             | In use       |
 | Lint / format   | ESLint (flat config) + Prettier                                                                  | In use       |
-| Auth providers  | Supabase Auth — Google (Facebook deferred)                                                       | In use       |
+| Auth providers  | Supabase Auth — Google, Facebook, Discord (M12)                                                  | In use       |
 | PWA             | Web App Manifest + **hand-written service worker** (`next-pwa` dropped — Turbopack-incompatible) | In use (M11) |
 | Validation      | Zod                                                                                              | In use       |
+| Charts / theme  | Recharts (stats charts), `next-themes` (System / Light / Dark)                                   | In use       |
 | Forms           | React Hook Form + Zod                                                                            | In use       |
 | Testing (unit)  | Vitest + React Testing Library; CI via GitHub Actions                                            | In use       |
 | Testing (e2e)   | Playwright                                                                                       | Planned      |
@@ -42,7 +43,8 @@ Supabase Postgres ── RLS policies scope every row to the user's groups
 
 ## Data model (as built)
 
-Defined in [`supabase/migrations/20260616015925_init_schema.sql`](../supabase/migrations/20260616015925_init_schema.sql).
+Defined in [`supabase/migrations/20260616015925_init_schema.sql`](../supabase/migrations/20260616015925_init_schema.sql)
+and extended by later migrations (noted below).
 
 Enums: `trump_suit = ('hearts','diamonds','clubs','spades')`;
 `game_status = ('in_progress','completed')`.
@@ -54,6 +56,11 @@ Enums: `trump_suit = ('hearts','diamonds','clubs','spades')`;
 | `players`       | Anyone who can appear in a game | `group_id`-scoped; `auth_user_id` null ⇒ guest                                                                                                                                                                       |
 | `games`         | One played game                 | `status` (`in_progress`\|`completed`, default `in_progress`); `started_at` (stamped at start), optional `ended_at` (stamped at finish)/`trump_suit`/`deck_count`/`notes`/`metrics` jsonb; `logged_by` → `auth.users` |
 | `game_players`  | One row per player per game     | PK `(game_id, player_id)`; `is_durak`/`is_first_out`/`is_last_out`                                                                                                                                                   |
+| `player_claims` | Single-use guest-claim links    | `token` PK; `group_id`, `player_id`, `created_by`; `expires_at` (default now + 7 days); `claimed_by`/`claimed_at` null until redeemed (M10)                                                                          |
+
+`games` also carries a nullable **`deleted_at`** (soft delete; added with edit/delete,
+below) — every read that means "real games" filters `deleted_at is null`, and a partial
+index `games (group_id, started_at desc) where deleted_at is null` backs history.
 
 **Referential integrity (`ON DELETE`):** `group_id`, `game_id`, and member
 `user_id` **cascade**; `players.auth_user_id` **set null** (a deleted user's
@@ -66,7 +73,9 @@ flags per row (`is_durak::int + is_first_out::int + is_last_out::int <= 1`).
 
 **Indexes:** FK lookup indexes on all child tables; `games (group_id, started_at desc)`
 for history; three **partial unique indexes** enforcing _at most one_ durak /
-first-out / last-out per game.
+first-out / last-out per game; and (M10) `players_one_account_per_group`, a partial
+unique index on `(group_id, auth_user_id) where auth_user_id is not null` so a person
+maps to at most one player per group.
 
 ## Integrity enforcement: why triggers, not just CHECKs
 
@@ -95,7 +104,7 @@ present.
 
 ## Authorization (RLS)
 
-RLS is enabled on all five tables; every policy targets the `authenticated` role
+RLS is enabled on all six tables; every policy targets the `authenticated` role
 and scopes rows through `group_members`.
 
 - **Helper functions** `is_group_member`, `is_group_owner`, `is_member_of_game`
@@ -107,10 +116,14 @@ and scopes rows through `group_members`.
   membership and group settings; a game's `logged_by` must equal `auth.uid()` on
   insert. Games were insert-only in v1; **M8 (two-part logging) adds member
   `update` on `games` and member `update`/`delete` on `game_players`** so a game can
-  be finished (status flip + roster/outcome reconciliation). This is scoped via the
-  same `is_group_member` / `is_member_of_game` helpers; general-purpose edit/delete
-  of a completed game remains a deferred roadmap item, and the app only mutates
-  through the `start_game` / `finish_game` RPCs.
+  be finished (status flip + roster/outcome reconciliation), scoped via the same
+  `is_group_member` / `is_member_of_game` helpers. `games_update` checks group
+  membership only; the stricter "original logger only" rules for editing and
+  deleting a **completed** game live in `games_soft_delete` and inside
+  `edit_completed_game` (see [Edit and delete](#edit-and-delete-completed-games)).
+  `games_delete` lets members hard-delete **in-progress** games only (discard).
+  `player_claims` allows member `select`/`insert` only; redemption goes through the
+  claim RPCs. The app only mutates through RPCs and these narrow policies.
 
 ### Client access & key-exposure model
 
@@ -140,7 +153,7 @@ Browser ──(anon key + user's JWT cookie)──▶ PostgREST gateway
 The anon key is safe to ship because it is a low-privilege token; the actual access
 control is **RLS + the user's session JWT**. This makes **RLS load-bearing** — a
 table without RLS or a wrong policy is a public data leak — which is why RLS is
-enabled on all five tables and the cross-group isolation is tested. In production,
+enabled on all six tables and the cross-group isolation is tested. In production,
 all four values are Vercel environment variables; only the two `NEXT_PUBLIC_` ones
 reach the browser.
 
@@ -211,11 +224,65 @@ else started, matching the `InProgressGames` UI which offers the **Finish →** 
 the whole group. (`edit_completed_game` and the soft-delete path are different: they
 keep an explicit `logged_by`-only restriction, since editing/deleting a _completed_
 game's history is still restricted to whoever logged it.) Each RPC does its multi-row
-work in a single transaction so the deferred checks see every row. There is **no time
-field in the UI** — `started_at` and `ended_at` are
-stamped server-side; editing them is deferred to a future edit-game screen. A
-standalone "add players to an in-progress game" RPC was folded into `finish_game`'s
-reconciliation and deferred as a separate entry point.
+work in a single transaction so the deferred checks see every row. The start and finish
+flows have **no time fields** — `started_at` and `ended_at` are stamped server-side;
+they can be corrected afterwards from the edit screen (see
+[Edit and delete](#edit-and-delete-completed-games)). A standalone "add players to an
+in-progress game" RPC was folded into `finish_game`'s reconciliation; the sibling
+**`update_game`** (migration `20260617130000_update_game.sql`) applies the same
+reconciliation and detail edits while leaving the game `in_progress`, so the finish
+page can save mid-play corrections repeatedly.
+
+### Edit and delete completed games
+
+Defined in [`supabase/migrations/20260617140000_edit_delete_games.sql`](../supabase/migrations/20260617140000_edit_delete_games.sql)
+(and refined by `20260630000000_fix_games_update_finish_check.sql`). A completed game
+can be corrected or removed by **whoever logged it** (`logged_by`):
+
+- **`edit_completed_game(game_id, participants, started_at, ended_at, trump?, deck?, notes?)`**
+  — `SECURITY INVOKER`. Updates the game's timestamps and details and reconciles the
+  roster in one transaction (so the deferred integrity trigger validates the final
+  state at COMMIT). Its `WHERE` clause restricts it to completed, non-deleted games
+  with `logged_by = auth.uid()`. This is the screen at `/games/[id]/edit`; times are
+  entered in the group's timezone and converted to UTC in the server action.
+- **Soft delete.** `deleted_at` is set directly with an `update` (the `games_soft_delete`
+  policy: logger only, completed games only, not already deleted). Soft-deleted games
+  disappear from history, detail, and the stats RPCs (`group_stats`, `player_stats`,
+  `head_to_head`), but the row is kept as an audit trail. **Known gap:** `group_roster`
+  (picker ranking and the Players-page games count) does not yet filter
+  `deleted_at`, so it still counts soft-deleted games — tracked in the roadmap.
+- **Why `games_update` no longer checks `logged_by`:** it originally did, which silently
+  limited `finish_game` to whoever started the game even though the UI offers **Finish →**
+  to every member. Membership is now the only gate on `games_update`; the logger-only
+  rules above are enforced where they apply.
+
+### Account claiming — `create_player_claim` / `claim_details` / `claim_player` (M10)
+
+Defined in [`supabase/migrations/20260616170000_player_claims.sql`](../supabase/migrations/20260616170000_player_claims.sql).
+A member mints a single-use, 7-day link for a **guest** player; the real person opens
+`/claim/[token]`, signs in, and redeems it, which links their account to that player
+**and** makes them a group member:
+
+- `create_player_claim(player_id)` — `SECURITY INVOKER`; RLS confirms the caller can see
+  the player, and the player must still be a guest.
+- `claim_details(token)` — `SECURITY DEFINER`, read-only, also granted to `anon`: returns a
+  coarse status (`valid` / `expired` / `claimed` / `not_found`) plus group and player
+  names so the landing page can render for signed-out visitors.
+- `claim_player(token)` — `SECURITY DEFINER` (the claimer isn't a member yet, so it must
+  write `group_members` and `players` past RLS). Locks the claim row, validates
+  unused / unexpired / still-a-guest / caller has no player in the group, then links,
+  joins, and stamps the link used, all in one transaction. `admin_add_user_to_group`
+  (below) is the operator-side, non-consent variant.
+
+Not built: manual revocation of an unused link (see the roadmap's open questions).
+
+### Active group — `most_played_group()` (M7)
+
+Defined in [`supabase/migrations/20260616130000_most_played_group.sql`](../supabase/migrations/20260616130000_most_played_group.sql).
+`SECURITY INVOKER`: counts the caller's `game_players` (via `players.auth_user_id =
+auth.uid()`) per group, tie-breaking on earliest-created, over a `LEFT JOIN` of every
+member group. `getCurrentGroup()` resolves the active group as the `durak_group_id`
+cookie if valid, else this RPC, else the earliest-created group.
 
 ### Roster ranking — `group_roster(group_id)` (M9)
 
@@ -305,6 +372,13 @@ called from `next.config.ts` and inlined as `process.env.BUILD_INFO`; the page
 never reads git or the filesystem at runtime. See [D-1](decisions.md) for how
 coverage is measured.
 
+### Admin: other service-role-only functions
+
+`admin_list_player_claims()` (`20260629000001_admin_list_player_claims.sql`) and
+`admin_system_stats()` (`20260701000000_admin_system_stats.sql`) follow the same
+`SECURITY DEFINER` + service-role-only pattern as `admin_list_external_accounts`; they
+back the claim-links list and the system overview on `/admin` (see [admin.md](./admin.md)).
+
 ### Admin: add account to group — `admin_add_user_to_group(user_id, group_id, display_name, player_id)`
 
 Defined in [`supabase/migrations/20260709000000_admin_add_user_to_group.sql`](../supabase/migrations/20260709000000_admin_add_user_to_group.sql).
@@ -331,8 +405,9 @@ A started-but-unfinished game can be abandoned from the finish page. `discard_ga
 is **`SECURITY INVOKER`** and deletes the game row (its `game_players` cascade via the
 FK). RLS still gates the delete through a new **`games_delete`** policy scoped to
 group members **and `status = 'in_progress'`** — so only in-progress games are
-discardable; deleting a **completed** game remains a deferred edit/delete roadmap
-item. The status guard is enforced both in the policy and in the function body.
+hard-deleted; a **completed** game is instead soft-deleted by its logger (see
+[Edit and delete](#edit-and-delete-completed-games)). The status guard is enforced both
+in the policy and in the function body.
 
 ### Stats v2 — time windows, head-to-head, recent form
 
@@ -377,8 +452,8 @@ The app is installable and loads its static shell offline:
   apple-touch-icon) and `src/app/favicon.ico`. The same SVG is the header logo in
   `app/layout.tsx`. Static files keep installability independent of runtime image
   generation. (The original M11 icons were `next/og` `ImageResponse` routes rendering
-  the 🃏 Twemoji joker, replaced in M12 by a card-fan/spade mark, replaced in turn by
-  the jester.)
+  the 🃏 Twemoji joker, replaced by a card-fan/spade mark, replaced in turn by the
+  jester, in non-milestone icon passes after M11.)
 - **PWA assets must stay outside the auth middleware.** The browser fetches
   `manifest.webmanifest` **without cookies** (credential-less per spec), so if the
   middleware's auth redirect catches it, Chrome receives the login page instead of
@@ -458,7 +533,7 @@ This machine has **no Docker**, so the local Supabase stack / `db reset` is not 
   identity is reconstructed via `auth_user_id`.
 - **SECURITY DEFINER helpers** to avoid recursive RLS evaluation.
 - **Deferred constraint triggers** for multi-row invariants (one durak, ≥3 players).
-- **`create_group` / `log_game` RPCs** for multi-row atomic writes — break the
+- **`create_group` / `log_game` RPCs** (later `start_game` / `finish_game` / `update_game` / `edit_completed_game`) for multi-row atomic writes — break the
   onboarding RLS chicken-and-egg, and keep a game + its players in one transaction.
 - **`groups.timezone`** for deterministic time-bucketed stats.
 - **Computed-not-stored metrics** until proven to need caching.

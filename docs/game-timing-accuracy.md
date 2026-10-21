@@ -32,7 +32,7 @@ detects, flags, or excludes a game with bad timing.
   - the game list ([`src/components/game-list.tsx`](../src/components/game-list.tsx))
 - **No filtering or outlier handling exists.** `avg_duration_seconds` is a plain
   mean over every completed, non-deleted game with an `ended_at`.
-- Games **are** already editable: `update_game` accepts `p_started_at` /
+- Games **are** already editable: `edit_completed_game` accepts `p_started_at` /
   `p_ended_at`, and the edit form exposes both as `datetime-local` inputs
   ([`src/app/games/[id]/edit/edit-game-form.tsx`](../src/app/games/[id]/edit/edit-game-form.tsx)).
   So correcting a bad start time is possible today — it's just undiscoverable and

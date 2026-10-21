@@ -1,6 +1,6 @@
 # Roadmap
 
-Milestones 1–12 are complete; M13 (Iterate) is next
+Milestones 1–12 are complete; M13 (Iterate) is the ongoing open-ended bucket
 (see [current-status.md](./current-status.md)). A milestone's PR carries the docs marking
 it complete — outstanding manual testing is done before that PR merges. M3 shipped **Google** auth only;
 M12 added **Facebook** and **Discord** login along with a full account management page.
@@ -11,7 +11,7 @@ app is **pre-release with no live data**, so schema changes can wipe + reseed
 ([supabase/seed.sql](../supabase/seed.sql)) rather than preserve data. PWA polish and
 the open-ended "Iterate" bucket shifted to M11+.
 
-## Remaining milestones (v1)
+## Milestones (v1)
 
 4. **Core flow** _(done)_ — add players (incl. guests); log a game; persist to
    DB. Introduced Zod + React Hook Form, with min-3-players / exactly-one-durak
@@ -105,7 +105,12 @@ the open-ended "Iterate" bucket shifted to M11+.
     linking" in Supabase Auth settings for the Connect button to work. Facebook requires
     a Meta app in Live mode for public users (app admins can test immediately).
 
-13. **Iterate** — additional metrics and refinements from real usage.
+13. **Iterate** _(ongoing)_ — additional metrics and refinements from real usage. Shipped
+    so far under this bucket, as non-milestone changes tracked in
+    [current-status.md](./current-status.md): edit and soft-delete of completed games,
+    profile pictures, stats charts, an operator `/admin` area, group-management rework,
+    PWA install fix and the jester icon, the About page, the public landing page, and the
+    chip-grid player selector. What's left is in the sections below.
 
 ## Stats v2 (stats-improvements branch) ✅
 
@@ -148,7 +153,8 @@ Shipped on top of M6, extending both stats RPCs (migration
 Automated tests should have been part of the project from M1; building milestones 1–11
 without them was a real oversight. A Vitest unit/component suite + GitHub Actions CI now
 exists (see [current-status.md](./current-status.md)), covering the pure-logic and
-validation layers. What remains:
+validation layers plus a set of components; measured coverage is on the About page
+([D-1](./decisions.md)). What remains:
 
 - **Server-action, data-layer & e2e coverage** — the largest gap. Nothing that renders
   React, runs a server action, or touches the database is tested yet: the `actions.ts`
@@ -170,9 +176,15 @@ validation layers. What remains:
 
 - **Auth UX polish** — Supabase custom auth domain + Google consent-screen branding so
   the login flow doesn't surface the raw Supabase project domain.
-- **Edit/delete game** — scoped to `logged_by` or group owner; soft-delete preferred;
-  audit trail. Also the future home for editing `started_at` / `ended_at` (M8 sets them
-  server-side, no UI).
+- **Edit/delete game** — _shipped_ (logger-only edit incl. `started_at` / `ended_at`, and
+  soft delete; see current-status.md). Still open: letting the **group owner** edit or
+  delete other members' games, an undo / restore for a deleted game, and a fuller audit
+  trail than the retained `deleted_at` row.
+- **Known bug — `group_roster` counts soft-deleted games.** The RPC filters
+  `status = 'completed'` but not `deleted_at is null`, so the Players-page games count and
+  the picker ranking include deleted games while the stats RPCs don't. Needs a small
+  migration (re-define `group_roster`) plus `supabase db push`.
+- **Game-history pagination** — `/games` is still capped at 100 rows.
 - **Offline support** — service worker queues writes locally, syncs on reconnect.
 - **Multi-player game confirmation** — multiple players confirm/enter one game;
   conflict resolution TBD.
@@ -180,8 +192,8 @@ validation layers. What remains:
 - **Native app** — Capacitor wrapper around the PWA for app-store distribution.
 - **Separate Dev/test database** — a dedicated Supabase project (or branch) for
   testing, so the seeded **Run Club** test group lives apart from real data. Until
-  then the home-page group switcher (M6) lets the owner flip between the seeded group
-  and their real group on the production DB.
+  then the group switcher on the Manage group page (originally added on home in M6) lets
+  the owner flip between the seeded group and their real group on the production DB.
 
 - **Automated DB migrations in CI** — add a `migrate` job to `.github/workflows/ci.yml`
   using `supabase/setup-cli@v1` that runs `supabase db push` on pushes to `main` only
