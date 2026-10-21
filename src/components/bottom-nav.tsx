@@ -7,6 +7,8 @@ type Tab = {
   href: string;
   label: string;
   icon: React.ReactNode;
+  /** This tab's stop on the brand gradient, used for its active state. */
+  color: string;
   /** Extra path prefixes that should also light this tab up. */
   match?: (path: string) => boolean;
 };
@@ -16,24 +18,28 @@ const TABS: Tab[] = [
     href: "/",
     label: "Home",
     icon: <HomeIcon />,
+    color: "var(--brand-from)",
     match: (p) => p === "/",
   },
   {
     href: "/games",
     label: "Games",
     icon: <GamesIcon />,
+    color: "var(--brand-via)",
     match: (p) => p.startsWith("/games"),
   },
   {
     href: "/stats",
     label: "Stats",
     icon: <StatsIcon />,
+    color: "var(--brand-via2)",
     match: (p) => p.startsWith("/stats"),
   },
   {
     href: "/players",
     label: "Players",
     icon: <PlayersIcon />,
+    color: "var(--brand-to)",
     match: (p) => p.startsWith("/players"),
   },
 ];
@@ -56,10 +62,11 @@ export function BottomNav() {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${
+                style={{ "--tab-color": tab.color } as React.CSSProperties}
+                className={`flex h-14 flex-col items-center justify-center gap-1 text-[11px] transition-colors ${
                   active
-                    ? "text-black dark:text-zinc-50"
-                    : "text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+                    ? "nav-tab-active font-semibold"
+                    : "font-medium text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
                 }`}
               >
                 <span aria-hidden className="contents">

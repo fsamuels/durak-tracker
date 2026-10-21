@@ -59,6 +59,19 @@ describe("BottomNav", () => {
     expect(linkFor("Stats")).toHaveAttribute("aria-current", "page");
   });
 
+  it("applies the glow class and a per-tab color only to the active tab", () => {
+    usePathname.mockReturnValue("/stats");
+    render(<BottomNav />);
+    const stats = linkFor("Stats");
+    expect(stats).toHaveClass("nav-tab-active");
+    expect(stats.style.getPropertyValue("--tab-color")).toBe(
+      "var(--brand-via2)",
+    );
+    expect(linkFor("Home")).not.toHaveClass("nav-tab-active");
+    expect(linkFor("Games")).not.toHaveClass("nav-tab-active");
+    expect(linkFor("Players")).not.toHaveClass("nav-tab-active");
+  });
+
   it("exposes a labelled primary nav", () => {
     usePathname.mockReturnValue("/");
     const { container } = render(<BottomNav />);
