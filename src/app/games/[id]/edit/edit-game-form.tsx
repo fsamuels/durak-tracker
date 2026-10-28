@@ -6,12 +6,12 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { AddGuestInline } from "@/components/add-guest-inline";
 import { Avatar } from "@/components/avatar";
+import { OutcomeToggle } from "@/components/outcome-toggle";
 import { PlayerChipGrid } from "@/components/player-chip-grid";
 import { Field, FormMessage } from "@/components/ui";
 import {
   buttonClass,
   cardClass,
-  compactSelectClass,
   cx,
   inputClass,
   textareaClass,
@@ -19,14 +19,14 @@ import {
 import {
   editGameFormSchema,
   finishRowsToParticipants,
-  OUTCOMES,
-  OUTCOME_LABELS,
+  assignOutcome,
   outcomeCountError,
   TRUMP_SUITS,
   TRUMP_SUIT_LABELS,
   type EditGameFormValues,
   type EditGamePayload,
   type Outcome,
+  type OutcomeRole,
 } from "@/lib/validation/game";
 
 import { deleteGameAction, editGameAction } from "./actions";
@@ -114,6 +114,17 @@ export function EditGameForm({
     setValue(`rows.${i}.selected`, !rows[i]?.selected, { shouldDirty: true });
   };
 
+  // One tap per outcome: a role moves to the tapped player (clearing whoever
+  // held it), and tapping a player's current role clears it.
+  const selectOutcome = (i: number, role: OutcomeRole) => {
+    const current = fields.map((_, j) => rows[j]?.outcome ?? "none");
+    assignOutcome(current, i, role).forEach((outcome, j) => {
+      if (outcome !== current[j]) {
+        setValue(`rows.${j}.outcome`, outcome, { shouldDirty: true });
+      }
+    });
+  };
+
   const buildPayload = (values: EditGameFormValues): EditGamePayload => ({
     gameId,
     startedAt: values.startedAt,
@@ -192,6 +203,7 @@ export function EditGameForm({
               <input type="hidden" {...register(`rows.${i}.playerId`)} />
               <input type="hidden" {...register(`rows.${i}.displayName`)} />
               <input type="checkbox" {...register(`rows.${i}.selected`)} />
+              <input type="hidden" {...register(`rows.${i}.outcome`)} />
             </span>
           ))}
         </div>
@@ -211,26 +223,22 @@ export function EditGameForm({
             {selectedIndices.map((i) => (
               <li
                 key={fields[i].id}
-                className={cx(cardClass, "flex items-center gap-3 px-4 py-2.5")}
+                className={cx(cardClass, "flex flex-col gap-2 px-4 py-2.5")}
               >
-                <Avatar
-                  src={avatarById.get(fields[i].playerId)}
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar
+                    src={avatarById.get(fields[i].playerId)}
+                    name={fields[i].displayName}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-black dark:text-zinc-50">
+                    {fields[i].displayName}
+                  </span>
+                </div>
+                <OutcomeToggle
                   name={fields[i].displayName}
+                  value={rows[i]?.outcome ?? "none"}
+                  onSelect={(role) => selectOutcome(i, role)}
                 />
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-black dark:text-zinc-50">
-                  {fields[i].displayName}
-                </span>
-                <select
-                  {...register(`rows.${i}.outcome`)}
-                  aria-label={`${fields[i].displayName} outcome`}
-                  className={compactSelectClass}
-                >
-                  {OUTCOMES.map((o) => (
-                    <option key={o} value={o}>
-                      {OUTCOME_LABELS[o]}
-                    </option>
-                  ))}
-                </select>
               </li>
             ))}
           </ul>
