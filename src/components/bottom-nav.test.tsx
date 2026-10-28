@@ -9,8 +9,12 @@ vi.mock("next/navigation", () => ({
   usePathname: () => usePathname(),
 }));
 
+// Whether the (mocked) link reports a navigation in flight.
+const linkPending = vi.fn<() => boolean>(() => false);
+
 // next/link renders a plain anchor in jsdom.
 vi.mock("next/link", () => ({
+  useLinkStatus: () => ({ pending: linkPending() }),
   default: ({
     href,
     children,
@@ -30,7 +34,11 @@ function linkFor(label: string) {
 }
 
 describe("BottomNav", () => {
-  beforeEach(() => usePathname.mockReset());
+  beforeEach(() => {
+    usePathname.mockReset();
+    linkPending.mockReset();
+    linkPending.mockReturnValue(false);
+  });
 
   it("renders all four tabs", () => {
     usePathname.mockReturnValue("/");
@@ -77,5 +85,22 @@ describe("BottomNav", () => {
     const { container } = render(<BottomNav />);
     const nav = within(container).getByLabelText("Primary");
     expect(nav.tagName).toBe("NAV");
+  });
+
+  it("lights up a tapped tab while its page is loading", () => {
+    usePathname.mockReturnValue("/");
+    linkPending.mockReturnValue(true);
+    render(<BottomNav />);
+    // Every mocked link reports pending; only inactive tabs show it.
+    expect(
+      within(linkFor("Stats")).getByText("Stats").closest(".nav-tab-pending"),
+    ).not.toBeNull();
+    expect(linkFor("Home").querySelector(".nav-tab-pending")).toBeNull();
+  });
+
+  it("shows no pending state when nothing is loading", () => {
+    usePathname.mockReturnValue("/");
+    render(<BottomNav />);
+    expect(document.querySelector(".nav-tab-pending")).toBeNull();
   });
 });

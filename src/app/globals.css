@@ -138,6 +138,26 @@ body {
   color: color-mix(in oklab, var(--tab-color) 90%, white);
 }
 
+/* A tapped tab whose page is still loading: take the tab's color right away
+ * and breathe gently until the navigation commits and .nav-tab-active takes
+ * over. Static for people who ask for reduced motion. */
+.nav-tab-pending {
+  color: color-mix(in oklab, var(--tab-color) 82%, var(--foreground));
+}
+.dark .nav-tab-pending {
+  color: color-mix(in oklab, var(--tab-color) 90%, white);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .nav-tab-pending {
+    animation: nav-tab-pending 1s ease-in-out infinite;
+  }
+}
+@keyframes nav-tab-pending {
+  50% {
+    opacity: 0.55;
+  }
+}
+
 /* Durak (loser) badge — the warm pink end of the aurora palette, replacing the
  * old flat red. Mixes with the theme background/foreground so it reads in both
  * light and dark. */

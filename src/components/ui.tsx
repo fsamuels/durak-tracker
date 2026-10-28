@@ -194,10 +194,10 @@ export function StatTile({
     >
       <span
         className={cx(
-          "break-words text-2xl font-semibold tracking-tight tabular-nums",
+          "break-words text-2xl tracking-tight tabular-nums",
           highlight
             ? "text-brand-gradient font-bold"
-            : "text-black dark:text-zinc-50",
+            : "font-semibold text-black dark:text-zinc-50",
         )}
       >
         {value}
