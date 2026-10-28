@@ -1,31 +1,8 @@
+import { Section, StatTile } from "@/components/ui";
 import type { SystemStats } from "@/lib/data/system";
+import { cardClass, cx } from "@/lib/ui";
 
 import { ErrorCard } from "./cards";
-
-/** One number-plus-label tile in the overview grid. */
-function StatTile({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: number;
-  sub?: string | null;
-}) {
-  return (
-    <div className="card-surface flex flex-col gap-0.5 rounded-2xl px-4 py-3">
-      <span className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-        {value.toLocaleString()}
-      </span>
-      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-        {label}
-      </span>
-      {sub ? (
-        <span className="text-xs text-zinc-400 dark:text-zinc-600">{sub}</span>
-      ) : null}
-    </div>
-  );
-}
 
 /** One label/value line in the insights card. */
 function InsightRow({ label, value }: { label: string; value: string }) {
@@ -51,9 +28,7 @@ export function SystemStats({
   error: string | null;
 }) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium text-zinc-500">System overview</h2>
-
+    <Section title="System overview">
       {error || !stats ? (
         <ErrorCard
           title="Failed to load system stats"
@@ -61,11 +36,14 @@ export function SystemStats({
         />
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2">
-            <StatTile label="Groups" value={stats.totalGroups} />
+          <div className="grid grid-cols-2 gap-3">
+            <StatTile
+              label="Groups"
+              value={stats.totalGroups.toLocaleString()}
+            />
             <StatTile
               label="Registered users"
-              value={stats.totalUsers}
+              value={stats.totalUsers.toLocaleString()}
               sub={
                 stats.newUsers7d > 0
                   ? `+${stats.newUsers7d} this week`
@@ -74,12 +52,12 @@ export function SystemStats({
             />
             <StatTile
               label="Players"
-              value={stats.totalPlayers}
+              value={stats.totalPlayers.toLocaleString()}
               sub={`${stats.guestPlayers} ${stats.guestPlayers === 1 ? "guest" : "guests"}`}
             />
             <StatTile
               label="Games"
-              value={stats.completedGames}
+              value={stats.completedGames.toLocaleString()}
               sub={
                 stats.totalGames > stats.completedGames
                   ? `${stats.totalGames - stats.completedGames} in progress`
@@ -88,7 +66,7 @@ export function SystemStats({
             />
           </div>
 
-          <div className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3">
+          <div className={cx(cardClass, "flex flex-col gap-2 px-4 py-3")}>
             <InsightRow
               label="Games this week"
               value={`${stats.games7d} across ${stats.activeGroups7d} ${
@@ -110,6 +88,6 @@ export function SystemStats({
           </div>
         </>
       )}
-    </section>
+    </Section>
   );
 }

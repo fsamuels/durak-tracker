@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { cardClass, cx, segmentClass } from "@/lib/ui";
+
 export type SegmentedItem = {
   /** Visible label. */
   label: string;
@@ -25,7 +27,7 @@ export function SegmentedToggle({
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className="card-surface flex gap-1 rounded-2xl p-1"
+      className={cx(cardClass, "flex gap-1 p-1")}
     >
       {items.map((item) => (
         <Link
@@ -34,11 +36,7 @@ export function SegmentedToggle({
           role="tab"
           aria-selected={item.active}
           scroll={false}
-          className={`flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-medium transition-colors ${
-            item.active
-              ? "bg-black text-white dark:bg-zinc-50 dark:text-black"
-              : "text-zinc-500 hover:text-black dark:hover:text-zinc-50"
-          }`}
+          className={segmentClass(item.active)}
         >
           {item.label}
         </Link>

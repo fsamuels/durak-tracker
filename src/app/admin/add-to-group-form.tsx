@@ -2,13 +2,12 @@
 
 import { useActionState, useState } from "react";
 
+import { FormMessage } from "@/components/ui";
 import type { AdminGroupOption } from "@/lib/data/admin-groups";
+import { buttonClass, cx, inputClass } from "@/lib/ui";
 import { MAX_PLAYER_NAME } from "@/lib/validation/player";
 
 import { addUserToGroupAction } from "./actions";
-
-const FIELD_CLASS =
-  "card-surface w-full rounded-xl px-3 py-2 text-sm text-black outline-none dark:text-zinc-50";
 
 /**
  * Admin: add one account to a group. Pick a group (rows the account already
@@ -43,7 +42,7 @@ export function AddToGroupForm({
           setGroupId(e.target.value);
           setPlayerId("");
         }}
-        className={FIELD_CLASS}
+        className={inputClass}
       >
         <option value="">Choose a group…</option>
         {groups.map((group) => {
@@ -63,7 +62,7 @@ export function AddToGroupForm({
         value={playerId}
         onChange={(e) => setPlayerId(e.target.value)}
         disabled={!groupId}
-        className={`${FIELD_CLASS} disabled:opacity-50`}
+        className={inputClass}
       >
         <option value="">New player</option>
         {guests.map((guest) => (
@@ -81,27 +80,21 @@ export function AddToGroupForm({
           defaultValue={defaultName}
           maxLength={MAX_PLAYER_NAME}
           placeholder="Name in this group"
-          className={`${FIELD_CLASS} placeholder:text-zinc-400`}
+          className={inputClass}
         />
       )}
 
       <button
         type="submit"
         disabled={pending || !groupId}
-        className="self-start rounded-full bg-black px-4 py-2 text-sm font-medium text-white transition-opacity disabled:opacity-50 dark:bg-white dark:text-black"
+        className={cx(buttonClass("solid", "sm"), "self-start")}
       >
         {pending ? "Adding…" : "Add to group"}
       </button>
 
-      {state?.error && (
-        <p className="text-sm text-red-600" role="alert">
-          {state.error}
-        </p>
-      )}
+      {state?.error && <FormMessage>{state.error}</FormMessage>}
       {state?.success && (
-        <p className="text-sm text-green-600" role="status">
-          {state.success}
-        </p>
+        <FormMessage tone="success">{state.success}</FormMessage>
       )}
     </form>
   );

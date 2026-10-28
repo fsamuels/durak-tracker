@@ -4,7 +4,9 @@ import type { UserIdentity } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { FormMessage } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
+import { buttonClass, cardClass, cx } from "@/lib/ui";
 
 type Provider = "google" | "facebook" | "discord";
 
@@ -77,11 +79,16 @@ export function ProviderConnections({
         return (
           <div
             key={id}
-            className="card-surface flex items-center gap-3 rounded-2xl px-4 py-3"
+            className={cx(cardClass, "flex items-center gap-3 px-4 py-3")}
           >
             <span className="shrink-0">{icon}</span>
-            <span className="flex-1 text-sm font-medium text-black dark:text-zinc-50">
-              {label}
+            <span className="flex flex-1 flex-col">
+              <span className="text-sm font-medium text-black dark:text-zinc-50">
+                {label}
+              </span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {connected ? "Connected" : "Not connected"}
+              </span>
             </span>
             {connected ? (
               <button
@@ -92,7 +99,7 @@ export function ProviderConnections({
                     ? "Add another sign-in method before disconnecting"
                     : undefined
                 }
-                className="text-sm text-zinc-500 underline underline-offset-4 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-red-400"
+                className={buttonClass("outline", "sm")}
               >
                 {pending === id ? "Disconnecting…" : "Disconnect"}
               </button>
@@ -100,7 +107,7 @@ export function ProviderConnections({
               <button
                 onClick={() => connect(id)}
                 disabled={pending !== null}
-                className="text-sm text-zinc-500 underline underline-offset-4 transition-colors hover:text-zinc-800 disabled:opacity-40 dark:hover:text-zinc-200"
+                className={buttonClass("solid", "sm")}
               >
                 {pending === id ? "Connecting…" : "Connect"}
               </button>
@@ -108,11 +115,7 @@ export function ProviderConnections({
           </div>
         );
       })}
-      {error && (
-        <p className="text-sm text-red-600" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <FormMessage>{error}</FormMessage>}
     </div>
   );
 }

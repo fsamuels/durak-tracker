@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { Avatar } from "@/components/avatar";
+import { inputClass, selectedFillClass } from "@/lib/ui";
 
 /**
  * Controlled "chip grid" player selector. The whole roster renders as toggle
@@ -22,9 +23,6 @@ export type ChipGridPlayer = {
   avatar_url?: string | null;
 };
 
-const inputClass =
-  "h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
-
 /** A pill that toggles a player in/out. Filled = in the game. */
 function PlayerChip({
   player,
@@ -42,7 +40,7 @@ function PlayerChip({
       onClick={onToggle}
       className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition ${
         selected
-          ? "border-transparent bg-black text-white dark:bg-zinc-50 dark:text-black"
+          ? `border-transparent ${selectedFillClass}`
           : "card-surface border-black/10 text-black hover:brightness-95 dark:border-white/10 dark:text-zinc-50"
       }`}
     >

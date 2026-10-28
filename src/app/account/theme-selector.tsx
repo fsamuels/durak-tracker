@@ -2,6 +2,8 @@
 
 import { useTheme } from "next-themes";
 
+import { cardClass, cx, segmentClass } from "@/lib/ui";
+
 const THEMES = [
   { value: "system", label: "System" },
   { value: "light", label: "Light" },
@@ -15,7 +17,9 @@ export function ThemeSelector() {
 
   return (
     <div
-      className="card-surface flex overflow-hidden rounded-2xl"
+      role="group"
+      aria-label="Theme"
+      className={cx(cardClass, "flex gap-1 p-1")}
       suppressHydrationWarning
     >
       {THEMES.map(({ value, label }) => {
@@ -23,13 +27,11 @@ export function ThemeSelector() {
         return (
           <button
             key={value}
+            type="button"
             onClick={() => setTheme(value)}
+            aria-pressed={active}
             suppressHydrationWarning
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              active
-                ? "bg-black text-white dark:bg-white dark:text-black"
-                : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
-            }`}
+            className={segmentClass(active)}
           >
             {label}
           </button>

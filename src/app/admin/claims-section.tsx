@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import type { AdminClaimStatus, AdminPlayerClaim } from "@/lib/data/claims";
+import { cardClass, cx, selectedFillClass } from "@/lib/ui";
 
 import { CollapsibleSection } from "./collapsible-section";
 import { EmptyCard, ErrorCard } from "./cards";
@@ -72,11 +73,7 @@ export function ClaimsSection({
             <FilterChip
               active={filter === "all"}
               onClick={() => setFilter("all")}
-              className={
-                filter === "all"
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                  : ""
-              }
+              className={filter === "all" ? selectedFillClass : ""}
             >
               All {claims.length}
             </FilterChip>
@@ -102,7 +99,7 @@ export function ClaimsSection({
               {visible.map((claim) => (
                 <li
                   key={claim.id}
-                  className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3"
+                  className={cx(cardClass, "flex flex-col gap-1 px-4 py-3")}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="truncate text-sm font-medium text-black dark:text-zinc-50">
@@ -117,7 +114,7 @@ export function ClaimsSection({
                   <span className="truncate text-sm text-zinc-600 dark:text-zinc-400">
                     {claim.groupName}
                   </span>
-                  <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-600">
+                  <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-500">
                     <span>
                       Created {formatDateTime(claim.createdAt)}
                       {claim.createdByEmail

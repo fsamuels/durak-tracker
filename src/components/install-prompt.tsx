@@ -2,6 +2,8 @@
 
 import { useState, useSyncExternalStore } from "react";
 
+import { buttonClass } from "@/lib/ui";
+
 export interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -142,14 +144,16 @@ export function InstallPrompt({
         </div>
         <div className="flex shrink-0 gap-2">
           <button
+            type="button"
             onClick={() => setDismissed(true)}
-            className="rounded-full px-3 py-1.5 text-xs font-medium text-zinc-500 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+            className="h-9 rounded-full px-3 text-sm font-medium text-zinc-500 transition-colors hover:bg-black/5 dark:text-zinc-400 dark:hover:bg-white/5"
           >
             Not now
           </button>
           <button
+            type="button"
             onClick={() => triggerInstall(prompt)}
-            className="btn-brand rounded-full px-3 py-1.5 text-xs font-semibold"
+            className={buttonClass("primary", "sm")}
           >
             Install
           </button>

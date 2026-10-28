@@ -3,8 +3,10 @@
 import { useState } from "react";
 
 import { Avatar } from "@/components/avatar";
+import { Badge } from "@/components/ui";
 import type { ExternalAccount } from "@/lib/data/accounts";
 import type { AdminGroupOption } from "@/lib/data/admin-groups";
+import { cardClass, cx, mutedLinkClass } from "@/lib/ui";
 
 import { AddToGroupForm } from "./add-to-group-form";
 import { CollapsibleSection } from "./collapsible-section";
@@ -48,7 +50,7 @@ export function AccountsSection({
             return (
               <li
                 key={key}
-                className="card-surface flex flex-col gap-3 rounded-2xl px-4 py-3"
+                className={cx(cardClass, "flex flex-col gap-3 px-4 py-3")}
               >
                 <div className="flex gap-3">
                   <Avatar
@@ -66,16 +68,16 @@ export function AccountsSection({
                           account.userEmail ??
                           "—"}
                       </span>
-                      <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-white/10 dark:text-zinc-300">
+                      <Badge>
                         {PROVIDER_LABELS[account.provider] ?? account.provider}
-                      </span>
+                      </Badge>
                     </div>
                     {(account.email ?? account.userEmail) && (
                       <span className="truncate text-sm text-zinc-600 dark:text-zinc-400">
                         {account.email ?? account.userEmail}
                       </span>
                     )}
-                    <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-600">
+                    <div className="mt-1 flex flex-col gap-0.5 text-xs text-zinc-400 dark:text-zinc-500">
                       <span>
                         Last sign-in: {formatDateTime(account.lastSignInAt)}
                       </span>
@@ -89,7 +91,7 @@ export function AccountsSection({
                   onClick={() =>
                     setOpenForms((prev) => ({ ...prev, [key]: !formOpen }))
                   }
-                  className="self-start text-sm font-medium text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
+                  className={cx(mutedLinkClass, "self-start font-medium")}
                 >
                   {formOpen ? "Cancel" : "Add to group…"}
                 </button>

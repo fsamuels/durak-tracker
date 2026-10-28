@@ -1,4 +1,5 @@
 import { switchGroup } from "@/app/actions";
+import { cx, selectedFillClass } from "@/lib/ui";
 
 export type SwitchableGroup = { id: string; name: string };
 
@@ -27,14 +28,17 @@ export function GroupSwitcher({
                 type="submit"
                 disabled={active}
                 aria-current={active ? "true" : undefined}
-                className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition ${
+                className={cx(
+                  "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-left transition",
                   active
-                    ? "border border-black bg-black text-white dark:border-zinc-50 dark:bg-zinc-50 dark:text-black"
-                    : "card-surface text-black hover:brightness-95 active:brightness-90 dark:text-zinc-50"
-                }`}
+                    ? `border border-transparent ${selectedFillClass}`
+                    : "card-surface text-black hover:brightness-95 active:brightness-90 dark:text-zinc-50",
+                )}
               >
-                <span className="font-medium">{g.name}</span>
-                <span className="text-xs">{active ? "current" : "Switch"}</span>
+                <span className="truncate text-sm font-medium">{g.name}</span>
+                <span className="shrink-0 text-xs">
+                  {active ? "Current" : "Switch →"}
+                </span>
               </button>
             </form>
           </li>

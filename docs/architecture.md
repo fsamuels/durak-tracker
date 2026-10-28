@@ -415,6 +415,18 @@ The app is installable and loads its static shell offline:
   `env(safe-area-inset-*)` padding keep content clear of the notch in the installed
   PWA (the status bar is `black-translucent`). Brand surfaces are unified on the
   `.app-bg` gradient (now on `<body>`) and the frosted `.card-surface` token.
+- **UI primitives:** page chrome and repeated controls come from two shared modules
+  rather than per-page Tailwind strings. [`src/lib/ui.ts`](../src/lib/ui.ts) holds the
+  class tokens (`buttonClass(variant, size)` with `primary`/`solid`/`outline`/`danger`,
+  `inputClass`/`textareaClass`/`compactSelectClass`, `cardClass`, `linkClass`/
+  `mutedLinkClass`, `badgeClass(tone)`, `segmentClass`, `selectedFillClass`), for
+  places that style a native element directly (a `<Link>` as a button, a
+  react-hook-form `register`ed input). [`src/components/ui.tsx`](../src/components/ui.tsx)
+  wraps the structural pieces: `PageShell`, `PageHeader` (title, description, optional
+  `← back` link), `Section`, `EmptyState`, `FormMessage` (error `alert` / success
+  `status`), `Badge`, `StatTile`, `HighlightCard` and `Field`. Every form field uses
+  16px text, because iOS Safari zooms the page on focus when a field's font is smaller.
+  New screens should build on these instead of re-typing the classes.
 
 ## Metrics
 

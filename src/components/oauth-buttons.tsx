@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { FormMessage } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
 
 type Provider = "google" | "facebook" | "discord";
@@ -49,17 +50,14 @@ export function OAuthButtons({ next }: { next?: string }) {
           key={id}
           onClick={() => signIn(id)}
           disabled={pending !== null}
-          className="card-surface flex h-12 items-center justify-center gap-3 rounded-full px-5 font-medium text-black transition-colors hover:brightness-95 disabled:opacity-60 dark:text-zinc-50"
+          type="button"
+          className="card-surface flex h-12 items-center justify-center gap-3 rounded-full px-5 font-medium text-black transition hover:brightness-95 disabled:opacity-60 dark:text-zinc-50"
         >
           <Icon className="size-5 shrink-0" />
           {pending === id ? "Redirecting…" : `Continue with ${label}`}
         </button>
       ))}
-      {error && (
-        <p role="alert" className="text-center text-sm text-red-600">
-          {error}
-        </p>
-      )}
+      {error && <FormMessage className="text-center">{error}</FormMessage>}
     </div>
   );
 }

@@ -5,7 +5,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { AddGuestInline } from "@/components/add-guest-inline";
+import { Avatar } from "@/components/avatar";
 import { PlayerChipGrid } from "@/components/player-chip-grid";
+import { Field, FormMessage } from "@/components/ui";
+import {
+  buttonClass,
+  cardClass,
+  compactSelectClass,
+  cx,
+  inputClass,
+  textareaClass,
+} from "@/lib/ui";
 import {
   editGameFormSchema,
   finishRowsToParticipants,
@@ -148,40 +158,25 @@ export function EditGameForm({
     // deleteGameAction redirects on success.
   }
 
-  const inputClass =
-    "h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
-
   return (
     <form onSubmit={onSave} className="flex flex-col gap-6">
       {/* Timestamps */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Start time
+        <Field label="Start time" error={errors.startedAt?.message}>
           <input
             type="datetime-local"
             {...register("startedAt")}
             className={inputClass}
           />
-          {errors.startedAt && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.startedAt.message}
-            </span>
-          )}
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          End time
+        <Field label="End time" error={errors.endedAt?.message}>
           <input
             type="datetime-local"
             {...register("endedAt")}
             className={inputClass}
           />
-          {errors.endedAt && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.endedAt.message}
-            </span>
-          )}
-        </label>
+        </Field>
       </div>
 
       {/* Players & outcomes */}
@@ -216,15 +211,19 @@ export function EditGameForm({
             {selectedIndices.map((i) => (
               <li
                 key={fields[i].id}
-                className="card-surface flex items-center gap-3 rounded-2xl px-3 py-2.5"
+                className={cx(cardClass, "flex items-center gap-3 px-4 py-2.5")}
               >
-                <span className="flex-1 text-black dark:text-zinc-50">
+                <Avatar
+                  src={avatarById.get(fields[i].playerId)}
+                  name={fields[i].displayName}
+                />
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-black dark:text-zinc-50">
                   {fields[i].displayName}
                 </span>
                 <select
                   {...register(`rows.${i}.outcome`)}
                   aria-label={`${fields[i].displayName} outcome`}
-                  className="h-9 rounded-md border border-black/15 bg-white px-2 text-sm text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+                  className={compactSelectClass}
                 >
                   {OUTCOMES.map((o) => (
                     <option key={o} value={o}>
@@ -253,7 +252,7 @@ export function EditGameForm({
         />
 
         <p
-          className={`text-sm ${liveError ? "text-zinc-500" : "text-emerald-600"}`}
+          className={`text-sm ${liveError ? "text-zinc-500" : "text-emerald-600 dark:text-emerald-400"}`}
         >
           {liveError
             ? `${selected.length} ${selected.length === 1 ? "player" : "players"} · ${liveError}`
@@ -263,8 +262,7 @@ export function EditGameForm({
 
       {/* Game details */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Trump suit <span className="text-zinc-400">(optional)</span>
+        <Field label="Trump suit" optional>
           <select {...register("trumpSuit")} className={inputClass}>
             <option value="">—</option>
             {TRUMP_SUITS.map((s) => (
@@ -273,42 +271,26 @@ export function EditGameForm({
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Deck count <span className="text-zinc-400">(optional)</span>
+        <Field label="Deck count" optional error={errors.deckCount?.message}>
           <input
             inputMode="numeric"
             placeholder="e.g. 1"
             {...register("deckCount")}
             className={inputClass}
           />
-          {errors.deckCount && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.deckCount.message}
-            </span>
-          )}
-        </label>
+        </Field>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Notes <span className="text-zinc-400">(optional)</span>
-        <textarea
-          {...register("notes")}
-          rows={2}
-          className="rounded-lg border border-black/15 bg-white px-3 py-2 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
-        />
-        {errors.notes && (
-          <span className="text-sm font-normal text-red-600">
-            {errors.notes.message}
-          </span>
-        )}
-      </label>
+      <Field label="Notes" optional error={errors.notes?.message}>
+        <textarea {...register("notes")} rows={2} className={textareaClass} />
+      </Field>
 
       <button
         type="submit"
         disabled={isSubmitting || deleting || saving}
-        className="btn-brand h-12 rounded-full px-5 text-base font-semibold"
+        className={buttonClass("primary")}
       >
         {saving ? "Saving…" : "Save changes"}
       </button>
@@ -317,16 +299,12 @@ export function EditGameForm({
         type="button"
         onClick={onDelete}
         disabled={isSubmitting || deleting || saving}
-        className="h-11 rounded-full border border-red-500/30 px-5 text-sm font-medium text-red-600 transition-colors hover:bg-red-500/10 disabled:opacity-60 dark:text-red-400"
+        className={buttonClass("danger")}
       >
         {deleting ? "Deleting…" : "Delete game"}
       </button>
 
-      {errors.root && (
-        <p role="alert" className="text-sm text-red-600">
-          {errors.root.message}
-        </p>
-      )}
+      {errors.root && <FormMessage>{errors.root.message}</FormMessage>}
     </form>
   );
 }

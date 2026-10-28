@@ -30,7 +30,7 @@ export default async function OnboardingPage() {
         <h1 className="text-brand-gradient text-3xl font-bold tracking-tight">
           Create your group
         </h1>
-        <p className="max-w-sm text-zinc-600 dark:text-zinc-400">
+        <p className="max-w-xs text-zinc-600 dark:text-zinc-400">
           A group is a circle of friends you track Durak games with. You can add
           players (including guests) once it&apos;s created.
         </p>

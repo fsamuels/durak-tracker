@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { OAuthButtons } from "@/components/oauth-buttons";
+import { FormMessage } from "@/components/ui";
+import { buttonClass } from "@/lib/ui";
 
 import { claimPlayerAction } from "./actions";
 
@@ -45,17 +47,14 @@ export function ClaimButton({ token }: { token: string }) {
   return (
     <div className="flex flex-col gap-2">
       <button
+        type="button"
         onClick={claim}
         disabled={pending}
-        className="btn-brand flex h-12 items-center justify-center rounded-full px-5 font-medium disabled:opacity-60"
+        className={buttonClass("primary")}
       >
         {pending ? "Claiming…" : "Claim this player"}
       </button>
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
+      {error && <FormMessage>{error}</FormMessage>}
     </div>
   );
 }

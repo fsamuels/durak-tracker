@@ -25,6 +25,15 @@
 import { useMemo, useState } from "react";
 
 import { Avatar } from "@/components/avatar";
+import { FormMessage } from "@/components/ui";
+import {
+  buttonClass,
+  cardClass,
+  cx,
+  inputClass,
+  segmentClass,
+  selectedFillClass,
+} from "@/lib/ui";
 import { outcomeCountError, type Outcome } from "@/lib/validation/game";
 
 import { REGULARS_COUNT, type DemoPlayer } from "./players";
@@ -59,9 +68,6 @@ const VARIANTS: { id: Variant; label: string; blurb: string }[] = [
   },
 ];
 
-const inputClass =
-  "h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
-
 function matches(p: DemoPlayer, q: string) {
   return p.display_name.toLowerCase().includes(q);
 }
@@ -87,7 +93,7 @@ function PlayerChip({
       onClick={onToggle}
       className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition ${
         selected
-          ? "border-transparent bg-black text-white dark:bg-zinc-50 dark:text-black"
+          ? `border-transparent ${selectedFillClass}`
           : "card-surface border-black/10 text-black hover:brightness-95 dark:border-white/10 dark:text-zinc-50"
       }`}
     >
@@ -132,20 +138,14 @@ function DemoAddGuest({ onAdd }: { onAdd: (name: string) => void }) {
           placeholder="Add a guest…"
           aria-label="New guest name"
           autoComplete="off"
-          className="h-11 flex-1 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+          className={cx(inputClass, "flex-1")}
         />
-        <button
-          type="button"
-          onClick={submit}
-          className="h-11 shrink-0 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 active:brightness-90 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
-        >
+        <button type="button" onClick={submit} className={buttonClass("solid")}>
           Add
         </button>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
+        <FormMessage>{error}</FormMessage>
       ) : (
         <p className="text-xs text-zinc-400">
           Demo only — added to this page&apos;s roster and selected, no DB
@@ -160,7 +160,7 @@ const OUTCOME_OPTS: { value: Outcome; label: string; activeClass: string }[] = [
   {
     value: "none",
     label: "—",
-    activeClass: "bg-black text-white dark:bg-zinc-50 dark:text-black",
+    activeClass: selectedFillClass,
   },
   { value: "durak", label: "Durak 🃏", activeClass: "bg-rose-600 text-white" },
   {
@@ -248,7 +248,7 @@ function ResultPanel({
           {inGame.map((p) => (
             <li
               key={p.id}
-              className="card-surface flex flex-col gap-2 rounded-2xl px-3 py-2.5"
+              className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-2.5"
             >
               <div className="flex items-center gap-2">
                 <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
@@ -285,7 +285,7 @@ function ResultPanel({
 function SelectedFooter({ count }: { count: number }) {
   return (
     <p
-      className={`text-sm ${count === 0 ? "text-red-600" : "text-emerald-600"}`}
+      className={`text-sm ${count === 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
       role={count === 0 ? "alert" : undefined}
     >
       {count === 0
@@ -374,7 +374,7 @@ function SelectionRegulars({
                       onToggle(p.id);
                       setSearch("");
                     }}
-                    className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95"
+                    className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left transition hover:brightness-95"
                   >
                     <span className="flex items-center gap-2">
                       <Avatar
@@ -456,7 +456,7 @@ function SelectionFilter({ roster, selectedIds, onToggle }: SelectionProps) {
                 type="button"
                 onClick={() => onToggle(p.id)}
                 aria-pressed={isSel}
-                className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95"
+                className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left transition hover:brightness-95"
               >
                 <span className="flex items-center gap-2">
                   <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
@@ -550,7 +550,7 @@ function SelectionSearch({ roster, selectedIds, onToggle }: SelectionProps) {
           {inGame.map((p) => (
             <li
               key={p.id}
-              className="card-surface flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5"
+              className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-2.5"
             >
               <span className="flex items-center gap-2">
                 <Avatar src={p.avatar_url} name={p.display_name} size="sm" />
@@ -596,7 +596,7 @@ function SelectionSearch({ roster, selectedIds, onToggle }: SelectionProps) {
                     onToggle(p.id);
                     setSearch("");
                   }}
-                  className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
+                  className="card-surface flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-2.5 text-left transition hover:brightness-95 active:brightness-90"
                 >
                   <span className="flex items-center gap-2">
                     <Avatar
@@ -692,7 +692,7 @@ export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
       <div
         role="tablist"
         aria-label="Flow"
-        className="card-surface flex gap-1 rounded-2xl p-1"
+        className={cx(cardClass, "flex gap-1 p-1")}
       >
         {(
           [
@@ -706,11 +706,7 @@ export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
             role="tab"
             aria-selected={mode === id}
             onClick={() => setMode(id)}
-            className={`flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-medium transition-colors ${
-              mode === id
-                ? "bg-black text-white dark:bg-zinc-50 dark:text-black"
-                : "text-zinc-500 hover:text-black dark:hover:text-zinc-50"
-            }`}
+            className={segmentClass(mode === id)}
           >
             {label}
           </button>
@@ -721,7 +717,7 @@ export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
       <div
         role="tablist"
         aria-label="Selector variant"
-        className="card-surface flex gap-1 rounded-2xl p-1"
+        className={cx(cardClass, "flex gap-1 p-1")}
       >
         {VARIANTS.map((v) => (
           <button
@@ -730,11 +726,7 @@ export function SelectorDemo({ players }: { players: DemoPlayer[] }) {
             role="tab"
             aria-selected={variant === v.id}
             onClick={() => setVariant(v.id)}
-            className={`flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-medium transition-colors ${
-              variant === v.id
-                ? "bg-black text-white dark:bg-zinc-50 dark:text-black"
-                : "text-zinc-500 hover:text-black dark:hover:text-zinc-50"
-            }`}
+            className={segmentClass(variant === v.id)}
           >
             {v.label}
           </button>

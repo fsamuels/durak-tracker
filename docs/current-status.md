@@ -1,6 +1,6 @@
 # Current Status
 
-Living snapshot of what's built. Last updated: 2026-10-21.
+Living snapshot of what's built. Last updated: 2026-10-28.
 
 - **Live app:** https://durak-tracker.vercel.app
 - **Repo:** https://github.com/fsamuels/durak-tracker
@@ -17,6 +17,38 @@ Living snapshot of what's built. Last updated: 2026-10-21.
 > implied-partial TODOs.
 
 ## In progress
+
+### UI consistency pass ✅ (non-milestone)
+
+A review of every route, admin included, turned up drift in hand-typed Tailwind
+strings: three input styles (one at 14px, which makes iOS zoom on focus), five
+button treatments, two segmented-control looks, mixed `green-600`/`emerald-600`
+success text, red errors with no dark variant, empty states in two radii and
+three paddings, and stat tiles in three layouts (full findings in [ui-review.md](./ui-review.md)). These now come from shared
+primitives ([architecture → UI primitives](./architecture.md)), and every page is
+migrated onto them. Other changes made along the way:
+
+- Finish and Edit game gained the `← back` link that Game detail and Player stats
+  already had. Outcome rows on Finish/Edit now show the player's avatar.
+- The display-name forms (Account, Manage group) use the same input and button row
+  as Add player, instead of a smaller pill.
+- The theme picker uses the same segmented control as the stats/history period
+  filters, with `aria-pressed`. "Past month" no longer wraps.
+- The violet "Explore other player selection ideas" banner on Start/Finish became a
+  muted link below the form (`SelectorDemoLink`), so the primary CTA stays at the
+  top. The demo page has a back link.
+- Account sign-in methods show a connected/not-connected caption with real buttons
+  in place of underlined text, and Sign out is a full-width outline button.
+- Stats cards (last durak, most durak, champion, rivalry) share one `HighlightCard`
+  layout across Home and Group stats. Admin/About tiles share `StatTile`.
+- The header menu closes on Escape. Fields and buttons have a visible
+  keyboard-focus ring.
+- Game notes keep their line breaks on the detail page.
+
+Tests: `src/lib/ui.test.ts` (token invariants: 16px fields, focus/disabled states
+on every button variant, badge shape), `src/components/ui.test.tsx` (primitive
+semantics: h1/h2 levels, alert vs status roles, `Field` labeling), and a NavMenu
+Escape-to-close case.
 
 ### Prominent active bottom-nav tab ✅ (non-milestone)
 
@@ -891,6 +923,21 @@ closing off organic/social growth for what's otherwise a public, free tool.
 
 ## Polish / UX backlog
 
+The UI review of 2026-10-28 has the full write-up behind the first six items below:
+problem, suggested approach, and the files involved. See
+[ui-review.md](./ui-review.md).
+
+- [ ] **Themed confirm for destructive actions.** Discard/Delete game use
+      `window.confirm`. Replace it with an in-app confirm sheet, or an undo toast.
+      _(Follow-up from the UI consistency pass.)_
+- [ ] **One-tap outcomes on Finish.** Make each player's outcome a segmented control
+      (Durak / 1st / Last) instead of a native `<select>`.
+- [ ] **Loading skeletons.** Add `loading.tsx` for Home, Games and Stats. These are
+      dynamic server pages, so a navigation shows nothing until the data arrives.
+- [ ] **History pagination.** Add "Load more" past the 100-game cap.
+- [ ] **Surface "My stats".** It is only in the hamburger menu. Link it from the
+      Players tab or the home dashboard.
+- [ ] **Retire `/games/selector-demo`** once a selector direction is final.
 - [x] ~~**Clean up & improve group management.**~~ Done — see the **Group management
       rework** section above. The standalone `/group/switch` page was folded back into a
       single Manage group page (group-details card → switch → players → create), and the

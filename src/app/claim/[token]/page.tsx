@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { getClaimDetails } from "@/lib/data/claims";
 import { createClient } from "@/lib/supabase/server";
+import { cardClass, cx, mutedLinkClass } from "@/lib/ui";
 import { claimTokenSchema } from "@/lib/validation/claim";
 
 import { ClaimButton, ClaimSignInButton } from "./claim-client";
@@ -117,7 +118,7 @@ function ClaimShell({
 }) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-12">
-      <div className="card-surface flex w-full max-w-sm flex-col gap-5 rounded-2xl p-7">
+      <div className={cx(cardClass, "flex w-full max-w-sm flex-col gap-5 p-7")}>
         <div className="flex flex-col items-center gap-2 text-center">
           <Logo size={44} />
           <h1 className="text-brand-gradient text-2xl font-bold tracking-tight">
@@ -136,10 +137,7 @@ function Name({ name }: { name: string | null }) {
 
 function HomeLink() {
   return (
-    <Link
-      href="/"
-      className="text-center text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-    >
+    <Link href="/" className={cx(mutedLinkClass, "text-center")}>
       Go to Durak Tracker →
     </Link>
   );

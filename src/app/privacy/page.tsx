@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           Information we collect
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-5">
@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           How we use your information
         </h2>
         <p>
@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           How your data is stored
         </h2>
         <p>
@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           Deleting your data
         </h2>
         <p>
@@ -107,7 +107,7 @@ export default function PrivacyPolicyPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           Contact
         </h2>
         <p>

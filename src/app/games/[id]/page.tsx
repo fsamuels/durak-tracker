@@ -3,10 +3,18 @@ import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 
 import { Avatar } from "@/components/avatar";
+import { Badge, PageHeader, PageShell, Section } from "@/components/ui";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameDetail } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { formatInTz } from "@/lib/time";
+import {
+  buttonClass,
+  cardClass,
+  cx,
+  nameLinkClass,
+  type BadgeTone,
+} from "@/lib/ui";
 import {
   OUTCOME_LABELS,
   TRUMP_SUIT_LABELS,
@@ -46,31 +54,23 @@ export default async function GameDetailPage({
     : null;
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <Link
-          href="/games"
-          className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
-          ← Game history
-        </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          {formatInTz(game.started_at, group.timezone)}
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Game in <span className="font-medium">{group.name}</span>
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        back={{ href: "/games", label: "Game history" }}
+        title={formatInTz(game.started_at, group.timezone)}
+        description={
+          <>
+            Game in <span className="font-medium">{group.name}</span>
+          </>
+        }
+      />
 
-      <Link
-        href={`/games/new?from=${game.id}`}
-        className="btn-brand flex h-12 items-center justify-center rounded-full px-5 text-base font-semibold"
-      >
+      <Link href={`/games/new?from=${game.id}`} className={buttonClass()}>
         ↻ Play again
       </Link>
 
       {/* Details */}
-      <section className="card-surface flex flex-col gap-3 rounded-2xl px-4 py-4">
+      <section className={cx(cardClass, "flex flex-col gap-3 px-4 py-4")}>
         <Row
           label="Started"
           value={formatInTz(game.started_at, group.timezone)}
@@ -97,8 +97,7 @@ export default async function GameDetailPage({
       </section>
 
       {/* Players */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-zinc-500">Players</h2>
+      <Section title="Players">
         <ul className="flex flex-col gap-2">
           {participants.map((gp) => {
             const name = gp.players?.display_name ?? "Unknown";
@@ -113,13 +112,19 @@ export default async function GameDetailPage({
             return (
               <li
                 key={gp.player_id}
-                className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
+                className={cx(
+                  cardClass,
+                  "flex items-center justify-between gap-3 px-4 py-3",
+                )}
               >
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar src={avatars.get(gp.player_id)} name={name} />
                   <Link
                     href={`/stats/players/${gp.player_id}`}
-                    className="truncate font-medium text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                    className={cx(
+                      nameLinkClass,
+                      "truncate font-medium text-black dark:text-zinc-50",
+                    )}
                   >
                     {name}
                   </Link>
@@ -129,26 +134,27 @@ export default async function GameDetailPage({
             );
           })}
         </ul>
-      </section>
+      </Section>
 
       {/* Notes */}
       {game.notes && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-zinc-500">Notes</h2>
-          <p className="card-surface rounded-2xl px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300">
+        <Section title="Notes">
+          <p
+            className={cx(
+              cardClass,
+              "whitespace-pre-line px-4 py-3 text-sm text-zinc-700 dark:text-zinc-300",
+            )}
+          >
             {game.notes}
           </p>
-        </section>
+        </Section>
       )}
 
       {/* Actions */}
-      <Link
-        href={`/games/${game.id}/edit`}
-        className="flex h-12 items-center justify-center rounded-full border border-black/15 px-5 text-base font-medium text-black transition-colors hover:bg-black/5 dark:border-white/20 dark:text-zinc-50 dark:hover:bg-white/5"
-      >
+      <Link href={`/games/${game.id}/edit`} className={buttonClass("outline")}>
         Edit game
       </Link>
-    </main>
+    </PageShell>
   );
 }
 
@@ -163,20 +169,14 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-const OUTCOME_STYLE: Record<Outcome, string> = {
-  durak: "badge-durak",
-  first_out: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  last_out: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-  none: "bg-black/5 text-zinc-500 dark:bg-white/10",
+const OUTCOME_TONE: Record<Outcome, BadgeTone> = {
+  durak: "durak",
+  first_out: "success",
+  last_out: "warning",
+  none: "neutral",
 };
 
 function OutcomeBadge({ outcome }: { outcome: Outcome }) {
   if (outcome === "none") return null;
-  return (
-    <span
-      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${OUTCOME_STYLE[outcome]}`}
-    >
-      {OUTCOME_LABELS[outcome]}
-    </span>
-  );
+  return <Badge tone={OUTCOME_TONE[outcome]}>{OUTCOME_LABELS[outcome]}</Badge>;
 }
