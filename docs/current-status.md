@@ -24,7 +24,7 @@ A review of every route, admin included, turned up drift in hand-typed Tailwind
 strings: three input styles (one at 14px, which makes iOS zoom on focus), five
 button treatments, two segmented-control looks, mixed `green-600`/`emerald-600`
 success text, red errors with no dark variant, empty states in two radii and
-three paddings, and stat tiles in three layouts. These now come from shared
+three paddings, and stat tiles in three layouts (full findings in [ui-review.md](./ui-review.md)). These now come from shared
 primitives ([architecture → UI primitives](./architecture.md)), and every page is
 migrated onto them. Other changes made along the way:
 
@@ -922,6 +922,10 @@ closing off organic/social growth for what's otherwise a public, free tool.
       add server-side admin operations.
 
 ## Polish / UX backlog
+
+The UI review of 2026-10-28 has the full write-up behind the first six items below:
+problem, suggested approach, and the files involved. See
+[ui-review.md](./ui-review.md).
 
 - [ ] **Themed confirm for destructive actions.** Discard/Delete game use
       `window.confirm`. Replace it with an in-app confirm sheet, or an undo toast.
