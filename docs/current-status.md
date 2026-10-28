@@ -18,6 +18,30 @@ Living snapshot of what's built. Last updated: 2026-10-28.
 
 ## In progress
 
+### Loading skeletons + pending nav tab ✅ (non-milestone)
+
+Every signed-in page is a dynamic server component, so after a tap the old page
+used to sit unchanged, with no feedback, until the new page's data arrived. Now:
+
+- **Skeletons.** Home, Games, Game detail, Start / Finish / Edit game, Stats,
+  Player stats, Players, Manage group and Account each have a `loading.tsx`. Next
+  shows it immediately while the page streams. The placeholders are built from
+  [`skeleton.tsx`](../src/components/skeleton.tsx) and mirror each page's real
+  layout (same column, card radii and spacing), so nothing jumps when content
+  arrives. The three game forms share `GameFormSkeleton`. The pulse is
+  `motion-safe`, and each skeleton announces "Loading…" once via `role="status"`
+  under `aria-busy`.
+- **Home moved into a `(home)` route group** (`src/app/(home)/page.tsx`; the URL is
+  still `/`). A `loading.tsx` at `src/app/` would also have wrapped login,
+  onboarding, claim, legal and about pages with the dashboard skeleton.
+- **Pending tab.** A tapped bottom-nav tab takes its own aurora color and breathes
+  (`.nav-tab-pending`) until the navigation commits and `.nav-tab-active` takes
+  over. This uses Next's `useLinkStatus` inside each tab's `<Link>`, and stays
+  static under reduced motion.
+
+Tests: `skeleton.test.tsx` (busy/status semantics, motion-safe pulse, radius
+default) and two `BottomNav` cases for the pending state.
+
 ### One-tap outcomes on Finish / Edit ✅ (non-milestone)
 
 On Finish and Edit game, each player's result was a native `<select>`
@@ -953,8 +977,8 @@ problem, suggested approach, and the files involved. See
       _(Follow-up from the UI consistency pass.)_
 - [x] ~~**One-tap outcomes on Finish.**~~ Done — see **One-tap outcomes on Finish /
       Edit** above.
-- [ ] **Loading skeletons.** Add `loading.tsx` for Home, Games and Stats. These are
-      dynamic server pages, so a navigation shows nothing until the data arrives.
+- [x] ~~**Loading skeletons.**~~ Done — see **Loading skeletons + pending nav tab**
+      above.
 - [ ] **History pagination.** Add "Load more" past the 100-game cap.
 - [ ] **Surface "My stats".** It is only in the hamburger menu. Link it from the
       Players tab or the home dashboard.

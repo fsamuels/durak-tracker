@@ -427,6 +427,11 @@ The app is installable and loads its static shell offline:
   `status`), `Badge`, `StatTile`, `HighlightCard` and `Field`. Every form field uses
   16px text, because iOS Safari zooms the page on focus when a field's font is smaller.
   New screens should build on these instead of re-typing the classes.
+- **Loading states:** each signed-in route has a `loading.tsx` skeleton built from
+  [`src/components/skeleton.tsx`](../src/components/skeleton.tsx), mirroring that
+  page's layout. The home page lives in a `(home)` route group so its skeleton
+  doesn't become the fallback for every other route under `src/app/`. A new
+  dynamic page should ship with its own `loading.tsx`.
 
 ## Metrics
 

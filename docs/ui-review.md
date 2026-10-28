@@ -54,15 +54,13 @@ soft delete (the game is hidden from history and stats), so an undo is cheap to 
 **Files.** The same two forms, plus a small toast/sheet component in
 `src/components/ui.tsx`.
 
-### 3. Loading states
+### 3. Loading states ✅ done
 
-**Problem.** Home, Games, Stats and Player stats are dynamic server pages. After a
-tap in the bottom nav, the old page stays on screen with no feedback until the new
-one's data arrives.
-
-**Suggestion.** Add `loading.tsx` skeletons built from the same primitives
-(placeholder `StatTile`s and card rows with a pulse). Also consider a pending state
-on the bottom-nav tab you just tapped.
+Shipped after this review. Every signed-in route (Home, Games, Game detail,
+Start / Finish / Edit game, Stats, Player stats, Players, Manage group, Account)
+has a `loading.tsx` skeleton built from `src/components/skeleton.tsx`, laid out like
+that page so content swaps in without a jump. A tapped bottom-nav tab also lights up
+in its own color while its page loads (`useLinkStatus` → `.nav-tab-pending`).
 
 ### 4. Feedback after saving
 

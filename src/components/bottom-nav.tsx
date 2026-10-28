@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 
 type Tab = {
@@ -69,16 +69,43 @@ export function BottomNav() {
                     : "font-medium text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
                 }`}
               >
-                <span aria-hidden className="contents">
-                  {tab.icon}
-                </span>
-                {tab.label}
+                <TabBody icon={tab.icon} label={tab.label} active={active} />
               </Link>
             </li>
           );
         })}
       </ul>
     </nav>
+  );
+}
+
+/**
+ * A tab's icon + label. Rendered inside the tab's `<Link>` so `useLinkStatus`
+ * can see that link's navigation: while a tapped tab's page is still loading
+ * it lights up in its own color (`.nav-tab-pending`), so the tap registers
+ * immediately instead of waiting for the server.
+ */
+function TabBody({
+  icon,
+  label,
+  active,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+}) {
+  const { pending } = useLinkStatus();
+  return (
+    <span
+      className={`flex flex-col items-center gap-1 ${
+        pending && !active ? "nav-tab-pending" : ""
+      }`}
+    >
+      <span aria-hidden className="contents">
+        {icon}
+      </span>
+      {label}
+    </span>
   );
 }
 

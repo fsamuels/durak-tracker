@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
 
 /** Routes reachable without an authenticated session. */
-// / is the public SEO landing page for signed-out visitors (src/app/page.tsx
+// / is the public SEO landing page for signed-out visitors (src/app/(home)/page.tsx
 // renders LandingPage instead of the dashboard when there's no user) — it
 // must stay crawlable and must not bounce visitors to /login before they see
 // it. /claim is public so an invitee can open a claim link and see who
