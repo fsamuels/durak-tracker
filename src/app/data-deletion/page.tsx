@@ -24,7 +24,7 @@ export default function DataDeletionPage() {
       </p>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           How to request deletion
         </h2>
         <p>
@@ -43,7 +43,7 @@ export default function DataDeletionPage() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold text-black dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-black dark:text-zinc-50">
           What gets deleted
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-5">

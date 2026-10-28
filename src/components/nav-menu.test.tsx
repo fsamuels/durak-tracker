@@ -136,4 +136,15 @@ describe("NavMenu", () => {
       screen.queryByRole("link", { name: "Manage group" }),
     ).not.toBeInTheDocument();
   });
+
+  it("closes when Escape is pressed", () => {
+    render(<NavMenu />);
+    openMenu();
+    expect(screen.getByRole("link", { name: "Account" })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(
+      screen.queryByRole("link", { name: "Account" }),
+    ).not.toBeInTheDocument();
+  });
 });

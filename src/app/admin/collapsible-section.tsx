@@ -2,6 +2,8 @@
 
 import { useId, useState, type ReactNode } from "react";
 
+import { SectionTitle } from "@/components/ui";
+
 /**
  * A titled admin section whose body collapses. The header (title + summary +
  * chevron) is itself the toggle and stays visible when collapsed; the
@@ -35,7 +37,7 @@ export function CollapsibleSection({
         aria-controls={panelId}
         className="-mx-1 flex items-center justify-between gap-3 rounded-lg px-1 py-0.5 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03]"
       >
-        <h2 className="text-sm font-medium text-zinc-500">{title}</h2>
+        <SectionTitle>{title}</SectionTitle>
         <span className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-600">
           {summary}
           <svg

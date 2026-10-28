@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
+import { PageHeader, PageShell, Section, StatTile } from "@/components/ui";
 import { aboutFacts, fmt, formatPlayTime } from "@/lib/about-facts";
 import { readBuildInfo } from "@/lib/build-info";
 import { getAppStats } from "@/lib/data/app-stats";
+import { badgeClass, cardClass, cx, linkClass, mutedLinkClass } from "@/lib/ui";
 import {
   TRUMP_SUIT_NAMES,
   TRUMP_SUIT_SYMBOLS,
@@ -31,23 +33,6 @@ const areaLabel = (area: string) => AREA_LABELS[area] ?? area;
 
 const SUITS: TrumpSuit[] = ["hearts", "diamonds", "clubs", "spades"];
 const RED_SUITS = new Set<TrumpSuit>(["hearts", "diamonds"]);
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-sm font-medium text-zinc-500">{children}</h2>;
-}
-
-function Tile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="card-surface flex flex-col gap-0.5 rounded-2xl px-4 py-3">
-      <span className="text-2xl font-semibold tracking-tight text-black tabular-nums dark:text-zinc-50">
-        {value}
-      </span>
-      <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-        {label}
-      </span>
-    </div>
-  );
-}
 
 function Bar({
   label,
@@ -145,31 +130,32 @@ export default async function AboutPage() {
     : [];
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-          About
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Durak Tracker
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          A mobile-first tracker for Durak games among friends. Created by{" "}
-          <strong>Forrest Samuels</strong> and <strong>Claude</strong>.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="About Durak Tracker"
+        description={
+          <>
+            A mobile-first tracker for Durak games among friends. Created by{" "}
+            <strong>Forrest Samuels</strong> and <strong>Claude</strong>.
+          </>
+        }
+      />
 
-      <section className="flex flex-col gap-3">
-        <SectionTitle>This build</SectionTitle>
+      <Section title="This build">
         {build ? (
-          <dl className="card-surface grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 rounded-2xl px-4 py-3 text-sm">
+          <dl
+            className={cx(
+              cardClass,
+              "grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 px-4 py-3 text-sm",
+            )}
+          >
             <Row label="Commit">
               {build.commitSha ? (
                 <a
                   href={`${REPO_URL}/commit/${build.commitSha}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono underline underline-offset-4"
+                  className={cx(linkClass, "font-mono")}
                 >
                   {build.commitShortSha}
                 </a>
@@ -210,10 +196,7 @@ export default async function AboutPage() {
                   "Supabase",
                   "Vercel",
                 ].map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full bg-black/5 px-2 py-0.5 text-xs text-zinc-700 dark:bg-white/10 dark:text-zinc-300"
-                  >
+                  <span key={item} className={badgeClass()}>
                     {item}
                   </span>
                 ))}
@@ -221,22 +204,21 @@ export default async function AboutPage() {
             </Row>
           </dl>
         ) : (
-          <p className="card-surface rounded-2xl px-4 py-3 text-sm text-zinc-500">
+          <p className={cx(cardClass, "px-4 py-3 text-sm text-zinc-500")}>
             Build info isn&rsquo;t available for this build.
           </p>
         )}
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3">
-        <SectionTitle>By the numbers</SectionTitle>
+      <Section title="By the numbers">
         {stats ? (
           <>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               {dataTiles.map((tile) => (
-                <Tile key={tile.label} {...tile} />
+                <StatTile key={tile.label} {...tile} />
               ))}
             </div>
-            <div className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3">
+            <div className={cx(cardClass, "flex flex-col gap-2 px-4 py-3")}>
               <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
                 Trump suits called
               </p>
@@ -265,21 +247,20 @@ export default async function AboutPage() {
             </div>
           </>
         ) : (
-          <p className="card-surface rounded-2xl px-4 py-3 text-sm text-zinc-500">
+          <p className={cx(cardClass, "px-4 py-3 text-sm text-zinc-500")}>
             App-wide totals are on the way.
           </p>
         )}
-      </section>
+      </Section>
 
       {code && (
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Under the hood</SectionTitle>
-          <div className="grid grid-cols-2 gap-2">
+        <Section title="Under the hood">
+          <div className="grid grid-cols-2 gap-3">
             {codeTiles.map((tile) => (
-              <Tile key={tile.label} {...tile} />
+              <StatTile key={tile.label} {...tile} />
             ))}
           </div>
-          <div className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3">
+          <div className={cx(cardClass, "flex flex-col gap-2 px-4 py-3")}>
             <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
               Lines by language
             </p>
@@ -292,7 +273,7 @@ export default async function AboutPage() {
               />
             ))}
           </div>
-          <div className="card-surface flex flex-col gap-2 rounded-2xl px-4 py-3">
+          <div className={cx(cardClass, "flex flex-col gap-2 px-4 py-3")}>
             <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
               Test coverage
             </p>
@@ -315,10 +296,7 @@ export default async function AboutPage() {
                       ["Functions", coverage.functions],
                     ] as const
                   ).map(([label, value]) => (
-                    <span
-                      key={label}
-                      className="rounded-full bg-black/5 px-2 py-0.5 text-xs text-zinc-700 dark:bg-white/10 dark:text-zinc-300"
-                    >
+                    <span key={label} className={badgeClass()}>
                       {label} {value}%
                     </span>
                   ))}
@@ -346,18 +324,22 @@ export default async function AboutPage() {
               </p>
             )}
           </div>
-        </section>
+        </Section>
       )}
 
       {facts.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <SectionTitle>Fun facts</SectionTitle>
-          <ul className="card-surface flex list-disc flex-col gap-1.5 rounded-2xl py-3 pr-4 pl-8 text-sm text-zinc-700 dark:text-zinc-300">
+        <Section title="Fun facts">
+          <ul
+            className={cx(
+              cardClass,
+              "flex list-disc flex-col gap-1.5 py-3 pr-4 pl-8 text-sm text-zinc-700 dark:text-zinc-300",
+            )}
+          >
             {facts.map((fact) => (
               <li key={fact}>{fact}</li>
             ))}
           </ul>
-        </section>
+        </Section>
       )}
 
       <p className="text-center text-sm">
@@ -365,11 +347,11 @@ export default async function AboutPage() {
           href={REPO_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-zinc-500 underline underline-offset-4 hover:text-zinc-700 dark:hover:text-zinc-300"
+          className={mutedLinkClass}
         >
           View the source on GitHub
         </a>
       </p>
-    </main>
+    </PageShell>
   );
 }

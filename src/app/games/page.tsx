@@ -3,9 +3,16 @@ import { redirect } from "next/navigation";
 
 import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
+import {
+  EmptyState,
+  FormMessage,
+  PageHeader,
+  PageShell,
+} from "@/components/ui";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { periodStartDate } from "@/lib/time";
+import { linkClass } from "@/lib/ui";
 import { historyFilterSchema } from "@/lib/validation/history";
 
 import { HistoryFilter } from "./history-filter";
@@ -36,44 +43,39 @@ export default async function GamesPage({
   ]);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Game history
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Games in <span className="font-medium">{group.name}</span>, most
-          recent first. Times shown in {group.timezone}.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Game history"
+        description={
+          <>
+            Games in <span className="font-medium">{group.name}</span>, most
+            recent first. Times shown in {group.timezone}.
+          </>
+        }
+      />
 
       <InProgressGames games={inProgress} timezone={group.timezone} />
 
       <HistoryFilter period={period} />
 
       {error ? (
-        <p role="alert" className="text-sm text-red-600">
-          Couldn&apos;t load games: {error.message}
-        </p>
+        <FormMessage>Couldn&apos;t load games: {error.message}</FormMessage>
       ) : (
         <GameList
           games={games}
           timezone={group.timezone}
           emptyState={
-            <li className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+            <EmptyState as="li">
               {period === "all"
                 ? "No games logged yet."
                 : "No games in this period."}{" "}
-              <Link
-                href="/games/new"
-                className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
-              >
+              <Link href="/games/new" className={linkClass}>
                 Start a game →
               </Link>
-            </li>
+            </EmptyState>
           }
         />
       )}
-    </main>
+    </PageShell>
   );
 }

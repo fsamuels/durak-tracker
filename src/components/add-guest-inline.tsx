@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { addPlayerAction, type AddedPlayer } from "@/app/players/actions";
+import { FormMessage } from "@/components/ui";
+import { buttonClass, cx, inputClass } from "@/lib/ui";
 import { addPlayerSchema } from "@/lib/validation/player";
 
 /**
@@ -54,22 +56,18 @@ export function AddGuestInline({
           placeholder="Add a guest…"
           aria-label="New guest name"
           autoComplete="off"
-          className="h-11 flex-1 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+          className={cx(inputClass, "flex-1")}
         />
         <button
           type="button"
           onClick={() => void submit()}
           disabled={busy}
-          className="h-11 shrink-0 rounded-full bg-black px-5 font-medium text-white transition-colors hover:bg-zinc-800 active:brightness-90 disabled:opacity-60 dark:bg-zinc-50 dark:text-black dark:hover:bg-zinc-200"
+          className={buttonClass("solid")}
         >
           {busy ? "Adding…" : "Add"}
         </button>
       </div>
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
+      {error && <FormMessage>{error}</FormMessage>}
     </div>
   );
 }

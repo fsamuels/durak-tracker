@@ -1,4 +1,5 @@
 import type { AdminClaimStatus } from "@/lib/data/claims";
+import { badgeToneClass } from "@/lib/ui";
 
 export const PROVIDER_LABELS: Record<string, string> = {
   google: "Google",
@@ -31,9 +32,7 @@ export const CLAIM_STATUS_LABELS: Record<AdminClaimStatus, string> = {
 };
 
 export const CLAIM_STATUS_BADGE: Record<AdminClaimStatus, string> = {
-  valid:
-    "bg-emerald-500/10 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300",
-  expired:
-    "bg-amber-500/10 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300",
-  claimed: "bg-black/5 text-zinc-600 dark:bg-white/10 dark:text-zinc-300",
+  valid: badgeToneClass("success"),
+  expired: badgeToneClass("warning"),
+  claimed: badgeToneClass("neutral"),
 };

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { FormMessage } from "@/components/ui";
+import { buttonClass } from "@/lib/ui";
+
 import { createPlayerClaimAction } from "./actions";
 
 type Shared = "idle" | "copied";
@@ -70,7 +73,7 @@ export function ClaimLinkButton({
       <button
         onClick={generate}
         disabled={pending}
-        className="rounded-full border border-black/15 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-black/5 active:bg-black/10 disabled:opacity-60 dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/5 dark:active:bg-white/10"
+        className={buttonClass("outline", "sm")}
       >
         {pending
           ? "Creating…"
@@ -84,15 +87,13 @@ export function ClaimLinkButton({
         <button
           onClick={() => copy(url)}
           title="Click to copy"
-          className="max-w-[12rem] truncate text-right text-[11px] text-zinc-400 underline-offset-2 hover:underline"
+          className="max-w-[12rem] truncate text-right text-xs text-zinc-400 underline-offset-2 hover:underline"
         >
           {url}
         </button>
       )}
       {error && (
-        <p role="alert" className="text-right text-[11px] text-red-600">
-          {error}
-        </p>
+        <FormMessage className="text-right text-xs">{error}</FormMessage>
       )}
     </div>
   );

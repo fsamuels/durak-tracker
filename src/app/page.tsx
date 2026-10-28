@@ -7,11 +7,19 @@ import { GameList } from "@/components/game-list";
 import { InProgressGames } from "@/components/in-progress-games";
 import { LandingPage } from "@/components/landing-page";
 import { SuitLabel } from "@/components/suit-label";
+import {
+  EmptyState,
+  HighlightCard,
+  PageShell,
+  Section,
+  StatTile,
+} from "@/components/ui";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getGameHistory, getInProgressGames } from "@/lib/data/games";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { createClient } from "@/lib/supabase/server";
 import { formatInTz } from "@/lib/time";
+import { buttonClass, linkClass, nameLinkClass } from "@/lib/ui";
 import {
   durakChampion,
   formatDuration,
@@ -81,167 +89,131 @@ export default async function Home() {
   const topSuit = topTrumpSuit(stats);
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
+    <PageShell>
       <Link
         href="/group"
-        className="text-brand-gradient text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
+        className="text-brand-gradient self-start text-3xl font-bold tracking-tight underline-offset-4 hover:underline"
       >
         {group.name}
       </Link>
 
       {stats?.last_durak && (
-        <div className="card-surface flex items-stretch gap-4 rounded-2xl px-4 py-3">
-          <span
-            aria-hidden
-            className="flex items-center self-stretch text-5xl leading-none"
-          >
-            🤡
-          </span>
-          <div className="flex min-w-0 flex-col justify-center gap-1">
+        <HighlightCard
+          media={
+            <span aria-hidden className="text-4xl leading-none">
+              🤡
+            </span>
+          }
+          title={
             <Link
               href={`/stats/players/${stats.last_durak.player_id}`}
-              className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+              className={nameLinkClass}
             >
               {stats.last_durak.display_name}
             </Link>
-            <span className="text-xs font-medium text-zinc-500">
-              last durak ·{" "}
-              {formatInTz(stats.last_durak.started_at, group.timezone)}
-            </span>
-          </div>
-        </div>
+          }
+          caption={`last durak · ${formatInTz(stats.last_durak.started_at, group.timezone)}`}
+        />
       )}
 
-      <Link
-        href="/games/new"
-        className="btn-brand flex h-12 items-center justify-center gap-2 rounded-full px-5 text-base font-semibold"
-      >
+      <Link href="/games/new" className={buttonClass("primary")}>
         <span aria-hidden>♠️</span> Start a game
       </Link>
 
       <InProgressGames games={inProgress} timezone={group.timezone} />
 
       {gamesPlayed > 0 && (
-        <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-medium text-zinc-500">Group stats</h2>
-            <Link
-              href="/stats"
-              className="text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-            >
-              More stats →
-            </Link>
-          </div>
+        <Section
+          title="Group stats"
+          action={{ href: "/stats", label: "More stats →" }}
+        >
           <div className="grid grid-cols-2 gap-3">
-            <div className="card-surface col-span-2 flex items-center gap-3 rounded-2xl px-4 py-3">
-              {topDurak && (
-                <Avatar
-                  src={avatars.get(topDurak.player_id)}
-                  name={topDurak.display_name}
-                  size="lg"
-                />
-              )}
-              <div className="flex min-w-0 flex-col gap-1">
-                {topDurak ? (
+            {topDurak && (
+              <HighlightCard
+                className="col-span-2"
+                media={
+                  <Avatar
+                    src={avatars.get(topDurak.player_id)}
+                    name={topDurak.display_name}
+                    size="lg"
+                  />
+                }
+                title={
                   <Link
                     href={`/stats/players/${topDurak.player_id}`}
-                    className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                    className={nameLinkClass}
                   >
                     {topDurak.display_name}
                   </Link>
-                ) : (
-                  <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                    —
-                  </span>
-                )}
-                <span className="text-xs font-medium text-zinc-500">
-                  {topDurak
-                    ? `most durak (${topDurak.durak_count})`
-                    : "no durak yet"}
-                </span>
-              </div>
-            </div>
+                }
+                caption={`most durak (${topDurak.durak_count})`}
+              />
+            )}
             {champion && (
-              <div className="card-surface col-span-2 flex items-center gap-3 rounded-2xl px-4 py-3">
-                <Avatar
-                  src={avatars.get(champion.player_id)}
-                  name={champion.display_name}
-                  size="lg"
-                />
-                <div className="flex min-w-0 flex-col gap-1">
+              <HighlightCard
+                className="col-span-2"
+                media={
+                  <Avatar
+                    src={avatars.get(champion.player_id)}
+                    name={champion.display_name}
+                    size="lg"
+                  />
+                }
+                title={
                   <Link
                     href={`/stats/players/${champion.player_id}`}
-                    className="truncate text-xl font-bold tracking-tight text-black underline-offset-4 hover:underline dark:text-zinc-50"
+                    className={nameLinkClass}
                   >
                     {champion.display_name}
                   </Link>
-                  <span className="text-xs font-medium text-zinc-500">
-                    champion 🏆 · lowest durak rate (
-                    {rate(champion.durak_count, champion.games_played)})
-                  </span>
-                </div>
-              </div>
+                }
+                caption={`champion 🏆 · lowest durak rate (${rate(champion.durak_count, champion.games_played)})`}
+              />
             )}
-            <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
-              <span className="text-brand-gradient text-3xl font-bold tracking-tight">
-                {gamesPlayed}
-              </span>
-              <span className="text-xs font-medium text-zinc-500">
-                {gamesPlayed === 1 ? "game played" : "games played"}
-              </span>
-            </div>
-            <div className="card-surface flex flex-col gap-1 rounded-2xl px-4 py-3">
-              <span className="text-brand-gradient text-3xl font-bold tracking-tight">
-                {formatDuration(stats?.avg_duration_seconds ?? null)}
-              </span>
-              <span className="text-xs font-medium text-zinc-500">
-                avg game time
-              </span>
-            </div>
-            <div className="card-surface col-span-2 flex flex-col gap-1 rounded-2xl px-4 py-3">
-              <span className="truncate text-xl font-bold tracking-tight text-black dark:text-zinc-50">
-                {topSuit ? (
+            <StatTile
+              highlight
+              value={gamesPlayed}
+              label={gamesPlayed === 1 ? "game played" : "games played"}
+            />
+            <StatTile
+              highlight
+              value={formatDuration(stats?.avg_duration_seconds ?? null)}
+              label="avg game time"
+            />
+            <StatTile
+              className="col-span-2"
+              value={
+                topSuit ? (
                   <SuitLabel suit={topSuit.suit} symbolClassName="text-3xl" />
                 ) : (
                   "—"
-                )}
-              </span>
-              <span className="text-xs font-medium text-zinc-500">
-                {topSuit ? `top suit (${topSuit.count})` : "no trump yet"}
-              </span>
-            </div>
+                )
+              }
+              label={topSuit ? `top suit (${topSuit.count})` : "no trump yet"}
+            />
           </div>
-        </section>
+        </Section>
       )}
 
-      <section className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-sm font-medium text-zinc-500">Recent games</h2>
-          {games.length > 0 && (
-            <Link
-              href="/games"
-              className="text-sm text-zinc-500 underline-offset-4 hover:text-zinc-800 hover:underline dark:hover:text-zinc-200"
-            >
-              View all →
-            </Link>
-          )}
-        </div>
+      <Section
+        title="Recent games"
+        action={
+          games.length > 0 ? { href: "/games", label: "View all →" } : undefined
+        }
+      >
         <GameList
           games={games}
           timezone={group.timezone}
           emptyState={
-            <li className="rounded-2xl border border-dashed border-black/15 px-3 py-8 text-center text-sm text-zinc-500 dark:border-white/15">
+            <EmptyState as="li">
               No games logged yet.{" "}
-              <Link
-                href="/games/new"
-                className="font-medium text-black underline underline-offset-4 dark:text-zinc-50"
-              >
+              <Link href="/games/new" className={linkClass}>
                 Start a game →
               </Link>
-            </li>
+            </EmptyState>
           }
         />
-      </section>
-    </main>
+      </Section>
+    </PageShell>
   );
 }

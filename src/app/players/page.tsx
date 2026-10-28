@@ -2,10 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Avatar } from "@/components/avatar";
+import { Badge, EmptyState, PageHeader, PageShell } from "@/components/ui";
 import { getGroupAvatars } from "@/lib/data/avatars";
 import { getCurrentGroup } from "@/lib/data/groups";
 import { getGroupRoster } from "@/lib/data/players";
 import { createClient } from "@/lib/supabase/server";
+import { cardClass, cx, nameLinkClass } from "@/lib/ui";
 
 import { AddPlayerForm } from "./add-player-form";
 import { ClaimLinkButton } from "./claim-link-button";
@@ -27,57 +29,66 @@ export default async function PlayersPage() {
   const gamesPlayed = new Map(roster.map((r) => [r.id, r.games_played]));
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Players
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Everyone in <span className="font-medium">{group.name}</span> who can
-          appear in a game. Add guests the same way — they don&apos;t need an
-          account.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Players"
+        description={
+          <>
+            Everyone in <span className="font-medium">{group.name}</span> who
+            can appear in a game. Add guests the same way — they don&apos;t need
+            an account.
+          </>
+        }
+      />
 
       <AddPlayerForm />
 
       <ul className="flex flex-col gap-2">
-        {(players ?? []).map((p) => (
-          <li
-            key={p.id}
-            className="card-surface flex items-center justify-between rounded-2xl px-3 py-2.5 text-black dark:text-zinc-50"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar src={avatars.get(p.id)} name={p.display_name} />
-              <div className="flex min-w-0 flex-col">
-                <Link
-                  href={`/stats/players/${p.id}`}
-                  className="truncate underline-offset-4 hover:underline"
-                >
-                  {p.display_name}
-                </Link>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {gamesPlayed.get(p.id) ?? 0} game
-                  {(gamesPlayed.get(p.id) ?? 0) === 1 ? "" : "s"}
-                </span>
+        {(players ?? []).map((p) => {
+          const count = gamesPlayed.get(p.id) ?? 0;
+          return (
+            <li
+              key={p.id}
+              className={cx(
+                cardClass,
+                "flex items-center justify-between gap-3 px-4 py-3",
+              )}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <Avatar src={avatars.get(p.id)} name={p.display_name} />
+                <div className="flex min-w-0 flex-col">
+                  <Link
+                    href={`/stats/players/${p.id}`}
+                    className={cx(
+                      nameLinkClass,
+                      "truncate text-sm font-medium text-black dark:text-zinc-50",
+                    )}
+                  >
+                    {p.display_name}
+                  </Link>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {count} game{count === 1 ? "" : "s"}
+                  </span>
+                </div>
               </div>
-            </div>
-            {!p.auth_user_id && (
-              <div className="flex flex-col items-end gap-1">
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800">
-                  guest
-                </span>
-                <ClaimLinkButton playerId={p.id} playerName={p.display_name} />
-              </div>
-            )}
-          </li>
-        ))}
+              {!p.auth_user_id && (
+                <div className="flex flex-col items-end gap-1">
+                  <Badge>guest</Badge>
+                  <ClaimLinkButton
+                    playerId={p.id}
+                    playerName={p.display_name}
+                  />
+                </div>
+              )}
+            </li>
+          );
+        })}
         {(!players || players.length === 0) && (
-          <li className="rounded-2xl border border-dashed border-black/15 px-3 py-6 text-center text-sm text-zinc-500 dark:border-white/15">
+          <EmptyState as="li">
             No players yet. Add a few to start logging games.
-          </li>
+          </EmptyState>
         )}
       </ul>
-    </main>
+    </PageShell>
   );
 }

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
+import { PageHeader, PageShell, Section } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
+import { buttonClass } from "@/lib/ui";
 
 import { DisplayNameForm } from "./display-name-form";
 import { ProviderConnections } from "./provider-connections";
@@ -22,46 +24,38 @@ export default async function AccountPage() {
     .maybeSingle();
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-6 py-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
-          Account
-        </h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Signed in as <span className="font-medium">{user.email}</span>.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Account"
+        description={
+          <>
+            Signed in as <span className="font-medium">{user.email}</span>.
+          </>
+        }
+      />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-zinc-500">Appearance</h2>
+      <Section title="Appearance">
         <ThemeSelector />
-      </section>
+      </Section>
 
       {playerRecord && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-zinc-500">Display name</h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Updates your name everywhere — every group you&apos;re in. To rename
-            yourself in just one group, use that group&apos;s Manage group page
-            instead.
-          </p>
+        <Section
+          title="Display name"
+          description="Updates your name everywhere — every group you're in. To rename yourself in just one group, use that group's Manage group page instead."
+        >
           <DisplayNameForm currentName={playerRecord.display_name} />
-        </section>
+        </Section>
       )}
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-zinc-500">Sign-in methods</h2>
+      <Section title="Sign-in methods">
         <ProviderConnections identities={user.identities ?? []} />
-      </section>
+      </Section>
 
-      <form action="/auth/signout" method="post">
-        <button
-          type="submit"
-          className="text-sm font-medium text-zinc-500 underline underline-offset-4 hover:text-zinc-800 dark:hover:text-zinc-200"
-        >
+      <form action="/auth/signout" method="post" className="flex flex-col">
+        <button type="submit" className={buttonClass("outline")}>
           Sign out
         </button>
       </form>
-    </main>
+    </PageShell>
   );
 }

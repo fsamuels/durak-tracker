@@ -3,6 +3,8 @@
 import { useActionState, useEffect, useRef } from "react";
 
 import { createGroupAction, type CreateGroupState } from "@/app/actions";
+import { Field, FormMessage } from "@/components/ui";
+import { buttonClass, cx, inputClass } from "@/lib/ui";
 
 const initialState: CreateGroupState = { error: null };
 
@@ -48,40 +50,34 @@ export function CreateGroupForm({
         ref={timezoneRef}
       />
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Group name
+      <Field label="Group name">
         <input
           name="name"
           required
           autoFocus={autoFocus}
-          placeholder="Run Club"
-          className="h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+          placeholder="Friday night cards"
+          className={inputClass}
         />
-      </label>
+      </Field>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Your display name
+      <Field label="Your display name" optional>
         <input
           name="display_name"
           defaultValue={defaultDisplayName}
           placeholder="What should the group call you?"
-          className="h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
+          className={inputClass}
         />
-      </label>
+      </Field>
 
       <button
         type="submit"
         disabled={pending}
-        className="btn-brand mt-2 h-12 rounded-full px-5 text-base font-semibold"
+        className={cx(buttonClass("primary"), "mt-2")}
       >
         {pending ? "Creating…" : submitLabel}
       </button>
 
-      {state.error && (
-        <p role="alert" className="text-sm text-red-600">
-          {state.error}
-        </p>
-      )}
+      {state.error && <FormMessage>{state.error}</FormMessage>}
     </form>
   );
 }

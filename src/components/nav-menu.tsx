@@ -8,6 +8,9 @@ import {
   useInstallPromptEvent,
 } from "@/components/install-prompt";
 
+const ITEM_CLASS =
+  "flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5";
+
 export function NavMenu({
   isAdmin = false,
   myPlayerId = null,
@@ -29,8 +32,15 @@ export function NavMenu({
         setOpen(false);
       }
     }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, []);
 
   return (
@@ -80,7 +90,7 @@ export function NavMenu({
           <Link
             href="/games/new"
             onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            className={ITEM_CLASS}
           >
             Start a game
           </Link>
@@ -88,7 +98,7 @@ export function NavMenu({
             <Link
               href={`/stats/players/${myPlayerId}`}
               onClick={() => setOpen(false)}
-              className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+              className={ITEM_CLASS}
             >
               My stats
             </Link>
@@ -97,21 +107,21 @@ export function NavMenu({
           <Link
             href="/group"
             onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            className={ITEM_CLASS}
           >
             Manage group
           </Link>
           <Link
             href="/account"
             onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            className={ITEM_CLASS}
           >
             Account
           </Link>
           <Link
             href="/about"
             onClick={() => setOpen(false)}
-            className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+            className={ITEM_CLASS}
           >
             About
           </Link>
@@ -119,7 +129,7 @@ export function NavMenu({
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="flex items-center px-4 py-2.5 text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+              className={ITEM_CLASS}
             >
               Admin
             </Link>
@@ -130,17 +140,14 @@ export function NavMenu({
                 setOpen(false);
                 void triggerInstall(installPrompt);
               }}
-              className="flex w-full items-center px-4 py-2.5 text-left text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
+              className={`${ITEM_CLASS} w-full text-left`}
             >
               Install app
             </button>
           )}
           <div className="my-1 border-t border-black/5 dark:border-white/10" />
           <form action="/auth/signout" method="post">
-            <button
-              type="submit"
-              className="flex w-full items-center px-4 py-2.5 text-left text-sm text-black hover:bg-black/5 dark:text-zinc-50 dark:hover:bg-white/5"
-            >
+            <button type="submit" className={`${ITEM_CLASS} w-full text-left`}>
               Sign out
             </button>
           </form>

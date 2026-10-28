@@ -5,6 +5,8 @@ import { useFieldArray, useForm, useWatch } from "react-hook-form";
 
 import { AddGuestInline } from "@/components/add-guest-inline";
 import { PlayerChipGrid } from "@/components/player-chip-grid";
+import { Field, FormMessage } from "@/components/ui";
+import { buttonClass, inputClass, textareaClass } from "@/lib/ui";
 import {
   startGameFormSchema,
   startRowsToParticipants,
@@ -87,9 +89,6 @@ export function StartGameForm({
     // On success the action redirects; nothing to do here.
   });
 
-  const inputClass =
-    "h-11 rounded-lg border border-black/15 bg-white px-3 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50";
-
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
@@ -129,23 +128,18 @@ export function StartGameForm({
         />
 
         <p
-          className={`text-sm ${selectedCount === 0 ? "text-red-600" : "text-emerald-600"}`}
+          className={`text-sm ${selectedCount === 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
           role={selectedCount === 0 ? "alert" : undefined}
         >
           {selectedCount === 0
             ? "Pick at least one player to start."
             : `${selectedCount} ${selectedCount === 1 ? "player" : "players"} in · you can add more when you finish`}
         </p>
-        {errors.rows && (
-          <p role="alert" className="text-sm text-red-600">
-            {errors.rows.message}
-          </p>
-        )}
+        {errors.rows && <FormMessage>{errors.rows.message}</FormMessage>}
       </fieldset>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Trump suit <span className="text-zinc-400">(optional)</span>
+        <Field label="Trump suit" optional>
           <select {...register("trumpSuit")} className={inputClass}>
             <option value="">—</option>
             {TRUMP_SUITS.map((s) => (
@@ -154,51 +148,31 @@ export function StartGameForm({
               </option>
             ))}
           </select>
-        </label>
+        </Field>
 
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Deck count <span className="text-zinc-400">(optional)</span>
+        <Field label="Deck count" optional error={errors.deckCount?.message}>
           <input
             inputMode="numeric"
             placeholder="e.g. 1"
             {...register("deckCount")}
             className={inputClass}
           />
-          {errors.deckCount && (
-            <span className="text-sm font-normal text-red-600">
-              {errors.deckCount.message}
-            </span>
-          )}
-        </label>
+        </Field>
       </div>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
-        Notes <span className="text-zinc-400">(optional)</span>
-        <textarea
-          {...register("notes")}
-          rows={2}
-          className="rounded-lg border border-black/15 bg-white px-3 py-2 text-base text-black dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-50"
-        />
-        {errors.notes && (
-          <span className="text-sm font-normal text-red-600">
-            {errors.notes.message}
-          </span>
-        )}
-      </label>
+      <Field label="Notes" optional error={errors.notes?.message}>
+        <textarea {...register("notes")} rows={2} className={textareaClass} />
+      </Field>
 
       <button
         type="submit"
         disabled={isSubmitting || selectedCount === 0}
-        className="btn-brand h-12 rounded-full px-5 text-base font-semibold"
+        className={buttonClass("primary")}
       >
         {isSubmitting ? "Starting…" : "Start game"}
       </button>
 
-      {errors.root && (
-        <p role="alert" className="text-sm text-red-600">
-          {errors.root.message}
-        </p>
-      )}
+      {errors.root && <FormMessage>{errors.root.message}</FormMessage>}
     </form>
   );
 }

@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { Section } from "@/components/ui";
 import type { InProgressGame } from "@/lib/data/games";
 import { formatInTz } from "@/lib/time";
+import { buttonClass, cardClass, cx } from "@/lib/ui";
 import { TRUMP_SUIT_LABELS, type TrumpSuit } from "@/lib/validation/game";
 
 /**
@@ -18,8 +20,7 @@ export function InProgressGames({
   if (games.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium text-zinc-500">In progress</h2>
+    <Section title="In progress">
       <ul className="flex flex-col gap-2">
         {games.map((game) => {
           const names = (game.game_players ?? [])
@@ -32,7 +33,10 @@ export function InProgressGames({
           return (
             <li
               key={game.id}
-              className="card-surface flex items-center justify-between gap-3 rounded-2xl px-4 py-3"
+              className={cx(
+                cardClass,
+                "flex items-center justify-between gap-3 px-4 py-3",
+              )}
             >
               <div className="flex min-w-0 flex-col gap-1">
                 <span className="text-sm font-medium text-black dark:text-zinc-50">
@@ -47,7 +51,7 @@ export function InProgressGames({
               </div>
               <Link
                 href={`/games/${game.id}/finish`}
-                className="btn-brand shrink-0 rounded-full px-4 py-2 text-sm font-semibold"
+                className={buttonClass("primary", "sm")}
               >
                 Finish →
               </Link>
@@ -55,6 +59,6 @@ export function InProgressGames({
           );
         })}
       </ul>
-    </section>
+    </Section>
   );
 }

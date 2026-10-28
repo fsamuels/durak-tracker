@@ -1,5 +1,7 @@
 import type { GroupDetails } from "@/lib/data/groups";
+import { Badge } from "@/components/ui";
 import { formatDateInTz } from "@/lib/time";
+import { cardClass, cx } from "@/lib/ui";
 
 function plural(n: number, noun: string): string {
   return `${n} ${noun}${n === 1 ? "" : "s"}`;
@@ -31,17 +33,13 @@ export function GroupDetails({ details }: { details: GroupDetails }) {
   return (
     <section
       aria-label="Group details"
-      className="card-surface flex flex-col gap-3 rounded-2xl px-4 py-4"
+      className={cx(cardClass, "flex flex-col gap-3 px-4 py-4")}
     >
       <div className="flex items-center justify-between gap-2">
         <h2 className="truncate text-lg font-semibold tracking-tight text-black dark:text-zinc-50">
           {details.name}
         </h2>
-        {details.viewerIsOwner && (
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-800">
-            owner
-          </span>
-        )}
+        {details.viewerIsOwner && <Badge>owner</Badge>}
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">

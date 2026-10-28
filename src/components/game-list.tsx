@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Badge } from "@/components/ui";
 import type { GameHistoryGame } from "@/lib/data/games";
 import { formatInTz } from "@/lib/time";
+import { buttonClass, cardClass, cx } from "@/lib/ui";
 import { TRUMP_SUIT_LABELS, type TrumpSuit } from "@/lib/validation/game";
 import { formatDuration } from "@/lib/validation/stats";
 
@@ -42,7 +44,10 @@ export function GameList({
         return (
           <li
             key={game.id}
-            className="card-surface relative flex flex-col gap-2 rounded-2xl px-4 py-3 transition-transform hover:-translate-y-0.5"
+            className={cx(
+              cardClass,
+              "relative flex flex-col gap-2 px-4 py-3 transition-transform hover:-translate-y-0.5",
+            )}
           >
             {/* Cover link: tapping anywhere on the card opens the detail page. */}
             <Link
@@ -55,11 +60,7 @@ export function GameList({
               <span className="text-sm font-medium text-black dark:text-zinc-50">
                 {formatInTz(game.started_at, timezone)}
               </span>
-              {durak && (
-                <span className="badge-durak shrink-0 rounded-full px-2 py-0.5 text-xs font-medium">
-                  Durak: {durak}
-                </span>
-              )}
+              {durak && <Badge tone="durak">Durak: {durak}</Badge>}
             </div>
 
             {names.length > 0 && (
@@ -93,7 +94,7 @@ export function GameList({
             <div className="relative z-10">
               <Link
                 href={`/games/new?from=${game.id}`}
-                className="btn-brand flex h-12 items-center justify-center rounded-full px-5 text-base font-semibold"
+                className={cx(buttonClass("primary"), "w-full")}
               >
                 ↻ Play again
               </Link>

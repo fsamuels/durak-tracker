@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Logo } from "@/components/logo";
 import { OAuthButtons } from "@/components/oauth-buttons";
+import { buttonClass } from "@/lib/ui";
 
 const SITE_URL = "https://durak-tracker.vercel.app";
 
@@ -159,10 +160,7 @@ export function LandingPage() {
         </p>
       </section>
 
-      <Link
-        href="/login"
-        className="btn-brand flex h-12 items-center justify-center gap-2 rounded-full px-5 text-base font-semibold"
-      >
+      <Link href="/login" className={buttonClass("primary")}>
         Get started — it&rsquo;s free →
       </Link>
     </main>
