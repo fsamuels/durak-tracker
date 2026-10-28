@@ -47,6 +47,26 @@ export const OUTCOME_LABELS: Record<Outcome, string> = {
   last_out: "Last out",
 };
 
+/** The outcomes a player can be given; "none" is the absence of one. */
+export const OUTCOME_ROLES = ["durak", "first_out", "last_out"] as const;
+export type OutcomeRole = (typeof OUTCOME_ROLES)[number];
+
+/**
+ * One tap on `role` for the player at `index`. Each role belongs to at most one
+ * player, so assigning it moves it: whoever held it goes back to "none".
+ * Tapping a player's current role clears it. Returns a new array.
+ */
+export function assignOutcome(
+  outcomes: readonly Outcome[],
+  index: number,
+  role: OutcomeRole,
+): Outcome[] {
+  if (outcomes[index] === role) {
+    return outcomes.map((o, i) => (i === index ? "none" : o));
+  }
+  return outcomes.map((o, i) => (i === index ? role : o === role ? "none" : o));
+}
+
 // ---------------------------------------------------------------------------
 // Shared game-outcome invariants (mirror the DB integrity triggers)
 // ---------------------------------------------------------------------------

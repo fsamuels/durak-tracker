@@ -18,6 +18,27 @@ Living snapshot of what's built. Last updated: 2026-10-28.
 
 ## In progress
 
+### One-tap outcomes on Finish / Edit ✅ (non-milestone)
+
+On Finish and Edit game, each player's result was a native `<select>`
+(— / Durak / First out / Last out): two taps and a system picker per player, on the
+most-used screen. Each row now shows a three-button
+[`OutcomeToggle`](../src/components/outcome-toggle.tsx) (**Durak 🃏 · 1st out · Last
+out**) under the player's name. Active buttons use that outcome's badge tone.
+
+- **Roles move, they don't duplicate.** Tapping Durak on Sam while Alex holds it
+  moves it to Sam. Tapping a player's active role clears it to "no outcome". This
+  logic is the pure `assignOutcome` helper in
+  [`validation/game.ts`](../src/lib/validation/game.ts), so "two duraks" or "two
+  first outs" can no longer be entered. `outcomeCountError` and the DB triggers
+  still guard the ≥3-player / exactly-one-durak rules at finish.
+- The outcome value stays a registered (hidden) react-hook-form field, so the
+  payload, schemas and server actions are unchanged.
+
+Tests: `assignOutcome` cases in `validation/game.test.ts`, an `OutcomeToggle`
+component test, and a `FinishGameForm` test that taps through
+move / clear / finish and checks the submitted participants.
+
 ### UI consistency pass ✅ (non-milestone)
 
 A review of every route, admin included, turned up drift in hand-typed Tailwind
@@ -930,8 +951,8 @@ problem, suggested approach, and the files involved. See
 - [ ] **Themed confirm for destructive actions.** Discard/Delete game use
       `window.confirm`. Replace it with an in-app confirm sheet, or an undo toast.
       _(Follow-up from the UI consistency pass.)_
-- [ ] **One-tap outcomes on Finish.** Make each player's outcome a segmented control
-      (Durak / 1st / Last) instead of a native `<select>`.
+- [x] ~~**One-tap outcomes on Finish.**~~ Done — see **One-tap outcomes on Finish /
+      Edit** above.
 - [ ] **Loading skeletons.** Add `loading.tsx` for Home, Games and Stats. These are
       dynamic server pages, so a navigation shows nothing until the data arrives.
 - [ ] **History pagination.** Add "Load more" past the 100-game cap.

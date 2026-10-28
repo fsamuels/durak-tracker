@@ -11,6 +11,8 @@ import {
   updateGamePayloadSchema,
   startRowsToParticipants,
   finishRowsToParticipants,
+  assignOutcome,
+  type Outcome,
 } from "./game";
 
 const GUID_A = "a0000000-0000-0000-0000-000000000001";
@@ -402,5 +404,43 @@ describe("updateGamePayloadSchema", () => {
         ],
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("assignOutcome", () => {
+  it("gives the tapped player the role", () => {
+    expect(assignOutcome(["none", "none", "none"], 1, "durak")).toEqual([
+      "none",
+      "durak",
+      "none",
+    ]);
+  });
+
+  it("moves a role that another player already holds", () => {
+    expect(assignOutcome(["durak", "first_out", "none"], 2, "durak")).toEqual([
+      "none",
+      "first_out",
+      "durak",
+    ]);
+  });
+
+  it("clears the role when the holder taps it again", () => {
+    expect(assignOutcome(["durak", "none", "none"], 0, "durak")).toEqual([
+      "none",
+      "none",
+      "none",
+    ]);
+  });
+
+  it("replaces the player's previous role without touching other roles", () => {
+    expect(
+      assignOutcome(["first_out", "durak", "last_out"], 0, "last_out"),
+    ).toEqual(["last_out", "durak", "none"]);
+  });
+
+  it("does not mutate its input", () => {
+    const before: Outcome[] = ["durak", "none"];
+    assignOutcome(before, 1, "durak");
+    expect(before).toEqual(["durak", "none"]);
   });
 });

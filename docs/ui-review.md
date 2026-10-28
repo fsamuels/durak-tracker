@@ -33,20 +33,13 @@ of re-typing Tailwind classes.
 
 Ordered by impact on the core loop: start a game → finish it → look at stats.
 
-### 1. One-tap outcomes on Finish
+### 1. One-tap outcomes on Finish ✅ done
 
-**Problem.** Each player's result on Finish/Edit is a native `<select>`
-(None / Durak / First out / Last out). That means two taps and a system picker per
-player, on the most-used screen in the app.
-
-**Suggestion.** Replace the `<select>` with a compact segmented control per row
-(`– · Durak · 1st · Last`), or with tap-to-cycle chips. Keep enforcing "one durak, at
-most one first/last out" through `outcomeCountError`. Selecting Durak on one player
-could clear it from the others instead of showing an error.
-
-**Files.** `src/app/games/[id]/finish/finish-game-form.tsx`,
-`src/app/games/[id]/edit/edit-game-form.tsx`. The selector demo's `ResultPanel` is a
-reference.
+Shipped after this review. Each player row on Finish and Edit now has a
+three-button `OutcomeToggle` (Durak · 1st out · Last out) in place of the
+`<select>`. Tapping a role that someone else holds moves it to the tapped player,
+and tapping the active role clears it. Duplicate roles can no longer be entered.
+The logic lives in `assignOutcome` (`src/lib/validation/game.ts`).
 
 ### 2. Themed confirm and undo for destructive actions
 
